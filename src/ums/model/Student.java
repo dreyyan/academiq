@@ -3,7 +3,13 @@ package ums.student;
 // [IMPORT] Standard
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
 import javax.xml.transform.Source;
+
+// [IMPORT] Enums
+import ums.model.enums.Department;
+import ums.model.enums.Courses;
+import ums.model.enums.AcademicStanding;
 
 public abstract class Student {
     // * Attributes
@@ -70,7 +76,7 @@ public abstract class Student {
         this.course = course; 
     }
 
-    public setAcademicStanding(AcademicStanding academicStanding){
+    public void setAcademicStanding(AcademicStanding academicStanding){
         this.academicStanding = academicStanding; 
     }
 

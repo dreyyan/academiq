@@ -5,6 +5,10 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+// [IMPORT] Enums
+import ums.model.enums.Department;
+import ums.model.enums.FacultyRank;
+
 public abstract class Faculty {
     // * Attributes
     private String facultyId;

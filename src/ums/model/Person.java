@@ -3,6 +3,9 @@ package ums.model;
 // [IMPORT] Standard
 import java.time.LocalDate;
 
+// [IMPORT] Enums
+import ums.model.enums.Gender;
+
 public abstract class Person {
     // * Attributes
     private String personId;
@@ -33,7 +36,7 @@ public abstract class Person {
     String getMiddleName() { return this.middleName; }
     String getLastName() { return this.lastName; }
     LocalDate getDateOfBirth() { return this.dateOfBirth; }
-    String getGender() { return this.gender; }
+    Gender getGender() { return this.gender; }
     String getAddress() { return this.address; }
     String getContactNumber() { return this.contactNumber; }
     String getEmail() { return this.email; }
