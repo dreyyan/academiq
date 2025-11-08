@@ -1,16 +1,14 @@
 package ums.model.enums;
 
-public enum EnrollmentStatus {
-    ENROLLED("Enrolled"),
-    WAITLISTED("Waitlisted"),
-    DROPPED("Dropped"),
-    COMPLETED("Completed");
+public enum Semester {
+    FIRST_SEM("1st Sem"),
+    SECOND_SEM("2nd Sem");
 
     // * Attribute
     private final String displayName;
 
     // * Constructor (Parameterized)
-    EnrollmentStatus(String displayName) {
+    Semester(String displayName) {
         this.displayName = displayName;
     }
 
