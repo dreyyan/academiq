@@ -1,5 +1,3 @@
-# PROJECT STRUCTURE
-
 university-management-system/
 │
 ├── src/
@@ -23,7 +21,17 @@ university-management-system/
 │       │   ├── Admin.java
 │       │   ├── Librarian.java
 │       │   ├── Department.java
-│       │   └── Course.java
+│       │   ├── Course.java
+│       │   └── enum/
+│       │       ├── Courses.java
+│       │       ├── Department.java
+│       │       ├── YearLevel.java
+│       │       ├── AcademicStanding.java
+│       │       ├── FacultyRank.java
+│       │       ├── Gender.java
+│       │       ├── EnrollmentStatus.java
+│       │       ├── GradeType.java
+│       │       └── GraduateProgram.java
 │       │
 │       ├── repository/
 │       │   └── DataStore.java
@@ -38,9 +46,12 @@ university-management-system/
 │       │   └── FacultyMenu.java
 │       │
 │       └── util/
+│           ├── Console/
+│           │   ├── ConsoleAnimation.java
+│           │   ├── ConsoleFormatting.java
+│           │   ├── ConsoleInput.java
+│           │   └── ConsoleUI.java
 │           ├── CSVReader.java
-│           ├── InputValidator.java
-│           ├── ConsoleUtils.java
 │           └── Logger.java
 │
 ├── data/
