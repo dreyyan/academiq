@@ -1,34 +1,26 @@
 @echo off
 setlocal
 
-:: Set project root
 set "PROJECT_ROOT=%~dp0"
 set "SRC_DIR=%PROJECT_ROOT%src"
 set "BIN_DIR=%PROJECT_ROOT%bin"
 
-echo ========================================
-echo    COMPILING UNIVERSITY MANAGEMENT SYSTEM
-echo ========================================
+echo [COMPILING] AcademIQ: University Management System...
 
-:: Create bin directory if it doesn't exist
+:: Create bin if it doesn't exist
 if not exist "%BIN_DIR%" mkdir "%BIN_DIR%"
 
-:: Compile all .java files recursively
-javac -d "%BIN_DIR%" -sourcepath "%SRC_DIR%" "%SRC_DIR%\ums\UniversityManagementSystem.java"
+:: Compile all java files recursively
+for /r "%SRC_DIR%" %%f in (*.java) do (
+    javac -d "%BIN_DIR%" -sourcepath "%SRC_DIR%" "%%f"
+)
 
-:: Check if compilation was successful
+:: Check compilation
 if %errorlevel% == 0 (
-    echo.
-    echo ========================================
-    echo    COMPILATION SUCCESSFUL!
-    echo    Classes output to: %BIN_DIR%
-    echo ========================================
+    echo [SUCCESS] Build completed.
 ) else (
-    echo.
-    echo XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    echo    COMPILATION FAILED!
-    echo    Check the errors above.
-    echo XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    echo [ERROR] Build failed.
+    pause
     exit /b %errorlevel%
 )
 
