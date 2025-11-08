@@ -1,16 +1,15 @@
 package ums.model.enums;
 
-public enum EnrollmentStatus {
-    ENROLLED("Enrolled"),
-    WAITLISTED("Waitlisted"),
-    DROPPED("Dropped"),
-    COMPLETED("Completed");
+// * [PERIOD] Grading period
+public enum Period {
+    MIDTERM("Midterm"),
+    FINAL("Final");
 
     // * Attribute
     private final String displayName;
 
     // * Constructor (Parameterized)
-    EnrollmentStatus(String displayName) {
+    Period(String displayName) {
         this.displayName = displayName;
     }
 
