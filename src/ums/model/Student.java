@@ -1,15 +1,17 @@
-package ums.student;
+package ums.model;
 
 // [IMPORT] Standard
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import javax.xml.transform.Source;
 
 // [IMPORT] Enums
 import ums.model.enums.Department;
-import ums.model.enums.Courses;
 import ums.model.enums.AcademicStanding;
+
+// [IMPORT] Entities
+import ums.model.entity.Course;
+import ums.model.entity.CourseOffering;
 
 public abstract class Student {
     // * Attributes
@@ -105,7 +107,8 @@ public abstract class Student {
     public void enrollInOffering(CourseOffering offering){
         if (getEnrolledCourses().contains(offering)){
             System.out.println(this.studentId + " is already enrolled in " + offering.getCourse());
-        } else (getEnrolledCourses().add(offering)){
+        } else {
+            getEnrolledCourses().add(offering);
             System.out.println(this.studentId + " enrolled in " + offering.getCourse());
         }
     }
