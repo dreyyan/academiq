@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import javax.xml.transform.Source;
 
-class Student {
+public abstract class Student {
     // * Attributes
     private String studentId;
     private LocalDate enrollmentDate; 
