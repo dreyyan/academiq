@@ -4,14 +4,10 @@ package ums.model;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-
-// [IMPORT] Enums
-import ums.model.enums.Department;
-import ums.model.enums.AcademicStanding;
-
-// [IMPORT] Entities
 import ums.model.entity.Course;
 import ums.model.entity.CourseOffering;
+import ums.model.enums.AcademicStanding;
+import ums.model.enums.Department;
 
 public abstract class Student {
     // * Attributes
@@ -136,8 +132,19 @@ public abstract class Student {
     }
 
     // [METHOD] Check student's eligibility for graduation
-    public boolean isEligibleForGradution(){
-        return getCreditsEarned() >= 120 && getGPA() <= 3.0; 
+    public boolean isEligibleForGraduation(){
+         boolean gpaRequirement = getGPA() <= 2.5;
+        boolean seniorRequirement = getCreditsEarned() >= 90;
+        boolean totalCreditsRequired = getCreditsEarned() >= 120;
+
+        boolean eligible = gpaRequirement && seniorRequirement && totalCreditsRequired; 
+
+        if (eligible){
+            System.out.println( getStudentId() + " is eligible for Undergraduate Graduation.");
+         } else {
+            System.out.println(getStudentId() + " is not eligible for Undergraduate Graduation.");
+    }
+        return eligible; 
     }
 
     // [METHOD] Display student's information
@@ -145,14 +152,26 @@ public abstract class Student {
         System.out.println("Student ID: " + getStudentId());
         System.out.println("Student's Department: " + getDepartment());
         System.out.println("Student's Course: " + getCourse());
+        System.out.println("Student's Year Level: " + calculateYearLevel());
         System.out.println("GPA: " + getGPA());
         System.out.println("Total Credits: " + getCreditsEarned());
-    }
+        System.out.println("Student's Academic Standing: " + getAcademicStanding());
+        System.out.println("Eligible for Graduation: " + (isEligibleForGraduation() ? "Yes" : "No"));
+}
 
     // [METHOD] Generate student's stringified report
     public String generateReport(){
-        return "Student's ID: " + getStudentId() + "\nGPA: " + getGPA() + "\nCredits: " + getCreditsEarned();
-    }
+        return "Student Report\n" +
+        "ID: " + getStudentId() + "\n" +
+        "Department: " + getDepartment() + "\n" +
+        "Course: " + getCourse() + "\n" +
+        "Year Level: " + calculateYearLevel() + "\n" +
+        "GPA: " + getGPA() + "\n" +
+        "Credits: " + getCreditsEarned() + "\n" +
+        "Academic Standing: " + getAcademicStanding() + "\n" +
+        "Eligible for Graduation: " + (isEligibleForGraduation() ? "Yes" : "No");
+}
+
 }
 
 
