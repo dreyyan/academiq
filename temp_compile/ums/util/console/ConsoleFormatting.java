@@ -1,5 +1,8 @@
 package ums.util.console;
 
+import ums.util.Settings;
+import ums.util.console.ConsoleAnimation;
+
 public class ConsoleFormatting {
     // [UTILITY] Prints a formatted line of 'length' characters using 'symbol'
     public static void displayFormat(int length, char symbol) {
