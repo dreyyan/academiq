@@ -3,6 +3,8 @@ package ums.model;
 // [IMPORT] Standard
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+
+// [IMPORT] Enums
 import ums.model.enums.Department;
 import ums.model.enums.FacultyRank;
 
@@ -42,7 +44,6 @@ public abstract class NonAcademicStaff extends Faculty {
     public void setSupervisor(NonAcademicStaff supervisor) { this.supervisor = supervisor; }
 
     // * Methods
-    
     // [METHOD] Generate work schedule string
     public String generateWorkSchedule() {
         StringBuilder schedule = new StringBuilder();
@@ -80,8 +81,7 @@ public abstract class NonAcademicStaff extends Faculty {
             System.out.println("Supervisor: " + supervisor.getStaffId() + " - " + supervisor.getPosition());
         } else {
             System.out.println("Supervisor: None");
-        }
-        System.out.println("Number of Advisees: " + getAdvisees().size());
+        }   
     }
 
     // [METHOD] Generate staff's stringified report
@@ -106,7 +106,6 @@ public abstract class NonAcademicStaff extends Faculty {
         } else {
             report.append("Supervisor: None\n");
         }
-        report.append("Advisees: ").append(getAdvisees().size()).append("\n");
         return report.toString();
     }
 }
