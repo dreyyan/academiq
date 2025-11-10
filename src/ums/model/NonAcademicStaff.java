@@ -3,8 +3,12 @@ package ums.model;
 // [IMPORT] Standard
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+
+// [IMPORT] Enums
 import ums.model.enums.Department;
 import ums.model.enums.FacultyRank;
+import ums.model.enums.Gender;
 
 public abstract class NonAcademicStaff extends Faculty {
     // * Attributes
@@ -14,38 +18,43 @@ public abstract class NonAcademicStaff extends Faculty {
     private NonAcademicStaff supervisor;
 
     // * Constructor (Parameterized)
-    public NonAcademicStaff(String facultyId, Department department, FacultyRank rank, LocalDate hireDate, 
-                            String officeLocation, double salary, boolean isTenured, String staffId, String position, 
-                            String shiftSchedule, NonAcademicStaff supervisor) {
-        super(facultyId, department, rank, hireDate, officeLocation, salary, isTenured);
+    public NonAcademicStaff(
+        // Person Attributes
+        String personId, String firstName, String middleName, String lastName, LocalDate dateOfBirth, Gender gender, String address, String contactNumber, String email,
+        // Faculty Attributes
+        String facultyId, Department department, FacultyRank rank, LocalDate hireDate, String officeLocation, double salary, boolean isTenured, List<GraduateStudent> advisees,
+        // NonAcademicStaff Attributes
+        String staffId, String position, String shiftSchedule, NonAcademicStaff supervisor
+    ) {
+        super(
+            // Person Attributes
+            personId, firstName, middleName, lastName, dateOfBirth, gender, address, contactNumber, email,
+            // Faculty Attributes
+            facultyId, department, rank, hireDate, officeLocation, salary, isTenured, advisees
+        );
+
         this.staffId = staffId;
         this.position = position;
         this.shiftSchedule = shiftSchedule;
         this.supervisor = supervisor;
     }
 
-   // * Getters
+    // * Getters
     public String getStaffId() { return this.staffId; }
     public String getPosition() { return this.position; }
-    @Override
-    public LocalDate getHireDate() { return super.getHireDate(); }
-    @Override
-    public double getSalary() { return super.getSalary(); }
     public String getShiftSchedule() { return this.shiftSchedule; }
     public NonAcademicStaff getSupervisor() { return this.supervisor; }
 
-   // * Setters
+    // * Setters
     public void setPosition(String position) { this.position = position; }
-    @Override
-    public void setSalary(double salary) { super.setSalary(salary); }
     public void setShiftSchedule(String schedule) { this.shiftSchedule = schedule; }
     public void setSupervisor(NonAcademicStaff supervisor) { this.supervisor = supervisor; }
 
     // * Methods
-    
-    // [METHOD] Generate work schedule string
+    // [METHOD] Return a stringified work schedule
     public String generateWorkSchedule() {
         StringBuilder schedule = new StringBuilder();
+
         schedule.append("===== Work Schedule =====\n");
         schedule.append("Staff ID: ").append(staffId).append("\n");
         schedule.append("Faculty ID: ").append(getFacultyId()).append("\n");
@@ -53,38 +62,38 @@ public abstract class NonAcademicStaff extends Faculty {
         schedule.append("Shift: ").append(shiftSchedule).append("\n");
         schedule.append("Department: ").append(getDepartment()).append("\n");
         schedule.append("Office: ").append(getOfficeLocation()).append("\n");
+
         if (supervisor != null) {
             schedule.append("Supervisor: ").append(supervisor.getStaffId())
-                   .append(" (").append(supervisor.getPosition()).append(")\n");
+                    .append(" (").append(supervisor.getPosition()).append(")\n");
         } else {
             schedule.append("Supervisor: None\n");
-        }
-        return schedule.toString();
+        } return schedule.toString();
     }
 
-    // [METHOD] Display staff's information 
+    // [METHOD: Override] Display non-academic staff's information
     @Override
     public void displayInfo() {
-        System.out.println("Staff ID: " + getStaffId());
+        System.out.println("Staff ID: " + staffId);
         System.out.println("Faculty ID: " + getFacultyId());
         System.out.println("Department: " + getDepartment());
-        System.out.println("Position: " + getPosition());
+        System.out.println("Position: " + position);
         System.out.println("Rank: " + getRank());
         System.out.println("Office: " + getOfficeLocation());
         System.out.println("Hire Date: " + getHireDate().format(DateTimeFormatter.ofPattern("MM/dd/yyyy")));
         System.out.println("Years of Service: " + calculateYearsOfService());
         System.out.println("Salary: $" + String.format("%.2f", getSalary()));
-        System.out.println("Shift Schedule: " + getShiftSchedule());
+        System.out.println("Shift Schedule: " + shiftSchedule);
         System.out.println("Tenured: " + (isTenured() ? "Yes" : "No"));
+
         if (supervisor != null) {
             System.out.println("Supervisor: " + supervisor.getStaffId() + " - " + supervisor.getPosition());
         } else {
             System.out.println("Supervisor: None");
-        }
-        System.out.println("Number of Advisees: " + getAdvisees().size());
+        } System.out.println("Number of Advisees: " + getAdvisees().size());
     }
 
-    // [METHOD] Generate staff's stringified report
+    // [METHOD: Override] Generate staff's stringified report
     @Override
     public String generateReport() {
         StringBuilder report = new StringBuilder();

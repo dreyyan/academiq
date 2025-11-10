@@ -1,9 +1,31 @@
-package ums.util.Console;
+package ums.util.console;
+
+import ums.util.Settings;
 
 public class ConsoleUI {
     // [UTILITY] Clear the console screen
     public static void clearScreen() {
-        System.out.print("\033[H\033[2J");
+        try {
+            final String os = System.getProperty("os.name").toLowerCase();
+
+            if (os.contains("win")) {
+                // Windows: Use cls command via process
+                new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
+            } else {
+                // Linux / macOS / Unix
+                System.out.print("\033[H\033[2J");  // ANSI clear
+                System.out.print("\033[3J");        // Clear scrollback (optional)
+                System.out.flush();
+            }
+        } catch (Exception e) {
+            // Fallback: Print blank lines (works everywhere)
+            for (int i = 0; i < Settings.CONSOLE_HEIGHT; i++) {
+                System.out.println();
+            }
+        }
+
+        // Ensure cursor is at top-left
+        System.out.print("\033[H");
         System.out.flush();
     }
 

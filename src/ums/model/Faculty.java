@@ -8,8 +8,9 @@ import java.util.List;
 // [IMPORT] Enums
 import ums.model.enums.Department;
 import ums.model.enums.FacultyRank;
+import ums.model.enums.Gender;
 
-public abstract class Faculty {
+public abstract class Faculty extends Person {
     // * Attributes
     private String facultyId;
     private Department department;
@@ -18,10 +19,20 @@ public abstract class Faculty {
     private String officeLocation;
     private double salary;
     private boolean isTenured;
-    private List<GraduateStudents> advisees;
+    private List<GraduateStudent> advisees;
 
     // * Constructor (Parameterized)
-    public Faculty(String facultyId, Department department, FacultyRank rank, LocalDate hireDate, String officeLocation, double salary, boolean isTenured) {
+    public Faculty(
+        // Person Attributes
+        String personId, String firstName, String middleName, String lastName, LocalDate dateOfBirth, Gender gender, String address, String contactNumber, String email,    
+        // Faculty Attributes
+        String facultyId, Department department, FacultyRank rank, LocalDate hireDate, String officeLocation, double salary, boolean isTenured, List<GraduateStudent> advisees
+    ) {
+        super(
+            // Person Attributes
+            personId, firstName, middleName, lastName, dateOfBirth, gender, address, contactNumber, email
+        );
+
         this.facultyId = facultyId;
         this.department = department;
         this.rank = rank;
@@ -40,7 +51,7 @@ public abstract class Faculty {
     public String getOfficeLocation() { return this.officeLocation; }
     public double getSalary() { return this.salary; }
     public boolean isTenured() { return this.isTenured; }
-    public List<GraduateStudents> getAdvisees() { return new ArrayList<>(advisees); }
+    public List<GraduateStudent> getAdvisees() { return new ArrayList<>(advisees); }
 
    // * Setters
     public void setRank(FacultyRank rank) { this.rank = rank; }
@@ -82,6 +93,7 @@ public abstract class Faculty {
     // [METHOD] Generate faculty's stringified report
     public String generateReport() {
         StringBuilder report = new StringBuilder();
+
         report.append("======= Faculty Report =======\n");
         report.append("ID: ").append(facultyId).append("\n");
         report.append("Department: ").append(getDepartment()).append("\n");
@@ -92,6 +104,7 @@ public abstract class Faculty {
         report.append("Salary: $").append(String.format("%.2f", getSalary())).append("\n");
         report.append("Tenured: ").append(isTenured() ? "Yes" : "No").append("\n");
         report.append("Advisees: ").append(getAdvisees().size()).append("\n");
+
         return report.toString();
     }
 }

@@ -6,7 +6,8 @@ public final class Settings {
     // * Console Settings
     public static final int CONSOLE_WIDTH = 100;
     public static final int CONSOLE_HEIGHT = 30;
-    public static final char SYMBOL = '#'; // ? Default symbol for UI display
+    public static final String SYMBOL = "#"; // ? Default symbol for UI display
+    public static final int MS_DELAY = 150;
     
     // * User Interface (UI) Labels
     public static final String SYSTEM_TITLE = "AcademIQ";

@@ -1,7 +1,7 @@
-package ums.util.Console;
+package ums.util.console;
 
-// [IMPORT] Utilities
-import ums.util.Console.ConsoleAnimation;
+import ums.util.Settings;
+import ums.util.console.ConsoleAnimation;
 
 public class ConsoleFormatting {
     // [UTILITY] Prints a formatted line of 'length' characters using 'symbol'

@@ -4,9 +4,17 @@ package ums.model;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+
+// [IMPORT] Entities
 import ums.model.entity.CourseOffering;
+
+// [IMPORT] Enums
 import ums.model.enums.Department;
 import ums.model.enums.FacultyRank;
+import ums.model.enums.Gender;
+
+// [IMPORT] Utilities
+import ums.util.Logger;
 
 public abstract class AcademicStaff extends Faculty {
     // * Attributes
@@ -16,13 +24,25 @@ public abstract class AcademicStaff extends Faculty {
     private int maxTeachingLoad = 18;
 
     // * Constructor (Parameterized)
-    public AcademicStaff(String facultyId, Department department, FacultyRank rank, 
-                        LocalDate hireDate, String officeLocation, double salary, 
-                        boolean isTenured, String teacherId) {
-        super(facultyId, department, rank, hireDate, officeLocation, salary, isTenured);
+    public AcademicStaff(
+        // Person Attributes
+        String personId, String firstName, String middleName, String lastName, LocalDate dateOfBirth, Gender gender, String address, String contactNumber, String email,
+        // Faculty Attributes
+        String facultyId, Department department, FacultyRank rank, LocalDate hireDate, String officeLocation, double salary, boolean isTenured, List<GraduateStudent> advisees,
+        // AcademicStaff Attributes
+        String teacherId, int teachingHoursPerWeek, int maxTeachingLoad
+        ) {
+        super(
+            // Person Attributes
+            personId, firstName, middleName, lastName, dateOfBirth, gender, address, contactNumber, email,
+            // Faculty Attributes
+            facultyId, department, rank, hireDate, officeLocation, salary, isTenured, advisees
+        );
+
         this.teacherId = teacherId;
         this.coursesTaught = new ArrayList<>();
-        this.teachingHoursPerWeek = 0;
+        this.teachingHoursPerWeek = teachingHoursPerWeek;
+        this.maxTeachingLoad = maxTeachingLoad;
     }
 
     // * Getters
@@ -38,7 +58,7 @@ public abstract class AcademicStaff extends Faculty {
                 coursesTaught.add(offering);
                 updateTeachingHours(offering.getCourse().getCredits());
             } else {
-                System.out.println("Cannot add course - teaching load would exceed maximum.");
+                Logger.errorMessage("Cannot add course - teaching load would exceed maximum");
             }
         }
     }
@@ -71,8 +91,9 @@ public abstract class AcademicStaff extends Faculty {
     // [METHOD] Generate performance report 
     public String generatePerformanceReport() {
         StringBuilder report = new StringBuilder();
+
         report.append("======= Academic Staff Performance Report =======\n");
-        report.append(super.generateReport()); // Call parent's generateReport()
+        report.append(super.generateReport());
         report.append("Teacher ID: ").append(teacherId).append("\n");
         report.append("Teaching Hours Per Week: ").append(teachingHoursPerWeek).append("\n");
         report.append("Max Teaching Load: ").append(maxTeachingLoad).append("\n");
@@ -82,15 +103,13 @@ public abstract class AcademicStaff extends Faculty {
         if (!coursesTaught.isEmpty()) {
             report.append("\nCourse Details:\n");
             for (CourseOffering course : coursesTaught) {
-                report.append("  - ").append(course.toString()).append("\n");
+                report.append(" - ").append(course.toString()).append("\n");
             }
-        }
-        
-        return report.toString();
+        } return report.toString();
     }
 
-    // [METHOD] Display academic staff information
     @Override
+    // [METHOD: Override] Display academic staff's information
     public void displayInfo() {
         super.displayInfo(); // Call parent's displayInfo()
         System.out.println("Teacher ID: " + getTeacherId());
@@ -100,8 +119,8 @@ public abstract class AcademicStaff extends Faculty {
         System.out.println("Number of Courses: " + getCoursesTaught().size());
     }
 
-    // [METHOD] Generate report 
     @Override
+    // [METHOD: Override] Generate academic staff's stringified report
     public String generateReport() {
         return generatePerformanceReport();
     }

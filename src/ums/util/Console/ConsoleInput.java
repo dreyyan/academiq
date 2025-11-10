@@ -1,9 +1,12 @@
-package ums.util.Console;
+package ums.util.console;
 
+// [IMPORT] Standard
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
+// [IMPORT] Utilities
 import ums.util.Logger;
+import ums.util.Settings;
 
 public class ConsoleInput {
     static Scanner scanner = new Scanner(System.in);
@@ -19,7 +22,7 @@ public class ConsoleInput {
         if (text == null) return;
         int padding = (consoleWidth - text.length()) / 2;
         if (padding < 0) padding = 0; // ? [HANDLE] Text longer than console
-        System.out.println(" ".repeat(padding) + text);
+        ConsoleAnimation.lineDelayAnimation(" ".repeat(padding) + text, Settings.MS_DELAY, true);
     }
 
     // [UTILITY] Get an integer input from the user

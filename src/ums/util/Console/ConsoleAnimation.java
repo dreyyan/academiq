@@ -1,4 +1,4 @@
-package ums.util.Console;
+package ums.util.console;
 
 public class ConsoleAnimation {
     // [UTILITY] Delays execution for given 'seconds'

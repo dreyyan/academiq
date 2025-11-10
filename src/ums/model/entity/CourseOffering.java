@@ -1,6 +1,10 @@
 package ums.model.entity;
 
+// [IMPORT] Enums
 import ums.model.enums.Semester;
+
+// [IMPORT] Class
+import ums.model.AcademicStaff;
 
 public class CourseOffering {
     // * Attributes

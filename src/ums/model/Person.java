@@ -19,9 +19,10 @@ public abstract class Person {
     private String email;
 
     // * Constructor (Parameterized)
-    Person(String personId, String firstName, String middleName, String lastName, LocalDate dateOfBirth, Gender gender, String address, String contactNumber, String email) {
+    public Person(String personId, String firstName, String middleName, String lastName, LocalDate dateOfBirth, Gender gender, String address, String contactNumber, String email) {
         this.personId = personId;
         this.firstName = firstName;
+        this.middleName = middleName;
         this.lastName = lastName;
         this.dateOfBirth = dateOfBirth;
         this.gender = gender;
@@ -56,5 +57,5 @@ public abstract class Person {
     abstract void displayInfo();
 
     // [ABSTRACT] Return a string of person's summary report
-    abstract void generateReport();
+    abstract String generateReport();
 }
