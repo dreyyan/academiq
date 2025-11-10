@@ -4,8 +4,7 @@ package ums.model;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-
-// [IMPORT] Enums
+import ums.model.entity.CourseOffering;
 import ums.model.enums.Department;
 import ums.model.enums.FacultyRank;
 
@@ -37,7 +36,7 @@ public abstract class AcademicStaff extends Faculty {
         if (offering != null && !coursesTaught.contains(offering)) {
             if (!isOverloaded()) {
                 coursesTaught.add(offering);
-                updateTeachingHours(offering.getCreditHours());
+                updateTeachingHours(offering.getCourse().getCredits());
             } else {
                 System.out.println("Cannot add course - teaching load would exceed maximum.");
             }
@@ -47,7 +46,7 @@ public abstract class AcademicStaff extends Faculty {
     // [METHOD] Remove a course offering from the teaching list
     public void removeCourseOffering(CourseOffering offering) {
         if (coursesTaught.remove(offering)) {
-            updateTeachingHours(-offering.getCreditHours());
+            updateTeachingHours(-offering.getCourse().getCredits());
         }
     }
 
@@ -73,6 +72,7 @@ public abstract class AcademicStaff extends Faculty {
     public String generatePerformanceReport() {
         StringBuilder report = new StringBuilder();
         report.append("======= Academic Staff Performance Report =======\n");
+        report.append(super.generateReport()); // Call parent's generateReport()
         report.append("Teacher ID: ").append(teacherId).append("\n");
         report.append("Teaching Hours Per Week: ").append(teachingHoursPerWeek).append("\n");
         report.append("Max Teaching Load: ").append(maxTeachingLoad).append("\n");
