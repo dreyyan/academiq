@@ -3,6 +3,8 @@ package ums.model;
 // [IMPORT] Standard
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+
+// [IMPORT] Enums
 import ums.model.enums.Department;
 import ums.model.enums.FacultyRank;
 
