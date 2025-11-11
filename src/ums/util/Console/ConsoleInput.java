@@ -120,60 +120,51 @@ public class ConsoleInput {
         }
     }
 
-    // [METHOD] Navigate input fields using ENTER key, with max characters per field
-    // and individual X/Y positions
-    public static String[] navigateInputs(int[] fieldYPositions, int[] fieldXPositions, int maxLength) throws IOException {
-        // ! [ERROR] Mismatching Y and X length
-        if (fieldYPositions.length != fieldXPositions.length) {
-            throw new IllegalArgumentException("Y and X positions arrays must have the same length.");
-        }
+// [METHOD] Navigate input fields using ENTER key, with max characters per field
+// and individual X/Y positions. Returns null if user types "\"
+public static String[] navigateInputs(int[] fieldYPositions, int[] fieldXPositions, int maxLength) throws IOException {
+    // ! [ERROR] Mismatching Y and X length
+    if (fieldYPositions.length != fieldXPositions.length) {
+        throw new IllegalArgumentException("Y and X positions arrays must have the same length.");
+    }
 
-        String[] inputs = new String[fieldYPositions.length];
-        Arrays.fill(inputs, ""); // initialize
+    String[] inputs = new String[fieldYPositions.length];
+    Arrays.fill(inputs, ""); // initialize
 
-        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+    BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
-        for (int current = 0; current < fieldYPositions.length; current++) {
+    for (int current = 0; current < fieldYPositions.length; current++) {
+        ConsoleUI.goTo(fieldYPositions[current], fieldXPositions[current]);
+
+        String input = "";
+        while (true) {
+            // Move cursor to the start of the current field
             ConsoleUI.goTo(fieldYPositions[current], fieldXPositions[current]);
 
-            String input = "";
-            while (true) {
-                // Move cursor to the start of the current field
-                ConsoleUI.goTo(fieldYPositions[current], fieldXPositions[current]);
+            // Display current input
+            System.out.print(input);
 
-                // Display current input
-                System.out.print(input);
+            // Read the line
+            String line = reader.readLine();
+            if (line == null) line = "";
 
-                // Read the line
-                String line = reader.readLine();
-                if (line != null) {
-                    if (line.length() > maxLength) {
-                        line = line.substring(0, maxLength); // enforce max length
-                    }
-                    input = line;
-                    break; // done with this field, go to next
-                }
+            // Check if user wants to cancel by entering "\"
+            if (line.equals("\\")) {
+                return null; // return null to indicate cancellation
             }
-            inputs[current] = input;
+
+            // Enforce max length
+            if (line.length() > maxLength) {
+                line = line.substring(0, maxLength); // enforce max length
+            }
+
+            input = line;
+            break; // done with this field, go to next
         }
-
-        return inputs;
+        inputs[current] = input;
     }
 
-    // * Input Validation
-    // [UTILITY] Check if email is valid
-    public static boolean isValidEmail(String email) {
-        String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
-        Pattern pattern = Pattern.compile(emailRegex);
-        Matcher matcher = pattern.matcher(email);
-        return matcher.matches();
-    }
+    return inputs;
+}
 
-    // * [UTILITY] Check if password is valid
-    public static boolean isValidPassword(String password) {
-        String passwordRegex = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!]).{8,}$";
-        Pattern pattern = Pattern.compile(passwordRegex);
-        Matcher matcher = pattern.matcher(password);
-        return matcher.matches();
-    }
 }

@@ -146,8 +146,29 @@ public class ConsoleDisplay {
     }
 
     public static void setupScreen() {
+        ConsoleUI.clearScreen();
         ConsoleDisplay.displayBorder(2, 3);
         ConsoleUI.goTo(5, 0);
         ConsoleDisplay.displayHeaderTitle();
+    }
+
+    // [METHOD] Display a dialog box with a specified message
+    public static void dialogBox(String dialogType, String dialogMessage) {
+        String type = "";
+
+        ConsoleUI.goTo(Settings.CONSOLE_HEIGHT - 4, 0);
+        switch (dialogType) {
+            case "success":
+                type = "[SUCCESS]";
+                break;
+            case "error":
+                type = "[ERROR]";
+                break;
+            case "info":
+                type = "[INFO]";
+                break;
+        }
+        ConsoleUI.moveCursor(0, 0, 5, 0);
+        ConsoleInput.printCentered(type + " " + dialogMessage, Settings.CONSOLE_WIDTH - 9);
     }
 }

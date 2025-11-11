@@ -5,9 +5,9 @@ public final class Settings {
 
     // * Console Settings
     public static final int CONSOLE_WIDTH = 100;
-    public static final int CONSOLE_HEIGHT = 30;
+    public static final int CONSOLE_HEIGHT = 40;
     public static final String SYMBOL = "#"; // ? Default symbol for UI display
-    public static final int MS_DELAY = 150;
+    public static final int MS_DELAY = 50;
     
     // * User Interface (UI) Labels
     public static final String SYSTEM_TITLE = "AcademIQ";
@@ -18,4 +18,5 @@ public final class Settings {
     public static final String FACULTY_FILE = "data/faculty.csv";
     public static final String COURSES_FILE = "data/courses.csv";
     public static final String ENROLLMENTS_FILE = "data/enrollments.csv";
+    public static final String CREDENTIALS_FILE = "data/credentials.csv";
 }

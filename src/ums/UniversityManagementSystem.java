@@ -7,6 +7,6 @@ import ums.ui.MainMenu;
 
 public class UniversityManagementSystem {
     public static void main(String[] args) throws IOException {
-        MainMenu.displayRegisterScreen();
+        MainMenu.displayLoginScreen();
     }
 }
