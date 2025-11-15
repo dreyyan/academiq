@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Scanner;
 
 // [IMPORT] Utilities
+import ums.ui.MenuOperation;
 import ums.util.CSV;
 import ums.util.Auth;
 import ums.util.Logger;
@@ -20,46 +21,200 @@ import ums.util.console.ConsoleFormatting;
 public class MainMenu {
     static Scanner scanner = new Scanner(System.in);
 
-    public static void displayMainMenu() throws IOException {
-        while (true) {
-            ConsoleDisplay.setupScreen();
-            scanner.nextLine();
-        }
-    }
+    // * Menu operations
+    static MenuOperation[] studentMenuOperations = {
+        new MenuOperation(new String[]{"1", "profile"}, "Profile", () -> displayStudentProfileMenu()),
+        new MenuOperation(new String[]{"2", "academics"}, "Academics", () -> displayStudentAcademicsMenu()),
+        new MenuOperation(new String[]{"3", "courses"}, "Courses", () -> displayStudentCoursesMenu())
+    };
 
+    static MenuOperation[] studentCoursesMenuOperations = {
+        new MenuOperation(new String[]{"1", "enroll"}, "Enroll in Course Offering", () -> displayStudentEnrollInCourseOfferingMenu()),
+        new MenuOperation(new String[]{"2", "drop"}, "Drop Course Offering", () -> displayStudentDropCourseOfferingMenu())
+    };
+    
+    // * UI: Student Menu
+    // [METHOD] Display "Student" menu
     public static void displayStudentMenu() {
         // Display UI
         ConsoleDisplay.setupScreen();
-        ConsoleUI.goTo(15, 0);
+        ConsoleUI.goTo(16, 0);
         ConsoleDisplay.displayHeaderSubtitle("Student Menu");
+
+        // This loop runs indefinitely until the user enters a valid choice
+        while (true) {
+            // Display top border
+            ConsoleUI.moveCursor(0, 0, 3, 0);
+            ConsoleInput.printCentered("=".repeat(16), Settings.CONSOLE_WIDTH - 6);
+            
+            // Display operations
+            for (MenuOperation operation : studentMenuOperations) {
+                ConsoleUI.moveCursor(0, 0, 42, 0);
+                ConsoleAnimation.lineDelayAnimation(operation.inputKeys[0] + ". " + operation.getDisplayName(), 50); System.out.println();
+            }
+
+            // Display bottom border
+            ConsoleUI.moveCursor(0, 0, 3, 0);
+            ConsoleInput.printCentered("=".repeat(16), Settings.CONSOLE_WIDTH - 6);
+
+            // Display ASCII art of school
+            ConsoleUI.moveCursor(0, 0, 42, 0);
+            ConsoleDisplay.displaySchool();
+
+            // Prompt user to enter choice
+            ConsoleUI.goTo(22, 43);
+            String input = ConsoleInput.getString(">> ");
+
+            // Find operation to execute
+            boolean found = false;
+            for (MenuOperation operation : studentMenuOperations) {
+                if (operation.matches(input)) {
+                    operation.action.run(); // Call function
+                    found = true;
+                    break;
+                }
+            }
+
+            // ! [ERROR] Invalid choice
+            if (!found) {
+                ConsoleUI.goTo(23, 43);
+                System.out.println("Invalid choice. Please try again.");
+            }
+        }
+    }
+
+    // [METHOD] Display student "Profile" menu
+    public static void displayStudentProfileMenu() {
+        // Display UI
+        ConsoleDisplay.setupScreen();
+        ConsoleUI.goTo(16, 0);
+        ConsoleDisplay.displayHeaderSubtitle("Student: Profile");
+
+        // This loop runs indefinitely until the user enters a valid choice
+        while (true) {
+            // Display top border
+            ConsoleUI.moveCursor(0, 0, 3, 0);
+            ConsoleInput.printCentered("=".repeat(28), Settings.CONSOLE_WIDTH - 6);
+
+            // Display operations
+            for (MenuOperation operation : studentCoursesMenuOperations) {
+                ConsoleUI.moveCursor(0, 0, 36, 0);
+                ConsoleAnimation.lineDelayAnimation(operation.inputKeys[0] + ". " + operation.getDisplayName(), 50); System.out.println();
+            }
+
+            // Display bottom border
+            ConsoleUI.moveCursor(0, 0, 3, 0);
+            ConsoleInput.printCentered("=".repeat(28), Settings.CONSOLE_WIDTH - 6);
+
+            // Prompt user to enter choice
+            ConsoleUI.moveCursor(0, 0, 36, 0);
+            String input = ConsoleInput.getString(">> ");
+
+            // Find operation to execute
+            boolean found = false;
+            for (MenuOperation operation : studentCoursesMenuOperations) {
+                if (operation.matches(input)) {
+                    operation.action.run(); // Call function
+                    found = true;
+                    break;
+                }
+            }
+
+            // ! [ERROR] Invalid choice
+            if (!found) {
+                ConsoleUI.goTo(23, 43);
+                System.out.println("Invalid choice. Please try again.");
+            }
+        }
+    }
+
+    // [METHOD] Display student "Academics" menu
+    public static void displayStudentAcademicsMenu() {
+        // Display UI
+        ConsoleDisplay.setupScreen();
+        ConsoleUI.goTo(15, 0);
+        ConsoleDisplay.displayHeaderSubtitle("Student: Academics");
 
         // This loop runs indefinitely until the user enters a valid choice
         while (true) {
             // Display operations
             ConsoleFormatting.displayFormat(Settings.CONSOLE_WIDTH, '=', true);
-            ConsoleUI.moveCursor(0, 0, 5, 0); ConsoleAnimation.lineDelayAnimation("1. Display Info", 50, true);
-            ConsoleUI.moveCursor(0, 0, 5, 0); ConsoleAnimation.lineDelayAnimation("2. Generate Report", 50, true);
-            ConsoleUI.moveCursor(0, 0, 5, 0); ConsoleAnimation.lineDelayAnimation("3. Update GPA", 50, true);
-            ConsoleUI.moveCursor(0, 0, 5, 0); ConsoleAnimation.lineDelayAnimation("4. Add Credits", 50, true);
-            ConsoleUI.moveCursor(0, 0, 5, 0); ConsoleAnimation.lineDelayAnimation("5. Enroll in Course", 50, true);
-            ConsoleUI.moveCursor(0, 0, 5, 0); ConsoleAnimation.lineDelayAnimation("6. Drop Course", 50, true);
-            ConsoleUI.moveCursor(0, 0, 5, 0); ConsoleAnimation.lineDelayAnimation("7. Change Department", 50, true);
-            ConsoleUI.moveCursor(0, 0, 5, 0); ConsoleAnimation.lineDelayAnimation("8. Change Academic Standing", 50, true);
-            ConsoleUI.moveCursor(0, 0, 5, 0); ConsoleAnimation.lineDelayAnimation("9. Show Year Level", 50, true);
-            ConsoleUI.moveCursor(0, 0, 5, 0); ConsoleAnimation.lineDelayAnimation("10. Check Graduation Eligibility", 50, true);
             ConsoleFormatting.displayFormat(Settings.CONSOLE_WIDTH, '=', true);
 
             int input = ConsoleInput.getInt(">> ");
         }
     }
 
+    // [METHOD] Display student "Courses" menu
+    public static void displayStudentCoursesMenu() {
+        // Display UI
+        ConsoleDisplay.setupScreen();
+        ConsoleUI.goTo(15, 0);
+        ConsoleDisplay.displayHeaderSubtitle("Student: Courses");
+
+        // This loop runs indefinitely until the user enters a valid choice
+        while (true) {
+            // Display operations
+            ConsoleFormatting.displayFormat(Settings.CONSOLE_WIDTH, '=', true);
+            ConsoleFormatting.displayFormat(Settings.CONSOLE_WIDTH, '=', true);
+
+            int input = ConsoleInput.getInt(">> ");
+        }
+    }
+
+    // [METHOD] Display student "Enroll in Course Offering" menu
+    public static void displayStudentEnrollInCourseOfferingMenu() {
+        // Display UI
+        ConsoleDisplay.setupScreen();
+        ConsoleUI.goTo(15, 0);
+        ConsoleDisplay.displayHeaderSubtitle("Student: Enroll in Course Offering");
+
+        // This loop runs indefinitely until the user enters a valid choice
+        while (true) {
+            // Display operations
+            ConsoleFormatting.displayFormat(Settings.CONSOLE_WIDTH, '=', true);
+            ConsoleFormatting.displayFormat(Settings.CONSOLE_WIDTH, '=', true);
+
+            int input = ConsoleInput.getInt(">> ");
+        }
+    }
+
+    // [METHOD] Display student "Drop Course Offering" menu
+    public static void displayStudentDropCourseOfferingMenu() {
+        // Display UI
+        ConsoleDisplay.setupScreen();
+        ConsoleUI.goTo(15, 0);
+        ConsoleDisplay.displayHeaderSubtitle("Student: Drop Course Offering");
+
+        // This loop runs indefinitely until the user enters a valid choice
+        while (true) {
+            // Display operations
+            ConsoleFormatting.displayFormat(Settings.CONSOLE_WIDTH, '=', true);
+            ConsoleFormatting.displayFormat(Settings.CONSOLE_WIDTH, '=', true);
+
+            int input = ConsoleInput.getInt(">> ");
+        }
+    }
+
+    // * UI: Faculty Menu
+    // [METHOD] Display "Faculty" menu
     public static void displayFacultyMenu() {
         // Display UI
         ConsoleDisplay.setupScreen();
         ConsoleUI.goTo(15, 0);
         ConsoleDisplay.displayHeaderSubtitle("Faculty Menu");
+
+        // This loop runs indefinitely until the user enters a valid choice
+        while (true) {
+            // Display operations
+            ConsoleFormatting.displayFormat(Settings.CONSOLE_WIDTH, '=', true);
+            ConsoleFormatting.displayFormat(Settings.CONSOLE_WIDTH, '=', true);
+
+            int input = ConsoleInput.getInt(">> ");
+        }
     }
 
+    // * UI: User Authentication
     public static void displayLoginScreen() throws IOException {
         // Display UI
         ConsoleDisplay.setupScreen();
@@ -70,7 +225,7 @@ public class MainMenu {
 
         int[] yPositions = { 17, 19 }; // y coordinates of each input line
         int[] xPositions = { 39, 42 }; // cursor start position
-        int maxLength = 22;
+        int maxLength = 32;
 
         String[] inputs; // To store user input
         String email;
@@ -162,7 +317,7 @@ public class MainMenu {
 
         int[] yPositions = { 17, 19, 21, 23 }; // y coordinates of each input line
         int[] xPositions = { 39, 42, 50, 43 }; // cursor start position
-        int maxLength = 22;
+        int maxLength = 32;
 
         String[] inputs; // To store user input
         String email, password, confirmPassword, userType;

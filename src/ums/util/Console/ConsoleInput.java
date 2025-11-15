@@ -33,6 +33,12 @@ public class ConsoleInput {
         ConsoleAnimation.lineDelayAnimation(" ".repeat(padding) + text, Settings.MS_DELAY, true);
     }
 
+    // [UTILITY] Prints the given text centered within the specified console width
+    public static void printCentered(String text, int consoleWidth, boolean newline) {
+            printCentered(text, consoleWidth);
+        if (newline) { System.out.println(); }
+    }
+
     // [UTILITY] Get an integer input from the user
     public static int getInt(String prompt) {
         while (true) {

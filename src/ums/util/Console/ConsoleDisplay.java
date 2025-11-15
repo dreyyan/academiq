@@ -171,4 +171,33 @@ public class ConsoleDisplay {
         ConsoleUI.moveCursor(0, 0, 5, 0);
         ConsoleInput.printCentered(type + " " + dialogMessage, Settings.CONSOLE_WIDTH - 9);
     }
+
+    // * ASCII Art
+    public static void displaySchool() {
+        String[] ASCIIArtSchool = {
+            "                         %                          ",
+            "                         #####                      ",
+            "                         %                          ",
+            "                         %%                         ",
+            "                      %%---#%                       ",
+            "                    %=--: .---%                     ",
+            "             %%%%%%%%---%:#---*%%%%%%%              ",
+            "            %%%%%%%%%-========*%%%%%%%%             ",
+            "           %%@@@%%%%%-....... #%%%%%%%%%            ",
+            " %%%%%%%%%%%=========%%%%%%%%%+*%#=*===+%%%%%%%%%%% ",
+            "%%%%%%%%%%%%==========---------=*##=*===+%%%%%%%%%%%",
+            " +++==++==++=========--#####=-=*%#=*====+==++==+++  ",
+            " +++==++==++=========--#=*===-=*%#=*====+==++==+++  ",
+            " +++==++==++=========--#=*===-=*##=*====+==++==+++  ",
+            " +++==++==++=========--#=*===-=*##=*====+==++==+++  "
+        };
+
+        ConsoleUI.goTo(24, 0);
+
+        // Display ASCII art
+        for (String line : ASCIIArtSchool) {
+            ConsoleUI.moveCursor(0, 0, 3, 0);
+            ConsoleInput.printCentered(line, Settings.CONSOLE_WIDTH - 3);
+        }
+    }
 }

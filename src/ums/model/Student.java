@@ -65,27 +65,6 @@ public abstract class Student extends Person {
     public void setAcademicStanding(AcademicStanding academicStanding) { this.academicStanding = academicStanding; }
 
     // * Methods
-    // [METHOD] Update student GPA
-    public void updateGPA(double newGPA){
-        if (newGPA >= 1.0 && newGPA <= 5.0){
-            this.GPA = newGPA;
-            Logger.infoMessage(getStudentId() + " GPA is updated to " + newGPA);
-        } else {
-            Logger.errorMessage("Invali GPA of" + getStudentId());
-        }
-    }
-
-    // [METHOD] Add a specified amount to student credits
-    public void addCredits(int credits) {
-        if(credits > 0) {
-            this.creditsEarned += credits;
-            Logger.successMessage(getStudentId() + " earned " + credits + " credits");
-            Logger.infoMessage("Total Credits: " +  getCreditsEarned());
-        } else { // ! [ERROR] Zero or negative credits to be added
-            Logger.errorMessage("Invalid amount of credits");
-        }
-    }
-
     // [METHOD] Enroll student in an existing course offering
     public void enrollInOffering(CourseOffering offering){
         if (getEnrolledCourses().contains(offering)){ // ! [ERROR] Student already enrolled in course offering
@@ -129,9 +108,10 @@ public abstract class Student extends Person {
         // Display eligibility for graduation
         if (isEligible) {
             Logger.infoMessage(getStudentId() + " is eligible for Undergraduate Graduation.");
-         } else {
+        } else {
             Logger.infoMessage(getStudentId() + " is not eligible for Undergraduate Graduation.");
-    }
+        }
+
         return isEligible; 
     }
 
@@ -145,7 +125,7 @@ public abstract class Student extends Person {
         System.out.println("Total Credits: " + getCreditsEarned());
         System.out.println("Student's Academic Standing: " + getAcademicStanding());
         System.out.println("Eligible for Graduation: " + (isEligibleForGraduation() ? "Yes" : "No"));
-}
+    }
 
     // [METHOD] Generate student's stringified report
     public String generateReport() {
