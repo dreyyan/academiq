@@ -16,7 +16,7 @@ import ums.model.enums.Gender;
 // [IMPORT] Utilities
 import ums.util.Logger;
 
-public abstract class AcademicStaff extends Faculty {
+public class AcademicStaff extends Faculty {
     // * Attributes
     private String teacherId;
     private List<CourseOffering> coursesTaught;
@@ -26,7 +26,7 @@ public abstract class AcademicStaff extends Faculty {
     // * Constructor (Parameterized)
     public AcademicStaff(
         // Person Attributes
-        String personId, String firstName, String middleName, String lastName, LocalDate dateOfBirth, Gender gender, String address, String contactNumber, String email,
+        String firstName, String middleName, String lastName, LocalDate dateOfBirth, Gender gender, String address, String contactNumber, String email,
         // Faculty Attributes
         String facultyId, Department department, FacultyRank rank, LocalDate hireDate, String officeLocation, double salary, boolean isTenured, List<GraduateStudent> advisees,
         // AcademicStaff Attributes
@@ -34,7 +34,7 @@ public abstract class AcademicStaff extends Faculty {
         ) {
         super(
             // Person Attributes
-            personId, firstName, middleName, lastName, dateOfBirth, gender, address, contactNumber, email,
+            firstName, middleName, lastName, dateOfBirth, gender, address, contactNumber, email,
             // Faculty Attributes
             facultyId, department, rank, hireDate, officeLocation, salary, isTenured, advisees
         );

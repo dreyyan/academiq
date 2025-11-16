@@ -2,34 +2,52 @@ package ums.model.enums;
 
 // ? NOTE: Based on West Visayas State University (WVSU) - Main Campus College Departments
 public enum Department {
-    CAS("College of Arts and Sciences"),
-    CICT("College of Information & Communications Technology"),
-    CBM("College of Business & Management"),
-    COM("College of Medicine"),
-    COP("College of PESCAR"),
-    COE("College of Education"),
-    CON("College of Nursing"),
-    COC("College of Communication"),
-    COL("College of Law"),
-    COD("College of Dentistry"),
-    ILS("Integrated Laboratory School");
+    CAS("CAS", "College of Arts and Sciences"),
+    CICT("CICT", "College of Information & Communications Technology"),
+    CBM("CBM", "College of Business & Management"),
+    COM("COM", "College of Medicine"),
+    COP("COP", "College of PESCAR"),
+    COE("COE", "College of Education"),
+    CON("CON", "College of Nursing"),
+    COC("COC", "College of Communication"),
+    COL("COL", "College of Law"),
+    COD("COD", "College of Dentistry"),
+    ILS("ILS", "Integrated Laboratory School"),
+    UNASSIGNED("", "Unassigned");
 
     // * Attribute
     private final String fullName;
+    private final String code;
 
     // * Constructor (Parameterized)
-    Department(String fullName) {
+    Department(String code, String fullName) {
+        this.code = code;
         this.fullName = fullName;
     }
 
     // * Getter
-    public String getFullName() {
-        return fullName;
-    }
+    public String getCode() { return this.code; }
+    public String getFullName() { return this.fullName; }
 
     @Override
     // [METHOD] Return stringified name
     public String toString() {
         return fullName;
+    }
+
+    // [METHOD] Return department from code or full name
+    public static Department fromCodeOrFullName(String input) {
+        if (input == null || input.isBlank()) return UNASSIGNED;
+
+        input = input.trim();
+
+        for (Department dept : Department.values()) {
+            // Match full name or enum code
+            if (dept.getFullName().equalsIgnoreCase(input) || dept.name().equalsIgnoreCase(input)) {
+                return dept;
+            }
+        }
+
+        return UNASSIGNED; // default
     }
 }

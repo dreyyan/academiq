@@ -2,12 +2,15 @@ package ums.model;
 
 // [IMPORT] Standard
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 // [IMPORT] Enums
 import ums.model.enums.Gender;
 
 public abstract class Person {
     // * Attributes
+    private static int personCount = 0;
     private String personId;
     private String firstName;
     private String middleName;
@@ -19,8 +22,8 @@ public abstract class Person {
     private String email;
 
     // * Constructor (Parameterized)
-    public Person(String personId, String firstName, String middleName, String lastName, LocalDate dateOfBirth, Gender gender, String address, String contactNumber, String email) {
-        this.personId = personId;
+    public Person(String firstName, String middleName, String lastName, LocalDate dateOfBirth, Gender gender, String address, String contactNumber, String email) {
+        this.personId = generatePersonId();
         this.firstName = firstName;
         this.middleName = middleName;
         this.lastName = lastName;
@@ -53,8 +56,31 @@ public abstract class Person {
     void setEmail(String email) { this.email = email; }
 
     // * Methods
-    // [ABSTRACT] Display person's information in a readable format
-    abstract void displayInfo();
+    // [METHOD] Get full name
+    public String getFullName() {
+        return getFirstName() + " " + getMiddleName().charAt(0) + ". " + getLastName();
+    }
+
+    // [METHOD] Generate person ID
+    private static String generatePersonId() {
+        personCount++;
+        return "P" + String.format("%05d", personCount); // Format: P00001
+    }
+    // [METHOD] Display student's information
+    public List<String> getProfileInformation() {
+        List<String> info = new ArrayList<>(); // Stores student's profile information
+
+        info.add(getFirstName());
+        info.add(getMiddleName());
+        info.add(getLastName());
+        info.add(getDateOfBirth().toString());
+        info.add(getGender().toString());
+        info.add(getAddress());
+        info.add(getContactNumber());
+        info.add(getEmail());
+
+        return info;
+    }
 
     // [ABSTRACT] Return a string of person's summary report
     abstract String generateReport();

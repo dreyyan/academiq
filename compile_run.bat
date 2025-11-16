@@ -85,5 +85,7 @@ if %FAILED% EQU 0 (
 ) else (
     echo [ERROR] Fix compilation errors above.
 )
-
+echo.
+echo Press any key to exit...
+pause >nul
 endlocal

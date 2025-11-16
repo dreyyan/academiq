@@ -20,20 +20,21 @@ public class UndergraduateStudent extends Student {
     // * Constructor (Parameterized)
     public UndergraduateStudent(
         // Person Attributes
-        String personId, String firstName, String middleName, String lastName, LocalDate dateOfBirth, Gender gender, String address, String contactNumber, String email,
+        String firstName, String middleName, String lastName, LocalDate dateOfBirth, Gender gender, String address, String contactNumber, String email,
         // Student Attributes
-        String studentId, LocalDate enrollmentDate, Department department, Course course, AcademicStanding academicStanding, double GPA, int creditsEarned, List<CourseOffering> enrolledCourses,
-        // UndergraduateStudent attributes
+        String studentId, LocalDate enrollmentDate, Department department, Course course,
+        AcademicStanding academicStanding, double GPA, int creditsEarned, List<CourseOffering> enrolledCourses,
+        // UndergraduateStudent Attributes
         YearLevel yearLevel
-        ) {
+    ) {
         super(
             // Person Attributes
-            personId, firstName, middleName, lastName, dateOfBirth, gender, address, contactNumber, email,
+            firstName, middleName, lastName, dateOfBirth, gender, address, contactNumber, email,
             // Student Attributes
             studentId, enrollmentDate, department, course, academicStanding, GPA, creditsEarned, enrolledCourses
         );
 
-        this.yearLevel = yearLevel; 
+        this.yearLevel = yearLevel;
     }
 
     // * Getter
@@ -60,13 +61,6 @@ public class UndergraduateStudent extends Student {
         // Update year level
         setYearLevel(YearLevel.valueOf(level.toUpperCase()));
         return level;
-    }
-
-    // [METHOD: Override] Display student's information
-    @Override
-    public void displayInfo() {
-        super.displayInfo();
-        System.out.println("Year Level: " + getYearLevel());
     }
 
     // [METHOD: Override] Generate student's stringified report

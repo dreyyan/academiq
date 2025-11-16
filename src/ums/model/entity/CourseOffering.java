@@ -18,7 +18,7 @@ public class CourseOffering {
     private int enrolledCount;
 
     // * Constructor (Parameterized)
-    CourseOffering(String offeringId, Course course, Semester semester, int year, AcademicStaff instructor, TimeSlot schedule, int capacity, int enrolledCount) {
+    public CourseOffering(String offeringId, Course course, Semester semester, int year, AcademicStaff instructor, TimeSlot schedule, int capacity, int enrolledCount) {
         this.offeringId = offeringId;
         this.course = course;
         this.semester = semester;

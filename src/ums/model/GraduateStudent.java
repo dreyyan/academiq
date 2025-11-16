@@ -3,6 +3,7 @@ package ums.model;
 // [IMPORT] Standard
 import java.time.LocalDate;
 import java.util.List;
+import java.util.ArrayList;
 
 // [IMPORT] Entities
 import ums.model.entity.Course;
@@ -13,7 +14,7 @@ import ums.model.enums.Department;
 import ums.model.enums.Gender;
 import ums.model.enums.GraduateProgram;
 
-public abstract class GraduateStudent extends Student {
+public class GraduateStudent extends Student {
     // * Attributes
     private GraduateProgram programLevel; 
     private String thesisTitle;
@@ -22,7 +23,7 @@ public abstract class GraduateStudent extends Student {
     // * Constructor (Parameterized)
     public GraduateStudent(
         // Person Attributes
-        String personId, String firstName, String middleName, String lastName, LocalDate dateOfBirth, Gender gender, String address, String contactNumber, String email,
+        String firstName, String middleName, String lastName, LocalDate dateOfBirth, Gender gender, String address, String contactNumber, String email,
         // Student Attributes
         String studentId, LocalDate enrollmentDate, Department department, Course course, AcademicStanding academicStanding, double GPA, int creditsEarned, List<CourseOffering> enrolledCourses,
         // GraduateStudent Attributes
@@ -30,7 +31,7 @@ public abstract class GraduateStudent extends Student {
         ) {
         super(
             // Person Attributes
-            personId, firstName, middleName, lastName, dateOfBirth, gender, address, contactNumber, email,
+            firstName, middleName, lastName, dateOfBirth, gender, address, contactNumber, email,
             // Student Attributes
             studentId, enrollmentDate, department, course, academicStanding, GPA, creditsEarned, enrolledCourses
         );
@@ -51,17 +52,21 @@ public abstract class GraduateStudent extends Student {
 
     // * Methods
     // [ABSTRACT] Check graduate student's eligibility for graduation
-    public abstract boolean isEligibleForGraduation();
+    public boolean isEligibleForGraduation() {
+        return true;
+    }
 
-    // [METHOD: Override] Display graduate student's information
+    // [METHOD: Override] Display graduate student's academics information
     @Override
-    public void displayInfo() {
-        super.displayInfo();
-        System.out.println("Program Level: " + programLevel);
-        System.out.println("Thesis Title: " + (thesisTitle !=null ? thesisTitle : "Not Set"));
-        System.out.println("Advisor: " + (advisor != null ? advisor.getFacultyId() : "Not Assigned"));
-        System.out.println("Year Level: " + calculateYearLevel());
-        System.out.println("Eligible for Graduation: " + (isEligibleForGraduation() ? "Yes" : "No"));
+    public List<String> getAcademicsInformation() {
+        List<String> info = super.getAcademicsInformation();
+
+        // Add graduate student–specific information
+        info.add(getProgramLevel().toString());
+        info.add(getThesisTitle());
+        info.add(getAdvisor() != null ? getAdvisor().getFacultyId() : "Not Assigned");
+
+        return info;
     }
 
     // [METHOD: Override] Generate graduate student's stringified report

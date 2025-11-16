@@ -1,8 +1,8 @@
 package ums.model.enums;
 
 public enum Semester {
-    FIRST_SEM("1st Sem"),
-    SECOND_SEM("2nd Sem");
+    FIRST_SEM("1st Semester"),
+    SECOND_SEM("2nd Semester");
 
     // * Attribute
     private final String displayName;

@@ -2,6 +2,7 @@ package ums.util.console;
 
 // [IMPORT] Standard
 import java.io.IOException;
+import java.util.List;
 
 // [IMPORT] Utilities
 import ums.util.Settings;
@@ -130,6 +131,28 @@ public class ConsoleUI {
 
             // Move cursor back to start of the field
             ConsoleUI.goTo(fieldYPositions[i], fieldXPositions[i]);
+        }
+    }
+
+    // [METHOD] Display information in input fields
+    public static void displayInputFields(List<String> values, int[] fieldYPositions, int[] fieldXPositions, int maxLength) throws IOException {
+        if (values.size() != fieldYPositions.length || values.size() != fieldXPositions.length) {
+            throw new IllegalArgumentException("Values and positions arrays must all have the same length.");
+        }
+
+        for (int i = 0; i < values.size(); i++) {
+            // Move cursor to the position
+            ConsoleUI.goTo(fieldYPositions[i], fieldXPositions[i]);
+
+            // Print the value, truncated or padded to maxLength
+            String output = values.get(i);
+            if (output.length() > maxLength) {
+                output = output.substring(0, maxLength); // truncate if too long
+            } else {
+                output = String.format("%-" + maxLength + "s", output); // pad with spaces
+            }
+
+            System.out.print(output);
         }
     }
 }

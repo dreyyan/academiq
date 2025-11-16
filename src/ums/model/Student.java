@@ -23,20 +23,21 @@ public abstract class Student extends Person {
     private LocalDate enrollmentDate; 
     private Department department;
     private Course course;
-    private AcademicStanding academicStanding; 
+    private AcademicStanding academicStanding;
+
     private double GPA;
     private int creditsEarned; 
-    private List<CourseOffering> enrolledCourses; 
+    private List<CourseOffering> enrolledCourses;
 
     // * Constructor (Parameterized)
     public Student(
         // Person Attributes
-        String personId, String firstName, String middleName, String lastName, LocalDate dateOfBirth, Gender gender, String address, String contactNumber, String email,
+        String firstName, String middleName, String lastName, LocalDate dateOfBirth, Gender gender, String address, String contactNumber, String email,
         // Student Attributes
         String studentId, LocalDate enrollmentDate, Department department, Course course, AcademicStanding academicStanding, double GPA, int creditsEarned,  List<CourseOffering> enrolledCourses) {
         super(
             // Person Attributes
-            personId, firstName, middleName, lastName, dateOfBirth, gender, address, contactNumber, email
+            firstName, middleName, lastName, dateOfBirth, gender, address, contactNumber, email
         );
 
         this.studentId = studentId;
@@ -51,7 +52,7 @@ public abstract class Student extends Person {
 
     // * Getters
     public String getStudentId() { return this.studentId; }
-    public LocalDate getEnLocalDate() { return this.enrollmentDate; }
+    public LocalDate getEnrollmentDate() { return this.enrollmentDate; }
     public Department getDepartment() { return this.department; }
     public Course getCourse() { return this.course; }
     public AcademicStanding getAcademicStanding() { return this.academicStanding; }
@@ -115,16 +116,27 @@ public abstract class Student extends Person {
         return isEligible; 
     }
 
-    // [METHOD] Display student's information
-    public void displayInfo() {
-        System.out.println("Student ID: " + getStudentId());
-        System.out.println("Student's Department: " + getDepartment());
-        System.out.println("Student's Course: " + getCourse());
-        System.out.println("Student's Year Level: " + calculateYearLevel());
-        System.out.println("GPA: " + getGPA());
-        System.out.println("Total Credits: " + getCreditsEarned());
-        System.out.println("Student's Academic Standing: " + getAcademicStanding());
-        System.out.println("Eligible for Graduation: " + (isEligibleForGraduation() ? "Yes" : "No"));
+    // [METHOD] Display student's academics information
+    public List<String> getAcademicsInformation() {
+        List<String> info = new ArrayList<>(); // Stores student's academics information
+
+        info.add(getAcademicStanding().toString());
+        info.add(calculateYearLevel());
+        info.add(String.valueOf(getGPA()));
+        info.add(String.valueOf(getCreditsEarned()));
+        info.add((isEligibleForGraduation() ? "Yes" : "No"));
+
+        return info;
+    }
+
+    // [METHOD] Display student's courses information
+    public List<String> getStudentCoursesInformation() {
+        List<String> info = new ArrayList<>(); // Stores student's courses information
+
+        info.add(getDepartment() != null ? getDepartment().toString() : "Not Assigned");
+        info.add(getCourse() != null ? getCourse().toString() : "Not Assigned");
+
+        return info;
     }
 
     // [METHOD] Generate student's stringified report
@@ -133,8 +145,8 @@ public abstract class Student extends Person {
 
         report.append("======= Student Report =======\n");
         report.append("ID: ").append(getStudentId()).append("\n");
-        report.append("Department: ").append(getDepartment()).append("\n");
-        report.append("Course: ").append(getCourse()).append("\n");
+        report.append("Department: ").append(getDepartment() != null ? getDepartment() : "Not Assigned").append("\n");
+        report.append("Course: ").append(getCourse() != null ? getCourse() : "Not Assigned").append("\n");
         report.append("Year Level: ").append(calculateYearLevel()).append("\n");
         report.append("GPA: ").append(getGPA()).append("\n");
         report.append("Credits: ").append(getCreditsEarned()).append("\n");
@@ -142,5 +154,16 @@ public abstract class Student extends Person {
         report.append("Eligible for Graduation: ").append(isEligibleForGraduation() ? "Yes" : "No").append("\n");
 
         return report.toString();
+    }
+
+    public String[] toCSVRow() {
+        return new String[] {
+            getPersonId(), getFirstName(), getMiddleName(), getLastName(), getDateOfBirth().toString(),
+            getGender().toString(), getAddress(), getContactNumber(), getEmail(),
+            getStudentId(), getEnrollmentDate().toString(),
+            getDepartment() != null ? getDepartment().toString() : "",
+            getCourse() != null ? getCourse().toString() : "",
+            // Add any other fields like standing, credits, year/program as needed
+        };
     }
 }

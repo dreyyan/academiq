@@ -24,13 +24,13 @@ public abstract class Faculty extends Person {
     // * Constructor (Parameterized)
     public Faculty(
         // Person Attributes
-        String personId, String firstName, String middleName, String lastName, LocalDate dateOfBirth, Gender gender, String address, String contactNumber, String email,    
+        String firstName, String middleName, String lastName, LocalDate dateOfBirth, Gender gender, String address, String contactNumber, String email,    
         // Faculty Attributes
         String facultyId, Department department, FacultyRank rank, LocalDate hireDate, String officeLocation, double salary, boolean isTenured, List<GraduateStudent> advisees
     ) {
         super(
             // Person Attributes
-            personId, firstName, middleName, lastName, dateOfBirth, gender, address, contactNumber, email
+            firstName, middleName, lastName, dateOfBirth, gender, address, contactNumber, email
         );
 
         this.facultyId = facultyId;

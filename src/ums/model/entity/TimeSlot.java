@@ -60,4 +60,29 @@ public class TimeSlot {
     public String toString() {
         return String.format("%s %s - %s", day, startTime.format(TIME_FORMATTER), endTime.format(TIME_FORMATTER));
     }
+
+    public static TimeSlot fromString(String s) {
+        if (s == null || s.isBlank()) return null;
+
+        try {
+            // Example input: "MON 10:00 AM - 12:00 PM"
+            String[] parts = s.split(" ");
+            if (parts.length < 4) return null;
+
+            DayOfWeek day = DayOfWeek.valueOf(parts[0].toUpperCase());
+
+            // Combine time strings (parts[1] + " " + parts[2] for start, parts[4] + " " + parts[5] for end)
+            String startStr = parts[1] + " " + parts[2];
+            String endStr = parts[4] + " " + parts[5];
+
+            LocalTime startTime = LocalTime.parse(startStr, TIME_FORMATTER);
+            LocalTime endTime = LocalTime.parse(endStr, TIME_FORMATTER);
+
+            return new TimeSlot(day, startTime, endTime);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }

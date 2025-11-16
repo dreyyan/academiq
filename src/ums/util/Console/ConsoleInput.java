@@ -19,8 +19,26 @@ public class ConsoleInput {
 
     // [UTILITY] Prompts the user to press the 'Enter' key to continue execution
     public static void pressEnterToContinue() {
-        System.out.println("Press [ENTER] to continue...");
+        ConsoleUI.moveCursor(0, 0, 3, 0); ConsoleInput.printCentered("Press [ENTER] to continue...", Settings.CONSOLE_WIDTH - 3);
         scanner.nextLine();
+    }
+
+    // [UTILITY] Prompts the user to press the 'ESC' key to navigate back
+    public static boolean pressESCToReturn() {
+        ConsoleUI.moveCursor(0, 0, 3, 0);
+        ConsoleInput.printCentered("Press [ESC] to return...", Settings.CONSOLE_WIDTH - 3);
+
+        try {
+            while (true) {
+                int key = System.in.read();
+                if (key == 27) { // ESC key ASCII
+                    return true; // indicate ESC was pressed
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     // [UTILITY] Prints the given text centered within the specified console width
