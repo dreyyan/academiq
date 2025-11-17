@@ -2,6 +2,8 @@ package ums.model.entity;
 
 // [IMPORT] Standard
 import java.time.LocalDate;
+
+// [IMPORT] Models
 import ums.model.enums.EnrollmentStatus;
 
 public class Enrollment {

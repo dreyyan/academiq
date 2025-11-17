@@ -3,7 +3,7 @@ package ums.model.entity;
 // [IMPORT] Enums
 import ums.model.enums.Semester;
 
-// [IMPORT] Class
+// [IMPORT] Models
 import ums.model.AcademicStaff;
 
 public class CourseOffering {

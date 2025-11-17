@@ -1,7 +1,7 @@
 package ums.model.entity;
 
-import ums.model.enums.Courses;
 // [IMPORT] Enums
+import ums.model.enums.Courses;
 import ums.model.enums.Department;
 
 public class Course {
@@ -38,11 +38,14 @@ public class Course {
     public void setDescription(String description) { this.description = description; }
     public void setCredits(int credits) { this.credits = credits; }
 
-    // Helper to create Course from a name or code
+    // * Methods
+    // [HELPER] Create Course from name or code
     public static Course fromCodeOrFullName(String input) {
+        // If no input, return 'unassigned' course
         if (input == null || input.isBlank()) return new Course("Not Assigned");
 
-        input = input.trim().replace(" ", "_").toUpperCase(); // normalize for enum matching
+        // Normalize input to match enum values
+        input = input.trim().replace(" ", "_").toUpperCase();
 
         // Check all course enums in each department
         for (Courses.CASCourse c : Courses.CASCourse.values()) {
@@ -101,10 +104,11 @@ public class Course {
             }
         }
 
-        // If not found, just return a course with the input as title
+        // If not found, return a course with input as title
         return new Course(input.replace("_", " "));
     }
 
+    // [METHOD: Override] Return course as string
     @Override
     public String toString() {
         return this.title != null ? this.title : "Not Assigned";

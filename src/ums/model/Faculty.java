@@ -60,7 +60,8 @@ public abstract class Faculty extends Person {
     public void setTenured(boolean tenured) {this.isTenured = tenured;}
 
     // * Methods
-    public void grantTenure() { this.isTenured = true;} // Grant tenure to faculty member
+    // [METHOD] Grant tenure to faculty member
+    public void grantTenure() { this.isTenured = true; }
 
     // [METHOD] Add a graduate student to advisee list
     public void addAdvisee(GraduateStudent student) {

@@ -12,10 +12,11 @@ import ums.model.enums.Courses;
 import ums.model.enums.Department;
 
 public class CourseCatalog {
+    // * Attrirbute
     private static final List<Course> allCourses = new ArrayList<>();
 
     static {
-        // Populate courses from all enums
+        // Populate courses for all deparatments
         for (Courses.CASCourse c : Courses.CASCourse.values())
             allCourses.add(new Course(c.getFullName(), c.getFullName(), "", 3, Department.CAS));
 
@@ -25,9 +26,32 @@ public class CourseCatalog {
         for (Courses.CBMCourse c : Courses.CBMCourse.values())
             allCourses.add(new Course(c.getFullName(), c.getFullName(), "", 3, Department.CBM));
 
-        // ... repeat for other departments
+        for (Courses.COPCourse c : Courses.COPCourse.values())
+            allCourses.add(new Course(c.getFullName(), c.getFullName(), "", 3, Department.COP));
+
+        for (Courses.COMCourse c : Courses.COMCourse.values())
+            allCourses.add(new Course(c.getFullName(), c.getFullName(), "", 3, Department.COM));
+
+        for (Courses.COECourse c : Courses.COECourse.values())
+            allCourses.add(new Course(c.getFullName(), c.getFullName(), "", 3, Department.COE));
+
+        for (Courses.CONCourse c : Courses.CONCourse.values())
+            allCourses.add(new Course(c.getFullName(), c.getFullName(), "", 3, Department.CON));
+
+        for (Courses.COCCourse c : Courses.COCCourse.values())
+            allCourses.add(new Course(c.getFullName(), c.getFullName(), "", 3, Department.COC));
+
+        for (Courses.COLCourse c : Courses.COLCourse.values())
+            allCourses.add(new Course(c.getFullName(), c.getFullName(), "", 3, Department.COL));
+
+        for (Courses.CODCourse c : Courses.CODCourse.values())
+            allCourses.add(new Course(c.getFullName(), c.getFullName(), "", 3, Department.COD));
+
+        for (Courses.ILSCourse c : Courses.ILSCourse.values())
+            allCourses.add(new Course(c.getFullName(), c.getFullName(), "", 3, Department.ILS));
     }
 
+    // * Getters
     public static List<Course> getAllCourses() { return allCourses; }
 
     public static List<Course> getCoursesByDepartment(Department dept) {

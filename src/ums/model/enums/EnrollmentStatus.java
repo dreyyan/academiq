@@ -1,5 +1,6 @@
 package ums.model.enums;
 
+// * [STATUS] Enrollment
 public enum EnrollmentStatus {
     ENROLLED("Enrolled"),
     WAITLISTED("Waitlisted"),
@@ -10,18 +11,12 @@ public enum EnrollmentStatus {
     private final String displayName;
 
     // * Constructor (Parameterized)
-    EnrollmentStatus(String displayName) {
-        this.displayName = displayName;
-    }
+    EnrollmentStatus(String displayName) { this.displayName = displayName; }
 
     // * Getter
-    public String getDisplayName() {
-        return displayName;
-    }
+    public String getDisplayName() { return displayName; }
 
-    @Override
     // [METHOD] Return stringified name
-    public String toString() {
-        return displayName;
-    }
+    @Override
+    public String toString() { return displayName; }
 }

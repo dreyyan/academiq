@@ -156,14 +156,14 @@ public abstract class Student extends Person {
         return report.toString();
     }
 
+    // [METHOD] Add student's information to database (.csv)
     public String[] toCSVRow() {
         return new String[] {
             getPersonId(), getFirstName(), getMiddleName(), getLastName(), getDateOfBirth().toString(),
             getGender().toString(), getAddress(), getContactNumber(), getEmail(),
             getStudentId(), getEnrollmentDate().toString(),
             getDepartment() != null ? getDepartment().toString() : "",
-            getCourse() != null ? getCourse().toString() : "",
-            // Add any other fields like standing, credits, year/program as needed
+            getCourse() != null ? getCourse().toString() : ""
         };
     }
 }

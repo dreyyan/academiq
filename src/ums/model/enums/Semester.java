@@ -8,18 +8,12 @@ public enum Semester {
     private final String displayName;
 
     // * Constructor (Parameterized)
-    Semester(String displayName) {
-        this.displayName = displayName;
-    }
+    Semester(String displayName) { this.displayName = displayName; }
 
     // * Getter
-    public String getDisplayName() {
-        return displayName;
-    }
+    public String getDisplayName() { return displayName; }
 
-    @Override
     // [METHOD] Return stringified name
-    public String toString() {
-        return displayName;
-    }
+    @Override
+    public String toString() { return displayName; }
 }

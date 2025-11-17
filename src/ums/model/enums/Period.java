@@ -14,13 +14,9 @@ public enum Period {
     }
 
     // * Getter
-    public String getDisplayName() {
-        return displayName;
-    }
+    public String getDisplayName() { return displayName; }
 
-    @Override
     // [METHOD] Return stringified name
-    public String toString() {
-        return displayName;
-    }
+    @Override
+    public String toString() { return displayName; }
 }

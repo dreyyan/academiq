@@ -15,20 +15,14 @@ public class Courses {
         private final String fullName;
 
         // * Constructor (Parameterized)
-        CASCourse(String fullName) {
-            this.fullName = fullName;
-        }
+        CASCourse(String fullName) { this.fullName = fullName; }
 
         // * Getter
-        public String getFullName() {
-            return fullName;
-        }
+        public String getFullName() { return fullName; }
 
-        @Override
         // [METHOD] Return stringified name
-        public String toString() {
-            return fullName;
-        }
+        @Override
+        public String toString() { return fullName; }
     }
 
     // * [COURSE] College of Information and Communications Technology
@@ -43,20 +37,14 @@ public class Courses {
         private final String fullName;
 
         // * Constructor (Parameterized)
-        CICTCourse(String fullName) {
-            this.fullName = fullName;
-        }
+        CICTCourse(String fullName) { this.fullName = fullName; }
 
         // * Getter
-        public String getFullName() {
-            return fullName;
-        }
+        public String getFullName() { return fullName; }
 
-        @Override
         // [METHOD] Return stringified name
-        public String toString() {
-            return fullName;
-        }
+        @Override
+        public String toString() { return fullName; }
     }
 
     // * [COURSE] College of Business & Management
@@ -70,15 +58,13 @@ public class Courses {
         private final String fullName;
 
         // * Constructor (Parameterized)
-        CBMCourse(String fullName) {
-            this.fullName = fullName;
-        }
+        CBMCourse(String fullName) { this.fullName = fullName; }
 
         // * Getter
         public String getFullName() { return fullName; }
 
-        @Override
         // [METHOD] Return stringified name
+        @Override
         public String toString() { return fullName; }
     }
 
@@ -98,8 +84,8 @@ public class Courses {
         // * Getter
         public String getFullName() { return fullName; }
 
-        @Override
         // [METHOD] Return stringified name
+        @Override
         public String toString() { return fullName; }
     }
 
@@ -116,8 +102,8 @@ public class Courses {
         // * Getter
         public String getFullName() { return fullName; }
 
-        @Override
         // [METHOD] Return stringified name
+        @Override
         public String toString() { return fullName; }
     }
 
@@ -137,8 +123,8 @@ public class Courses {
         // * Getter
         public String getFullName() { return fullName; }
 
-        @Override
         // [METHOD] Return stringified name
+        @Override
         public String toString() { return fullName; }
     }
 
@@ -155,8 +141,8 @@ public class Courses {
         // * Getter
         public String getFullName() { return fullName; }
 
-        @Override
         // [METHOD] Return stringified name
+        @Override
         public String toString() { return fullName; }
     }
 
@@ -175,8 +161,8 @@ public class Courses {
         // * Getter
         public String getFullName() { return fullName; }
 
-        @Override
         // [METHOD] Return stringified name
+        @Override
         public String toString() { return fullName; }
     }
 
@@ -193,8 +179,8 @@ public class Courses {
         // * Getter
         public String getFullName() { return fullName; }
 
-        @Override
         // [METHOD] Return stringified name
+        @Override
         public String toString() { return fullName; }
     }
 
@@ -211,8 +197,8 @@ public class Courses {
         // * Getter
         public String getFullName() { return fullName; }
 
-        @Override
         // [METHOD] Return stringified name
+        @Override
         public String toString() { return fullName; }
     }
 
@@ -232,8 +218,8 @@ public class Courses {
         // * Getter
         public String getFullName() { return fullName; }
 
-        @Override
         // [METHOD] Return stringified name
+        @Override
         public String toString() { return fullName; }
     }
 }

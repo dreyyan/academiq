@@ -24,43 +24,32 @@ public class TimeSlot {
     }
 
     // * Getters
-    public DayOfWeek getDay() {
-        return day;
-    }
-
-    public LocalTime getStartTime() {
-        return startTime;
-    }
-
-    public LocalTime getEndTime() {
-        return endTime;
-    }
+    public DayOfWeek getDay() { return day; }
+    public LocalTime getStartTime() { return startTime; }
+    public LocalTime getEndTime() { return endTime; }
 
     // * Setters
-    public void setDay(DayOfWeek day) {
-        this.day = day;
-    }
+    public void setDay(DayOfWeek day) { this.day = day; }
 
     public void setStartTime(LocalTime startTime) {
         if (endTime != null && endTime.isBefore(startTime)) {
             throw new IllegalArgumentException("Start time cannot be after end time.");
-        }
-        this.startTime = startTime;
+        } this.startTime = startTime;
     }
 
     public void setEndTime(LocalTime endTime) {
         if (startTime != null && endTime.isBefore(startTime)) {
             throw new IllegalArgumentException("End time cannot be before start time.");
-        }
-        this.endTime = endTime;
+        } this.endTime = endTime;
     }
 
+    // [METHOD] Return a readable formatted string (e.g. "Mon 10:00 AM - 12:00 PM")
     @Override
-    // [METHOD] Return a human-readable formatted string (e.g. "Mon 10:00 AM - 12:00 PM")
     public String toString() {
         return String.format("%s %s - %s", day, startTime.format(TIME_FORMATTER), endTime.format(TIME_FORMATTER));
     }
 
+    // [METHOD] Convert stringified time to TimeSlot
     public static TimeSlot fromString(String s) {
         if (s == null || s.isBlank()) return null;
 

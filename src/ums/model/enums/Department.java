@@ -29,16 +29,16 @@ public enum Department {
     public String getCode() { return this.code; }
     public String getFullName() { return this.fullName; }
 
-    @Override
     // [METHOD] Return stringified name
-    public String toString() {
-        return fullName;
-    }
+    @Override
+    public String toString() { return fullName; }
 
     // [METHOD] Return department from code or full name
     public static Department fromCodeOrFullName(String input) {
+        // If no input, return 'UNASSIGNED' value
         if (input == null || input.isBlank()) return UNASSIGNED;
 
+        // Remove leading and trailing whitespaces
         input = input.trim();
 
         for (Department dept : Department.values()) {
@@ -48,6 +48,7 @@ public enum Department {
             }
         }
 
-        return UNASSIGNED; // default
+        // If none, return 'UNASSIGNED' value
+        return UNASSIGNED;
     }
 }

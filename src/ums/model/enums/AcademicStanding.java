@@ -31,6 +31,6 @@ public enum AcademicStanding {
                 return h;
             }
         }
-        return null; // ! [ERROR] Invalid GWA
+        return null;
     }
 }

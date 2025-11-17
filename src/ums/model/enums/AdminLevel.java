@@ -12,17 +12,13 @@ public enum AdminLevel {
     private final String displayName;
 
     // * Constructor (Parameterized)
-    AdminLevel(String displayName) {
-        this.displayName = displayName;
-    }
+    AdminLevel(String displayName) { this.displayName = displayName; }
 
     // * Getter
-    public String getDisplayName() {
-        return displayName;
-    }
+    public String getDisplayName() { return displayName; }
 
-    @Override
     // [METHOD] Return stringified name
+    @Override
     public String toString() {
         return displayName;
     }
