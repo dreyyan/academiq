@@ -130,7 +130,7 @@ public class ConsoleDisplay {
 
         // Display centered header
         for (String line : headerLines) {
-            ConsoleUI.moveCursor(0, 0, 5, 0);
+            ConsoleUI.moveCursor(5);
             ConsoleInput.printCentered(line, WIDTH - 10);
         }
 
@@ -141,7 +141,7 @@ public class ConsoleDisplay {
     }
 
     public static void displayHeaderSubtitle(String subtitle) {
-        ConsoleUI.moveCursor(0, 0, 5, 0);
+        ConsoleUI.moveCursor(5);
         ConsoleInput.printCentered("[ " + subtitle + " ]", Settings.CONSOLE_WIDTH - 9);
     }
 
@@ -168,7 +168,7 @@ public class ConsoleDisplay {
                 type = "[INFO]";
                 break;
         }
-        ConsoleUI.moveCursor(0, 0, 5, 0);
+        ConsoleUI.moveCursor(5);
         ConsoleInput.printCentered(type + " " + dialogMessage, Settings.CONSOLE_WIDTH - 9);
     }
 
@@ -196,7 +196,7 @@ public class ConsoleDisplay {
 
         // Display ASCII art
         for (String line : ASCIIArtSchool) {
-            ConsoleUI.moveCursor(0, 0, 3, 0);
+            ConsoleUI.moveCursor(3);
             ConsoleInput.printCentered(line, Settings.CONSOLE_WIDTH - 3);
         }
     }

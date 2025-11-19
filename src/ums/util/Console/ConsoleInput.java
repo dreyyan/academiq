@@ -1,14 +1,23 @@
 package ums.util.console;
 
+// [IMPORT] Standard
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.security.Key;
 import java.util.Arrays;
-// [IMPORT] Standard
 import java.util.InputMismatchException;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+// [IMPORT] JLine
+import org.jline.reader.EndOfFileException;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
+import org.jline.utils.NonBlockingReader;
+import org.jline.terminal.Attributes;
+
 
 // [IMPORT] Utilities
 import ums.util.Logger;
@@ -16,16 +25,31 @@ import ums.util.Settings;
 
 public class ConsoleInput {
     static Scanner scanner = new Scanner(System.in);
+    private static Terminal terminal;
+    private static NonBlockingReader reader;
+
+    static {
+        try {
+            terminal = TerminalBuilder.builder()
+                    .system(true)
+                    .jna(true)
+                    .jansi(true)
+                    .build();
+            reader = terminal.reader(); // don't enter raw mode yet
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     // [UTILITY] Prompts the user to press the 'Enter' key to continue execution
     public static void pressEnterToContinue() {
-        ConsoleUI.moveCursor(0, 0, 3, 0); ConsoleInput.printCentered("Press [ENTER] to continue...", Settings.CONSOLE_WIDTH - 3);
+        ConsoleUI.moveCursor(3); ConsoleInput.printCentered("Press [ENTER] to continue...", Settings.CONSOLE_WIDTH - 3);
         scanner.nextLine();
     }
 
     // [UTILITY] Prompts the user to press the 'ESC' key to navigate back
     public static boolean pressESCToReturn() {
-        ConsoleUI.moveCursor(0, 0, 3, 0);
+        ConsoleUI.moveCursor(3);
         ConsoleInput.printCentered("Press [ESC] to return...", Settings.CONSOLE_WIDTH - 3);
 
         try {
@@ -144,51 +168,83 @@ public class ConsoleInput {
         }
     }
 
-// [METHOD] Navigate input fields using ENTER key, with max characters per field
-// and individual X/Y positions. Returns null if user types "\"
-public static String[] navigateInputs(int[] fieldYPositions, int[] fieldXPositions, int maxLength) throws IOException {
-    // ! [ERROR] Mismatching Y and X length
-    if (fieldYPositions.length != fieldXPositions.length) {
-        throw new IllegalArgumentException("Y and X positions arrays must have the same length.");
-    }
+    // [METHOD] Navigate input fields using [ENTER] key, with max characters per field and individual X/Y positions. Returns null if user presses [ESC] key
+    public static String[] navigateInputs(int[] fieldYPositions, int[] fieldXPositions, int maxLength) throws IOException {
+        if (fieldYPositions.length != fieldXPositions.length) {
+            throw new IllegalArgumentException("Y and X positions arrays must have the same length.");
+        }
 
-    String[] inputs = new String[fieldYPositions.length];
-    Arrays.fill(inputs, ""); // initialize
+        String[] inputs = new String[fieldYPositions.length];
+        Arrays.fill(inputs, ""); // initialize
 
-    BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-
-    for (int current = 0; current < fieldYPositions.length; current++) {
-        ConsoleUI.goTo(fieldYPositions[current], fieldXPositions[current]);
-
-        String input = "";
-        while (true) {
-            // Move cursor to the start of the current field
+        for (int current = 0; current < fieldYPositions.length; current++) {
             ConsoleUI.goTo(fieldYPositions[current], fieldXPositions[current]);
 
-            // Display current input
-            System.out.print(input);
+            StringBuilder input = new StringBuilder();
 
-            // Read the line
-            String line = reader.readLine();
-            if (line == null) line = "";
+            while (true) {
+                // Move cursor to the start of the current field
+                ConsoleUI.goTo(fieldYPositions[current], fieldXPositions[current]);
 
-            // Check if user wants to cancel by entering "\"
-            if (line.equals("\\")) {
-                return null; // return null to indicate cancellation
+                // Display current input
+                System.out.print(input.toString()); // extra space to clear leftover characters
+
+                int key = readKey(); // use JLine or fallback to System.in
+
+                if (key == 27) { // ESC key
+                    return null; // user cancelled
+                } else if (key == 10 || key == 13) { // ENTER key (LF or CR)
+                    break; // done with this field
+                } else if (key == 8 || key == 127) { // Backspace
+                    if (input.length() > 0) input.deleteCharAt(input.length() - 1);
+                } else if (key >= 32 && key <= 126) { // Printable ASCII
+                    if (input.length() < maxLength) input.append((char) key);
+                }
             }
 
-            // Enforce max length
-            if (line.length() > maxLength) {
-                line = line.substring(0, maxLength); // enforce max length
-            }
-
-            input = line;
-            break; // done with this field, go to next
+            inputs[current] = input.toString();
         }
-        inputs[current] = input;
+
+        return inputs;
     }
 
-    return inputs;
-}
+    // [METHOD] Read keyboard input with JLine
+    public static int readKey() throws IOException {
+        if (terminal == null) return System.in.read();
 
+        Attributes original = terminal.getAttributes();
+        try {
+            // Enter temporary raw mode
+            Attributes raw = new Attributes(original);
+            raw.setLocalFlag(Attributes.LocalFlag.ECHO, false);   // disable echo
+            raw.setLocalFlag(Attributes.LocalFlag.ICANON, false); // disable line-buffered input
+            terminal.setAttributes(raw);
+
+            int key = reader.read();
+
+        // Handle arrow keys (escape sequences)
+        if (key == 27) { // ESC
+            if (reader.ready()) {
+                int next1 = reader.read(); // usually '[' -> 91
+                int next2 = reader.read(); // A/B/C/D for arrows
+                switch (next2) {
+                    case 65: return Settings.UP_KEY;    // Up arrow
+                    case 66: return Settings.DOWN_KEY;  // Down arrow
+                    case 67: return Settings.RIGHT_KEY; // Right arrow
+                    case 68: return Settings.LEFT_KEY;  // Left arrow
+                }
+            }
+        }
+
+            return key;
+        } finally {
+            // Restore original attributes
+            terminal.setAttributes(original);
+        }
+    }
+
+    // [METHOD] Converts an ASCII value to its corresponding character
+    public static char asciiToChar(int asciiValue) {
+        return (char) asciiValue;
+    }
 }

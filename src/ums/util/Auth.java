@@ -110,7 +110,7 @@ public class Auth {
 
     private static AcademicStanding safeStanding(String[] row, int idx) {
         if (row.length <= idx || row[idx].trim().isEmpty()) {
-            return AcademicStanding.GOOD;                 // default
+            return AcademicStanding.GOOD; // Default value
         }
         try {
             return AcademicStanding.valueOf(row[idx].trim().toUpperCase());
@@ -171,58 +171,92 @@ public class Auth {
         return faculty;
     }
 
-public static Faculty getFacultyById(String facultyId) {
-    if (facultyId == null || facultyId.isBlank()) return null;
+    // [HELPER] Safe parser for FacultyRank
+    private static FacultyRank safeFacultyRank(String value) {
+        if (value == null || value.isBlank()) return FacultyRank.INSTRUCTOR;
 
-    List<String[]> rows = CSV.readCSV(Settings.FACULTY_FILE);
-    for (String[] r : rows) {
-        if (r.length == 0) continue;
-
-        if (r[0].trim().equalsIgnoreCase(facultyId.trim())) {
-            try {
-                // Person attributes
-                String id         = r[0];
-                String firstName  = r[1];
-                String middleName = r[2];
-                String lastName   = r[3];
-                LocalDate dob     = r.length > 4 && !r[4].isBlank() ? LocalDate.parse(r[4]) : LocalDate.now();
-                Gender gender     = r.length > 5 ? Gender.valueOf(r[5].toUpperCase()) : Gender.OTHER;
-                String email      = r.length > 6 ? r[6] : "";
-                String contact    = r.length > 7 ? r[7] : "";
-                String departmentName = r.length > 8 ? r[8] : null;
-
-                Department dept = null;
-                if (departmentName != null && !departmentName.isBlank()) {
-                    dept = Department.fromCodeOrFullName(departmentName);
-                }
-
-                // Faculty attributes (defaults if missing)
-                FacultyRank rank      = r.length > 9 ? FacultyRank.valueOf(r[9].toUpperCase()) : FacultyRank.INSTRUCTOR;
-                LocalDate hireDate    = r.length > 10 && !r[10].isBlank() ? LocalDate.parse(r[10]) : LocalDate.now();
-                String officeLocation = r.length > 11 ? r[11] : "Office TBD";
-                double salary         = r.length > 12 && !r[12].isBlank() ? Double.parseDouble(r[12]) : 0.0;
-                boolean isTenured     = r.length > 13 && !r[13].isBlank() && r[13].equalsIgnoreCase("true");
-                List<GraduateStudent> advisees = new ArrayList<>(); // empty for now
-
-                // AcademicStaff attributes
-                String teacherId = r.length > 14 ? r[14] : id;
-                int teachingHoursPerWeek = r.length > 15 ? Integer.parseInt(r[15]) : 0;
-                int maxTeachingLoad       = r.length > 16 ? Integer.parseInt(r[16]) : 12;
-
-                return new AcademicStaff(
-                    firstName, middleName, lastName, dob, gender, "", contact, email,
-                    id, dept, rank, hireDate, officeLocation, salary, isTenured, advisees,
-                    teacherId, teachingHoursPerWeek, maxTeachingLoad
-                );
-
-            } catch (Exception e) {
-                System.out.println("Error parsing faculty with ID: " + facultyId);
-                e.printStackTrace();
-            }
+        switch (value.trim().toUpperCase()) {
+            case "INSTRUCTOR": return FacultyRank.INSTRUCTOR;
+            case "ASSISTANT_PROFESSOR":
+            case "ASSISTANT PROFESSOR":
+                return FacultyRank.ASSISTANT_PROFESSOR;
+            case "ASSOCIATE_PROFESSOR":
+            case "ASSOCIATE PROFESSOR":
+                return FacultyRank.ASSOCIATE_PROFESSOR;
+            case "FULL_PROFESSOR":
+            case "FULL PROFESSOR":
+                return FacultyRank.FULL_PROFESSOR;
+            case "PROFESSOR": // map old generic "PROFESSOR" to FULL_PROFESSOR
+                return FacultyRank.FULL_PROFESSOR;
+            default:
+                System.out.println("Warning: Invalid FacultyRank '" + value + "'. Defaulting to INSTRUCTOR.");
+                return FacultyRank.INSTRUCTOR;
         }
     }
-    return null;
-}
+
+    // [HELPER] Safe parser for Gender
+    private static Gender safeGender(String value) {
+        if (value == null || value.isBlank()) return Gender.OTHER;
+        try {
+            return Gender.valueOf(value.trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            System.out.println("Warning: Invalid Gender '" + value + "'. Defaulting to OTHER.");
+            return Gender.OTHER;
+        }
+    }
+
+    public static Faculty getFacultyById(String facultyId) {
+        if (facultyId == null || facultyId.isBlank()) return null;
+
+        List<String[]> rows = CSV.readCSV(Settings.FACULTY_FILE);
+        for (String[] r : rows) {
+            if (r.length == 0) continue;
+
+            if (r[0].trim().equalsIgnoreCase(facultyId.trim())) {
+                try {
+                    // Person attributes
+                    String id         = r[0];
+                    String firstName  = r[1];
+                    String middleName = r[2];
+                    String lastName   = r[3];
+                    LocalDate dob     = r.length > 4 && !r[4].isBlank() ? LocalDate.parse(r[4]) : LocalDate.now();
+                    Gender gender     = r.length > 5 ? Gender.valueOf(r[5].toUpperCase()) : Gender.OTHER;
+                    String email      = r.length > 6 ? r[6] : "";
+                    String contact    = r.length > 7 ? r[7] : "";
+                    String departmentName = r.length > 8 ? r[8] : null;
+
+                    Department dept = null;
+                    if (departmentName != null && !departmentName.isBlank()) {
+                        dept = Department.fromCodeOrFullName(departmentName);
+                    }
+
+                    // Faculty attributes (defaults if missing)
+                    FacultyRank rank = r.length > 9 ? safeFacultyRank(r[9]) : FacultyRank.INSTRUCTOR;
+                    LocalDate hireDate    = r.length > 10 && !r[10].isBlank() ? LocalDate.parse(r[10]) : LocalDate.now();
+                    String officeLocation = r.length > 11 ? r[11] : "Office TBD";
+                    double salary         = r.length > 12 && !r[12].isBlank() ? Double.parseDouble(r[12]) : 0.0;
+                    boolean isTenured     = r.length > 13 && !r[13].isBlank() && r[13].equalsIgnoreCase("true");
+                    List<GraduateStudent> advisees = new ArrayList<>(); // empty for now
+
+                    // AcademicStaff attributes
+                    String teacherId = r.length > 14 ? r[14] : id;
+                    int teachingHoursPerWeek = r.length > 15 ? Integer.parseInt(r[15]) : 0;
+                    int maxTeachingLoad       = r.length > 16 ? Integer.parseInt(r[16]) : 12;
+
+                    return new AcademicStaff(
+                        firstName, middleName, lastName, dob, gender, "", contact, email,
+                        id, dept, rank, hireDate, officeLocation, salary, isTenured, advisees,
+                        teacherId, teachingHoursPerWeek, maxTeachingLoad
+                    );
+
+                } catch (Exception e) {
+                    System.out.println("Error parsing faculty with ID: " + facultyId);
+                    e.printStackTrace();
+                }
+            }
+        }
+        return null;
+    }
 
     public static Student getUndergraduateByEmail(String email) {
         List<String[]> rows = CSV.readCSV(Settings.STUDENTS_FILE);
@@ -308,46 +342,43 @@ public static Faculty getFacultyById(String facultyId) {
         return null;
     }
 
+    // [METHOD] Read academic staff from .csv
     public static List<AcademicStaff> readAllAcademicStaff() {
-        List<String[]> rows = CSV.readCSV(Settings.ACADEMIC_STAFF_FILE); // CSV file for staff
+        List<String[]> rows = CSV.readCSV(Settings.ACADEMIC_STAFF_FILE);
         List<AcademicStaff> staffList = new ArrayList<>();
 
         for (String[] r : rows) {
             if (r.length == 0) continue;
 
             try {
-                // Person attributes
                 String id         = r[0];
                 String firstName  = r[1];
                 String middleName = r.length > 2 ? r[2] : "";
                 String lastName   = r.length > 3 ? r[3] : "";
                 LocalDate dob     = r.length > 4 && !r[4].isBlank() ? LocalDate.parse(r[4]) : LocalDate.now();
-                Gender gender     = r.length > 5 ? Gender.valueOf(r[5].toUpperCase()) : Gender.OTHER;
-                String email      = r.length > 6 ? r[6] : "";
+                Gender gender     = safeGender(r.length > 5 ? r[5] : null);
+                String address    = r.length > 6 ? r[6] : "";
                 String contact    = r.length > 7 ? r[7] : "";
-                Department dept   = r.length > 8 && !r[8].isBlank() ? Department.fromCodeOrFullName(r[8]) : null;
+                String email      = r.length > 8 ? r[8] : "";
+                Department dept   = safeDept(r, 9); // column 9 = Department
+                FacultyRank rank  = safeFacultyRank(r.length > 10 ? r[10] : null); // column 10 = FacultyRank
+                LocalDate hireDate = r.length > 11 && !r[11].isBlank() ? LocalDate.parse(r[11]) : LocalDate.now();
+                String officeLocation = r.length > 12 ? r[12] : "Office TBD";
+                double salary     = r.length > 13 && !r[13].isBlank() ? Double.parseDouble(r[13]) : 0.0;
+                boolean isTenured = r.length > 14 && "true".equalsIgnoreCase(r[14]);
+                List<GraduateStudent> advisees = new ArrayList<>();
 
-                // Faculty attributes
-                FacultyRank rank      = r.length > 9 ? FacultyRank.valueOf(r[9].toUpperCase()) : FacultyRank.INSTRUCTOR;
-                LocalDate hireDate    = r.length > 10 && !r[10].isBlank() ? LocalDate.parse(r[10]) : LocalDate.now();
-                String officeLocation = r.length > 11 ? r[11] : "Office TBD";
-                double salary         = r.length > 12 && !r[12].isBlank() ? Double.parseDouble(r[12]) : 0.0;
-                boolean isTenured     = r.length > 13 && "true".equalsIgnoreCase(r[13]);
-                List<GraduateStudent> advisees = new ArrayList<>(); // empty for now
-
-                // AcademicStaff-specific attributes
-                String teacherId            = r.length > 14 ? r[14] : id;
-                int teachingHoursPerWeek    = r.length > 15 ? Integer.parseInt(r[15]) : 0;
-                int maxTeachingLoad         = r.length > 16 ? Integer.parseInt(r[16]) : 12;
+                String teacherId = r.length > 15 ? r[15] : id;
+                int teachingHoursPerWeek = r.length > 16 ? Integer.parseInt(r[16]) : 0;
+                int maxTeachingLoad = r.length > 17 ? Integer.parseInt(r[17]) : 12;
 
                 AcademicStaff staff = new AcademicStaff(
-                        firstName, middleName, lastName, dob, gender, "", contact, email,
+                        firstName, middleName, lastName, dob, gender, address, contact, email,
                         id, dept, rank, hireDate, officeLocation, salary, isTenured, advisees,
                         teacherId, teachingHoursPerWeek, maxTeachingLoad
                 );
 
                 staffList.add(staff);
-
             } catch (Exception e) {
                 System.out.println("Error parsing academic staff row: " + String.join(",", r));
                 e.printStackTrace();
@@ -357,6 +388,7 @@ public static Faculty getFacultyById(String facultyId) {
         return staffList;
     }
 
+    // [METHOD] Get
     public static AcademicStaff getAcademicStaffById(String staffId) {
         List<AcademicStaff> allStaff = readAllAcademicStaff(); // you need a method that reads all staff from CSV
         for (AcademicStaff staff : allStaff) {

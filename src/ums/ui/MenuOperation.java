@@ -17,9 +17,18 @@ public class MenuOperation {
     public String getDisplayName() { return this.displayName; }
 
     // * Method
-        public boolean matches(String input) {
+    // [METHOD] Matches full string commands (like "profile")
+    public boolean matches(String input) {
         for (String key : inputKeys) {
             if (key.equalsIgnoreCase(input)) return true;
+        }
+        return false;
+    }
+
+    // [METHOD] Matches single-character input (like '1', '2', '3')
+    public boolean matches(char input) {
+        for (String key : inputKeys) {
+            if (key.length() == 1 && key.charAt(0) == input) return true;
         }
         return false;
     }

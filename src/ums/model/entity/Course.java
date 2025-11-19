@@ -17,6 +17,12 @@ public class Course {
         this.title = title;
     }
 
+    // * Constructor (Parameterized - Title & Department Only)
+    public Course(String title, Department department) {
+        this.title = title;
+        this.department = department;
+    }
+    
     // * Constructor (Parameterized)
     public Course(String courseCode, String title, String description, int credits, Department department) {
         this.courseCode = courseCode;
@@ -39,6 +45,38 @@ public class Course {
     public void setCredits(int credits) { this.credits = credits; }
 
     // * Methods
+    // [HELPER] Map user input (full name or shorthand) to a Course object
+    public static <T extends Enum<T>> Course mapCourseInput(String input, T[] courses, Department dept) {
+        input = input.trim().toLowerCase();
+
+        for (T c : courses) {
+            String fullName = ((Object)c).toString(); // enum's full name string
+            String shortName = generateCourseShortName(fullName);
+
+            if (fullName.equalsIgnoreCase(input) || shortName.equalsIgnoreCase(input)) {
+                return new Course(fullName, dept);
+            }
+        }
+
+        return null;
+    }
+
+    // [METHOD] Generate shorthand for a course from its full name
+    private static String generateCourseShortName(String fullName) {
+        if (fullName.startsWith("Bachelor of Science in ")) {
+            return "BS " + fullName.substring("Bachelor of Science in ".length());
+        } else if (fullName.startsWith("Bachelor of Arts in ")) {
+            return "BA " + fullName.substring("Bachelor of Arts in ".length());
+        } else if (fullName.startsWith("Doctor of Medicine")) {
+            return "MD";
+        } else if (fullName.startsWith("Juris Doctor")) {
+            return "JD";
+        } else if (fullName.startsWith("Doctor of Dental Medicine")) {
+            return "DMD";
+        }
+        return fullName; // fallback
+    }
+
     // [HELPER] Create Course from name or code
     public static Course fromCodeOrFullName(String input) {
         // If no input, return 'unassigned' course

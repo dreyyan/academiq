@@ -1,5 +1,7 @@
 package ums.model.enums;
 
+import ums.model.entity.Course;
+
 // ? NOTE: Based on West Visayas State University (WVSU) - Main Campus College Departments' Courses
 public class Courses {
     // * [COURSE] College of Arts and Sciences

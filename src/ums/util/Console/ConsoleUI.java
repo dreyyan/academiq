@@ -47,15 +47,15 @@ public class ConsoleUI {
     }
 
     // [UTILITY] Move cursor up/down/right/left by specified values
-    public static void moveCursor(int up, int down, int right, int left) {
-        if (up > 0)
-            System.out.print("\033[" + up + "A");
-        if (down > 0)
-            System.out.print("\033[" + down + "B");
+    public static void moveCursor(int right) {
+        // if (up > 0)
+        //     System.out.print("\033[" + up + "A");
+        // if (down > 0)
+        //     System.out.print("\033[" + down + "B");
         if (right > 0)
             System.out.print("\033[" + right + "C");
-        if (left > 0)
-            System.out.print("\033[" + left + "D");
+        // if (left > 0)
+        //     System.out.print("\033[" + left + "D");
         System.out.flush();
     }
 
@@ -96,23 +96,23 @@ public class ConsoleUI {
         // Otherwise, build a stacked multi-input box
         String top = topLeft + horizontal.repeat(innerWidth) + topRight;
         String bottom = bottomLeft + horizontal.repeat(innerWidth) + bottomRight;
-        ConsoleUI.moveCursor(0, 0, 5, 0);
+        ConsoleUI.moveCursor(5);
         ConsoleInput.printCentered(top, Settings.CONSOLE_WIDTH - 9);
 
         for (int i = 0; i < labels.length; i++) {
             String labelLine = String.format("%s %-" + (innerWidth - 1) + "s%s", vertical, labels[i] + ":", vertical);
-            ConsoleUI.moveCursor(0, 0, 5, 0);
+            ConsoleUI.moveCursor(5);
             ConsoleInput.printCentered(labelLine, Settings.CONSOLE_WIDTH - 9);
 
             // Add divider if not the last field
             if (i < labels.length - 1) {
                 String divider = dividerLeft + horizontal.repeat(innerWidth) + dividerRight;
-                ConsoleUI.moveCursor(0, 0, 5, 0);
+                ConsoleUI.moveCursor(5);
                 ConsoleInput.printCentered(divider, Settings.CONSOLE_WIDTH - 9);
             }
         }
 
-        ConsoleUI.moveCursor(0, 0, 5, 0);
+        ConsoleUI.moveCursor(5);
         ConsoleInput.printCentered(bottom, Settings.CONSOLE_WIDTH - 9);
     }
 

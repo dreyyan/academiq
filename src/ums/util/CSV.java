@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.UUID;
 
 import ums.model.AcademicStaff;
+import ums.model.Student;
 import ums.model.entity.Course;
 import ums.model.entity.CourseOffering;
 import ums.model.entity.TimeSlot;
@@ -159,5 +160,59 @@ public class CSV {
         }
 
         writeCSV(Settings.COURSE_OFFERINGS_FILE, rows); // overwrite file
+    }
+
+    // [METHOD] Update student record
+    public static void updateStudentRecord(Student student) {
+        if (student == null || student.getStudentId() == null) {
+            errorMessage("Cannot update null student or student without ID.");
+            return;
+        }
+
+        List<String[]> rows = readCSV(Settings.STUDENTS_FILE);
+        boolean updated = false;
+
+        for (int i = 0; i < rows.size(); i++) {
+            String[] row = rows.get(i);
+
+            // Match by STUDENT_ID column
+            if (row.length > Settings.COL_STUDENT_ID && row[Settings.COL_STUDENT_ID].equals(student.getStudentId())) {
+
+                // Ensure row has enough columns
+                int requiredLength = Settings.TOTAL_COLS;
+                if (row.length < requiredLength) {
+                    String[] newRow = new String[requiredLength];
+                    System.arraycopy(row, 0, newRow, 0, row.length);
+                    // fill remaining with empty strings
+                    for (int j = row.length; j < requiredLength; j++) newRow[j] = "";
+                    row = newRow;
+                }
+
+                // Update fields safely
+                row[Settings.COL_FIRST_NAME]    = student.getFirstName();
+                row[Settings.COL_MIDDLE_NAME]   = student.getMiddleName();
+                row[Settings.COL_LAST_NAME]     = student.getLastName();
+                row[Settings.COL_DOB]           = student.getDateOfBirth() != null ? student.getDateOfBirth().toString() : "";
+                row[Settings.COL_GENDER]        = student.getGender() != null ? student.getGender().toString() : "";
+                row[Settings.COL_ADDRESS]       = student.getAddress();
+                row[Settings.COL_CONTACT]       = student.getContactNumber();
+                row[Settings.COL_EMAIL]         = student.getEmail();
+                row[Settings.COL_DEPARTMENT]    = student.getDepartment() != null ? student.getDepartment().toString() : "";
+                row[Settings.COL_COURSE]        = student.getCourse() != null ? student.getCourse().toString() : "";
+                row[Settings.COL_ACAD_STANDING] = student.getAcademicStanding() != null ? student.getAcademicStanding().toString() : "";
+                row[Settings.COL_GPA]           = String.valueOf(student.getGPA());
+                row[Settings.COL_CREDITS]       = String.valueOf(student.getCreditsEarned());
+
+                rows.set(i, row);
+                updated = true;
+                break;
+            }
+        }
+
+        if (updated) {
+            writeCSV(Settings.STUDENTS_FILE, rows);
+        } else {
+            errorMessage("Student ID not found in CSV: " + student.getStudentId());
+        }
     }
 }

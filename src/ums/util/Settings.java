@@ -61,4 +61,11 @@ public final class Settings {
     // CSV
     public static final int STUDENTS_CSV_MAX_COLUMNS = 24;
     public static final int TOTAL_COLS = 16;
+
+    // Keys (ASCII Value)
+    public static final int ESC_KEY = 27;
+    public static final int UP_KEY = 1001;
+    public static final int DOWN_KEY = 1002;
+    public static final int LEFT_KEY = 1003;
+    public static final int RIGHT_KEY = 1004;
 }

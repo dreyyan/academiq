@@ -35,25 +35,25 @@ public abstract class Person {
     }
 
     // * Getters
-    String getPersonId() { return this.personId; }
-    String getFirstName() { return this.firstName; }
-    String getMiddleName() { return this.middleName; }
-    String getLastName() { return this.lastName; }
-    LocalDate getDateOfBirth() { return this.dateOfBirth; }
-    Gender getGender() { return this.gender; }
-    String getAddress() { return this.address; }
-    String getContactNumber() { return this.contactNumber; }
-    String getEmail() { return this.email; }
+    public String getPersonId() { return this.personId; }
+    public String getFirstName() { return this.firstName; }
+    public String getMiddleName() { return this.middleName; }
+    public String getLastName() { return this.lastName; }
+    public LocalDate getDateOfBirth() { return this.dateOfBirth; }
+    public Gender getGender() { return this.gender; }
+    public String getAddress() { return this.address; }
+    public String getContactNumber() { return this.contactNumber; }
+    public String getEmail() { return this.email; }
 
     // * Setters
-    void setFirstName(String firstName) { this.firstName = firstName; }
-    void setMiddleName(String middleName) { this.middleName = middleName; }
-    void setLastName(String lastName) { this.lastName = lastName; }
-    void setDateOfBirth(LocalDate dateOfBirth) { this.dateOfBirth = dateOfBirth; }
-    void setGender(Gender gender) { this.gender = gender; }
-    void setAddress(String address) { this.address = address; }
-    void setContactNumber(String contactNumber) { this.contactNumber = contactNumber; }
-    void setEmail(String email) { this.email = email; }
+    public void setFirstName(String firstName) { this.firstName = firstName; }
+    public void setMiddleName(String middleName) { this.middleName = middleName; }
+    public void setLastName(String lastName) { this.lastName = lastName; }
+    public void setDateOfBirth(LocalDate dateOfBirth) { this.dateOfBirth = dateOfBirth; }
+    public void setGender(Gender gender) { this.gender = gender; }
+    public void setAddress(String address) { this.address = address; }
+    public void setContactNumber(String contactNumber) { this.contactNumber = contactNumber; }
+    public void setEmail(String email) { this.email = email; }
 
     // * Methods
     // [METHOD] Get full name
