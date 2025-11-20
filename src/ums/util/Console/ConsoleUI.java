@@ -162,15 +162,16 @@ public class ConsoleUI {
             // Move cursor to the position
             ConsoleUI.goTo(fieldYPositions[i], fieldXPositions[i]);
 
-            // Print the value, truncated or padded to maxLength
-            String output = values.get(i);
-            if (output.length() > maxLength) {
-                output = output.substring(0, maxLength); // truncate if too long
-            } else {
-                output = String.format("%-" + maxLength + "s", output); // pad with spaces
+            // Truncate displayed value if it exceeds maxLength
+            String value = values.get(i);
+            if (value.length() > maxLength) value = value.substring(0, maxLength);
+
+            // Pad with spaces to visually fill the input box
+            if (value.length() < maxLength) {
+                value = String.format("%-" + maxLength + "s", value);
             }
 
-            System.out.print(output);
+            System.out.print(value);
         }
     }
 }

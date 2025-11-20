@@ -583,12 +583,18 @@ public class MainMenu {
 
         // Setup input fields
         String[] profileFields = {
-            "First Name", "Middle Name", "Last Name", "Date of Birth",
-            "Gender", "Address", "Contact Number", "Email"
+            "First Name",
+            "Middle Name",
+            "Last Name",
+            "Date of Birth",
+            "Gender",
+            "Address",
+            "Contact Number",
+            "Email"
         };
-        int[] yPositions = { 18, 20, 22, 24, 26, 28, 30, 32 }; // y coordinates of each input line
-        int[] xPositions = { 34, 35, 33, 37, 30, 31, 38, 29 }; // cursor start position
-        int maxLength = 32;
+        int[] yPositions = { 18, 20, 22, 24, 26, 28, 30, 32 };
+        int[] xPositions = { 34, 35, 33, 37, 30, 31, 38, 29 };
+        int maxLength = 14;
 
         // Display profile information
         ConsoleUI.drawInputFields(60, profileFields);
@@ -613,7 +619,6 @@ public class MainMenu {
         }
 
         // Navigate back to 'Student Menu'
-        ConsoleInput.pressEnterToContinue();
         displayStudentMenu(student);
     }
 
@@ -632,14 +637,22 @@ public class MainMenu {
         System.out.println();
 
         // Setup input fields
-        String[] academicsFields = { "Department", "Course" };
-        int[] yPositions = { 18, 20 }; // y coordinates of each input line
-        int[] xPositions = { 34, 31 }; // cursor start position
-        int maxLength = 62;
+        String[] academicsFields = {
+            "Student ID",
+            "Enrollment Date",
+            "Department",
+            "Course",
+            "Credits",
+            "GPA",
+            "Academic Standing"
+        };
+        int[] yPositions = { 18, 20, 22, 24, 26, 28, 30 };
+        int[] xPositions = { 34, 39, 34, 30, 31, 27, 41 };
+        int maxLength = 72;
 
         // Display profile information
         ConsoleUI.drawInputFields(60, academicsFields);
-        ConsoleUI.displayInputFields(student.getStudentCoursesInformation(), yPositions, xPositions, maxLength);
+        ConsoleUI.displayInputFields(student.getStudentAcademicsInformation(), yPositions, xPositions, maxLength);
 
         // Prompt user to press [ESC] to return or [E] to edit
         ConsoleUI.goTo(Settings.CONSOLE_HEIGHT - 3, 0);
@@ -659,7 +672,6 @@ public class MainMenu {
         }
 
         // Navigate back to 'Student Menu'
-        ConsoleInput.pressEnterToContinue();
         displayStudentMenu(student);
     }
 

@@ -66,7 +66,7 @@ public abstract class Person {
         personCount++;
         return "P" + String.format("%05d", personCount); // Format: P00001
     }
-    // [METHOD] Display student's information
+    // [METHOD] Display student's profile information
     public List<String> getProfileInformation() {
         List<String> info = new ArrayList<>(); // Stores student's profile information
 

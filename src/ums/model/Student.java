@@ -130,12 +130,17 @@ public abstract class Student extends Person {
         return info;
     }
 
-    // [METHOD] Display student's courses information
-    public List<String> getStudentCoursesInformation() {
-        List<String> info = new ArrayList<>(); // Stores student's courses information
+    // [METHOD] Display student's academics information
+    public List<String> getStudentAcademicsInformation() {
+        List<String> info = new ArrayList<>(); // Stores student's academics information
 
+        info.add(getEnrollmentDate().toString());
+        info.add(getStudentId());
         info.add(getDepartment() != null ? getDepartment().toString() : "Not Assigned");
         info.add(getCourse() != null ? getCourse().toString() : "Not Assigned");
+        info.add(String.valueOf(getCreditsEarned()));
+        info.add(String.valueOf(getGPA()));
+        info.add(getAcademicStanding().toString());
 
         return info;
     }
