@@ -16,6 +16,7 @@ import ums.model.enums.Gender;
 
 // [IMPORT] Utilities
 import ums.util.Logger;
+import ums.util.console.ConsoleDisplay;
 
 public abstract class Student extends Person {
     // * Attributes
@@ -30,25 +31,25 @@ public abstract class Student extends Person {
     private List<CourseOffering> enrolledCourses;
 
     // * Constructor (Parameterized)
-    public Student(
-        // Person Attributes
-        String firstName, String middleName, String lastName, LocalDate dateOfBirth, Gender gender, String address, String contactNumber, String email,
-        // Student Attributes
-        String studentId, LocalDate enrollmentDate, Department department, Course course, AcademicStanding academicStanding, double GPA, int creditsEarned,  List<CourseOffering> enrolledCourses) {
-        super(
+        public Student(
             // Person Attributes
-            firstName, middleName, lastName, dateOfBirth, gender, address, contactNumber, email
-        );
+            String firstName, String middleName, String lastName, LocalDate dateOfBirth, Gender gender, String address, String contactNumber, String email,
+            // Student Attributes
+            String studentId, LocalDate enrollmentDate, Department department, Course course, AcademicStanding academicStanding, double GPA, int creditsEarned,  List<CourseOffering> enrolledCourses) {
+            super(
+                // Person Attributes
+                firstName, middleName, lastName, dateOfBirth, gender, address, contactNumber, email
+            );
 
-        this.studentId = studentId;
-        this.enrollmentDate = enrollmentDate;
-        this.department = department; 
-        this.course = course;
-        this.academicStanding = academicStanding;
-        this.GPA = GPA;
-        this.creditsEarned = creditsEarned;
-        this.enrolledCourses = new ArrayList<>();
-    }
+            this.studentId = studentId;
+            this.enrollmentDate = enrollmentDate;
+            this.department = department; 
+            this.course = course;
+            this.academicStanding = academicStanding;
+            this.GPA = GPA;
+            this.creditsEarned = creditsEarned;
+            this.enrolledCourses = new ArrayList<>();
+        }
 
     // * Getters
     public String getStudentId() { return this.studentId; }
@@ -72,7 +73,7 @@ public abstract class Student extends Person {
             Logger.errorMessage(getStudentId() + " is already enrolled in " + offering.getCourse());
         } else {
             getEnrolledCourses().add(offering); // Enroll in course offering
-            Logger.successMessage(getStudentId() + " enrolled in " + offering.getCourse());
+            ConsoleDisplay.dialogBox("success", "Successfully enrolled in " + offering.getCourse() + "!");
         }
     }
 
@@ -156,14 +157,14 @@ public abstract class Student extends Person {
         return report.toString();
     }
 
-    // [METHOD] Add student's information to database (.csv)
     public String[] toCSVRow() {
         return new String[] {
             getPersonId(), getFirstName(), getMiddleName(), getLastName(), getDateOfBirth().toString(),
             getGender().toString(), getAddress(), getContactNumber(), getEmail(),
             getStudentId(), getEnrollmentDate().toString(),
             getDepartment() != null ? getDepartment().toString() : "",
-            getCourse() != null ? getCourse().toString() : ""
+            getCourse() != null ? getCourse().toString() : "",
+            // Add any other fields like standing, credits, year/program as needed
         };
     }
 }

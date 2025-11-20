@@ -280,112 +280,120 @@ public class MainMenu {
     }
 
     // [METHOD] Display student "Enroll in Course Offering" menu
-public static void displayStudentEnrollInCourseOfferingMenu(Student student) throws IOException {
-    if (student == null) {
-        ConsoleDisplay.dialogBox("error", "Student record is null!");
-        return;
-    }
-
-    ConsoleDisplay.setupScreen();
-    ConsoleUI.goTo(15, 0);
-    ConsoleDisplay.displayHeaderSubtitle("Student: Enroll in Course Offering");
-
-    List<CourseOffering> availableOfferings = CSV.readCourseOfferings();
-    if (availableOfferings.isEmpty()) {
-        ConsoleDisplay.dialogBox("info", "No course offerings available at this time.");
-        ConsoleInput.pressEnterToContinue();
-        displayStudentMenu(student);
-        return;
-    }
-
-    int tableWidth = 90; // total width of table
-    String border = "=".repeat(tableWidth);
-    String separator = "-".repeat(tableWidth);
-
-    while (true) {
-        // Table Header
-        ConsoleUI.moveCursor(5); ConsoleInput.printCentered(border, Settings.CONSOLE_WIDTH - 10);
-        ConsoleUI.moveCursor(5); ConsoleInput.printCentered("Available Course Offerings", Settings.CONSOLE_WIDTH - 10);
-        ConsoleUI.moveCursor(5); ConsoleInput.printCentered(separator, Settings.CONSOLE_WIDTH - 10);
-
-        // Column headers
-        String header = String.format("| %-3s | %-12s | %-12s | %-4s | %-25s | %-9s |",
-                "No", "Course", "Semester", "Year", "Instructor", "Seats");
-        ConsoleUI.moveCursor(5); ConsoleInput.printCentered(header, Settings.CONSOLE_WIDTH - 10);
-        ConsoleUI.moveCursor(5); ConsoleInput.printCentered(separator, Settings.CONSOLE_WIDTH - 10);
-
-        // Table rows
-        for (int i = 0; i < availableOfferings.size(); i++) {
-            CourseOffering offering = availableOfferings.get(i);
-            String instructorName = (offering.getInstructor() != null)
-                    ? offering.getInstructor().getFullName()
-                    : "TBD";
-
-            String courseTitle = offering.getCourse().getTitle();
-            if (courseTitle.length() > 12) courseTitle = courseTitle.substring(0, 12);
-            if (instructorName.length() > 25) instructorName = instructorName.substring(0, 25);
-
-            String body = String.format("| %-3d | %-12s | %-12s | %-4s | %-25s | %3d/%-5d |\n",
-                    i + 1,
-                    courseTitle,
-                    offering.getSemester(),
-                    offering.getYear(),
-                    instructorName,
-                    offering.getEnrolledCount(),
-                    offering.getCapacity());
-
-            ConsoleUI.moveCursor(5); ConsoleInput.printCentered(body, Settings.CONSOLE_WIDTH - 10, false);
-        }
-
-        ConsoleUI.moveCursor(5); ConsoleInput.printCentered(border, Settings.CONSOLE_WIDTH - 10);
-
-        ConsoleUI.drawInputBoxes(40, "Course Offering No. to Enroll");
-
-        ConsoleUI.goTo(Settings.CONSOLE_HEIGHT - 4, 0);
-        ConsoleInput.pressESCToReturn();
-
-        int[] yPositions = { 17 }; // y coordinates of each input line
-        int[] xPositions = { 42 }; // cursor start position
-        int maxLength = 32;
-
-        String[] inputArray;
-
-        // This loop runs indefinitely until user enters valid credentials
-        while (true) {
-            inputArray = ConsoleInput.navigateInputs(yPositions, xPositions, maxLength);
-
-            if (inputArray == null) {
-                displayStudentMenu(student);
-                return;
-            }
-
-            String inputStr = inputArray[0].trim();
-            int choice;
-            try {
-                choice = Integer.parseInt(inputStr);
-            } catch (NumberFormatException e) {
-                ConsoleDisplay.dialogBox("error", "Invalid input. Please enter a number.");
-                continue;
-            }
-
-            if (choice == 0) return; // go back
-            if (choice < 1 || choice > availableOfferings.size()) {
-                ConsoleDisplay.dialogBox("error", "Invalid choice. Please try again.");
-                continue;
-            }
-
-            // Enroll student
-            CourseOffering selected = availableOfferings.get(choice - 1);
-            student.enrollInOffering(selected);
-            CSV.updateCourseOffering(selected);
-            CSV.appendRow(Settings.STUDENTS_FILE, student.toCSVRow());
-            ConsoleDisplay.dialogBox("success", "Successfully enrolled in " + selected.getCourse().getTitle() + "!");
-            ConsoleInput.pressEnterToContinue();
+    public static void displayStudentEnrollInCourseOfferingMenu(Student student) throws IOException {
+        if (student == null) {
+            ConsoleDisplay.dialogBox("error", "Student record is null!");
             return;
         }
-    }
-}
 
+        ConsoleDisplay.setupScreen();
+        ConsoleUI.goTo(15, 0);
+        ConsoleDisplay.displayHeaderSubtitle("Student: Enroll in Course Offering");
+        System.out.println();
+
+        List<CourseOffering> availableOfferings = CSV.readCourseOfferings();
+        if (availableOfferings.isEmpty()) {
+            ConsoleDisplay.dialogBox("info", "No course offerings available at this time.");
+            ConsoleInput.pressEnterToContinue();
+            displayStudentMenu(student);
+            return;
+        }
+
+        int tableWidth = 90; // total width of table
+        String border = "=".repeat(tableWidth);
+        String separator = "-".repeat(tableWidth);
+
+        while (true) {
+            // Table Header
+            ConsoleUI.moveCursor(5); ConsoleInput.printCentered(border, Settings.CONSOLE_WIDTH - 10);
+            ConsoleUI.moveCursor(5); ConsoleInput.printCentered("Available Course Offerings", Settings.CONSOLE_WIDTH - 10);
+            ConsoleUI.moveCursor(5); ConsoleInput.printCentered(separator, Settings.CONSOLE_WIDTH - 10);
+
+            // Column headers
+            String header = String.format("| %-3s | %-12s | %-12s | %-4s | %-25s | %-9s |",
+                    "No", "Course", "Semester", "Year", "Instructor", "Seats");
+            ConsoleUI.moveCursor(5); ConsoleInput.printCentered(header, Settings.CONSOLE_WIDTH - 10);
+            ConsoleUI.moveCursor(5); ConsoleInput.printCentered(separator, Settings.CONSOLE_WIDTH - 10);
+
+            // Table rows
+            for (int i = 0; i < availableOfferings.size(); i++) {
+                CourseOffering offering = availableOfferings.get(i);
+                String instructorName = (offering.getInstructor() != null)
+                        ? offering.getInstructor().getFullName()
+                        : "TBD";
+
+                String courseTitle = offering.getCourse().getTitle();
+                if (courseTitle.length() > 12) courseTitle = courseTitle.substring(0, 12);
+                if (instructorName.length() > 25) instructorName = instructorName.substring(0, 25);
+
+                String body = String.format("| %-3d | %-12s | %-12s | %-4s | %-25s | %3d/%-5d |",
+                        i + 1,
+                        courseTitle,
+                        offering.getSemester(),
+                        offering.getYear(),
+                        instructorName,
+                        offering.getEnrolledCount(),
+                        offering.getCapacity());
+
+                ConsoleUI.moveCursor(5); ConsoleInput.printCentered(body, Settings.CONSOLE_WIDTH - 10, false);
+            }
+
+            ConsoleUI.moveCursor(5); ConsoleInput.printCentered(border, Settings.CONSOLE_WIDTH - 10, true);
+
+            ConsoleUI.drawInputBoxes(40, "Course Offering No. to Enroll");
+
+            int[] yPositions = { 27 }; // y coordinates of each input line
+            int[] xPositions = { 63 }; // cursor start position
+            int maxLength = 32;
+
+            String[] inputArray;
+
+            // This loop runs indefinitely until user enters valid credentials
+            while (true) {
+                inputArray = ConsoleInput.navigateInputs(yPositions, xPositions, maxLength);
+
+                if (inputArray == null) {
+                    displayStudentMenu(student);
+                    return;
+                }
+
+                String inputStr = inputArray[0].trim();
+                int choice;
+                try {
+                    choice = Integer.parseInt(inputStr);
+                } catch (NumberFormatException e) {
+                    ConsoleDisplay.dialogBox("error", "Invalid input. Please enter a number.");
+                    continue;
+                }
+
+                if (choice == 0) return; // go back
+                if (choice < 1 || choice > availableOfferings.size()) {
+                    ConsoleDisplay.dialogBox("error", "Invalid choice. Please try again.");
+                    continue;
+                }
+
+                // Enroll student
+                CourseOffering selected = availableOfferings.get(choice - 1);
+
+                // Update in-memory student object
+                student.enrollInOffering(selected);
+
+                // Update offering seats
+                CSV.updateCourseOffering(selected);
+
+                // Save enrollment record
+                String[] enrollmentRow = new String[] {
+                    student.getStudentId(),
+                    selected.getOfferingId(),
+                    LocalDate.now().toString()
+                };
+                CSV.appendRow(Settings.ENROLLMENTS_FILE, enrollmentRow);
+                break;
+            }
+            ConsoleInput.pressEnterToContinue();
+            displayStudentMenu(student);
+        }
+    }
 
     // [METHOD] Display student "Drop Course Offering" menu
     public static void displayStudentDropCourseOfferingMenu(Student student) throws IOException {
@@ -634,19 +642,7 @@ public static void displayStudentEnrollInCourseOfferingMenu(Student student) thr
     // * UI: Faculty Menu
     // [METHOD] Display "Faculty" menu
     public static void displayFacultyMenu() {
-        // Display UI
-        ConsoleDisplay.setupScreen();
-        ConsoleUI.goTo(15, 0);
-        ConsoleDisplay.displayHeaderSubtitle("Faculty Menu");
 
-        // This loop runs indefinitely until the user enters a valid choice
-        while (true) {
-            // Display operations
-            ConsoleFormatting.displayFormat(Settings.CONSOLE_WIDTH, '=', true);
-            ConsoleFormatting.displayFormat(Settings.CONSOLE_WIDTH, '=', true);
-
-            int input = ConsoleInput.getInt(">> ");
-        }
     }
 
     // * UI: User Authentication

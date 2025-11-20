@@ -87,9 +87,9 @@ public class ConsoleUI {
             String labelLine = String.format("%s %-" + (innerWidth - 1) + "s%s", vertical, labels[0] + ":", vertical);
             String bottom = bottomLeft + horizontal.repeat(innerWidth) + bottomRight;
 
-            ConsoleInput.printCentered(top, Settings.CONSOLE_WIDTH);
-            ConsoleInput.printCentered(labelLine, Settings.CONSOLE_WIDTH);
-            ConsoleInput.printCentered(bottom, Settings.CONSOLE_WIDTH);
+            ConsoleUI.moveCursor(5); ConsoleInput.printCentered(top, Settings.CONSOLE_WIDTH - 9);
+            ConsoleUI.moveCursor(5); ConsoleInput.printCentered(labelLine, Settings.CONSOLE_WIDTH - 9);
+            ConsoleUI.moveCursor(5); ConsoleInput.printCentered(bottom, Settings.CONSOLE_WIDTH - 9);
             return;
         }
 
