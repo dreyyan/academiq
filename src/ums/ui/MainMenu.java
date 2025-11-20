@@ -7,9 +7,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
-import ums.model.CourseCatalog;
+// [IMPORT] Models
 import ums.model.GraduateStudent;
 import ums.model.Student;
 import ums.model.enums.Department;
@@ -21,11 +20,10 @@ import ums.model.enums.Courses;
 import ums.model.enums.Gender;
 import ums.model.enums.GraduateProgram;
 import ums.model.enums.YearLevel;
+
 // [IMPORT] Utilities
-import ums.ui.MenuOperation;
 import ums.util.CSV;
 import ums.util.Auth;
-import ums.util.Logger;
 import ums.util.Settings;
 import ums.util.console.ConsoleAnimation;
 import ums.util.console.ConsoleDisplay;
@@ -34,10 +32,10 @@ import ums.util.console.ConsoleUI;
 import ums.util.console.ConsoleFormatting;
 
 public class MainMenu {
-    static Scanner scanner = new Scanner(System.in);
-    private static Student currentStudent;
+    private static Student currentStudent; // To keep track of current student logged in the system
 
     // * Menu operations
+    // [OPERATION] Student Menu
     static MenuOperation[] studentMenuOperations = {
         new MenuOperation(new String[]{"1"}, "Profile", () -> {
             try {
@@ -62,6 +60,7 @@ public class MainMenu {
         })
     };
 
+    // [OPERATION] Student: Courses Menu
     static MenuOperation[] studentCoursesMenuOperations = {
         new MenuOperation(new String[]{"1"}, "Enroll in Course Offering", () -> {
             try {
@@ -82,6 +81,7 @@ public class MainMenu {
     // * UI: Student Sub-menu
     // [METHOD] Display student "Edit Profile" menu
     public static void displayEditStudentProfileMenu(Student student) throws IOException {
+        // ! [ERROR] Null student record
         if (student == null) {
             ConsoleDisplay.dialogBox("error", "Student record is null!");
             return;
@@ -93,16 +93,16 @@ public class MainMenu {
         ConsoleDisplay.displayHeaderSubtitle("Student: Edit Profile");
         System.out.println();
 
+        // Setup input fields
         String[] profileFields = {
             "First Name", "Middle Name", "Last Name", "Date of Birth",
             "Gender", "Address", "Contact Number", "Email"
         };
-
         int[] yPositions = { 18, 20, 22, 24, 26, 28, 30, 32 };
         int[] xPositions = { 34, 35, 33, 37, 30, 31, 38, 29 };
         int maxLength = 32;
 
-        // Pre-fill student info
+        // Pre-fill student info's current values
         String[] currentValues = {
             student.getFirstName(),
             student.getMiddleName(),
@@ -114,8 +114,8 @@ public class MainMenu {
             student.getEmail()
         };
 
-        // Display input boxes
-        ConsoleUI.drawInputBoxes(60, profileFields);
+        // Display input fields
+        ConsoleUI.drawInputFields(60, profileFields);
 
         // Fill initial values
         for (int i = 0; i < profileFields.length; i++) {
@@ -123,45 +123,27 @@ public class MainMenu {
             System.out.print(currentValues[i]);
         }
 
+        // This loop runs until user performs a successful operation
         while (true) {
-            String[] inputs = ConsoleInput.navigateInputs(yPositions, xPositions, maxLength);
+            // Prompt user to fill out input fields
+            String[] inputs = ConsoleInput.captureFormInputs(yPositions, xPositions, maxLength);
 
+            // Validate input fields
+            // ? [INFO] Cancel form editing
             if (inputs == null) {
                 ConsoleDisplay.dialogBox("info", "Edit canceled. No changes were made.");
                 return;
             }
 
-            // Only validate non-empty fields
+            // ! [ERROR] Invalid email address
             if (!inputs[7].isEmpty() && !Auth.isValidEmail(inputs[7])) {
                 ConsoleDisplay.dialogBox("error", "Please enter a valid email address (e.g. example@domain.com).");
+
                 ConsoleUI.clearInputFields(yPositions, xPositions, maxLength);
                 continue;
             }
 
-            if (!inputs[4].isEmpty() &&
-                !inputs[4].equalsIgnoreCase("male") &&
-                !inputs[4].equalsIgnoreCase("female")) {
-                ConsoleDisplay.dialogBox("error", "Gender must be 'Male' or 'Female'.");
-                ConsoleUI.clearInputFields(yPositions, xPositions, maxLength);
-                continue;
-            }
-
-            // Update fields only if input is not empty
-            if (!inputs[0].isEmpty()) student.setFirstName(inputs[0]);
-            if (!inputs[1].isEmpty()) student.setMiddleName(inputs[1]);
-            if (!inputs[2].isEmpty()) student.setLastName(inputs[2]);
-
-            if (!inputs[3].isEmpty()) {
-                try {
-                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-                    student.setDateOfBirth(LocalDate.parse(inputs[3], formatter));
-                } catch (DateTimeParseException e) {
-                    ConsoleDisplay.dialogBox("error", "Invalid date format! Use yyyy-MM-dd.");
-                    ConsoleUI.clearInputFields(yPositions, xPositions, maxLength);
-                    continue;
-                }
-            }
-
+            // ! [ERROR] Invalid gender
             if (!inputs[4].isEmpty()) {
                 try {
                     student.setGender(Gender.valueOf(inputs[4].toUpperCase()));
@@ -172,21 +154,42 @@ public class MainMenu {
                 }
             }
 
+            // Update fields only if input is not empty
+            if (!inputs[0].isEmpty()) student.setFirstName(inputs[0]);
+            if (!inputs[1].isEmpty()) student.setMiddleName(inputs[1]);
+            if (!inputs[2].isEmpty()) student.setLastName(inputs[2]);
+            if (!inputs[3].isEmpty()) {
+                try {
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                    student.setDateOfBirth(LocalDate.parse(inputs[3], formatter));
+                } catch (DateTimeParseException e) {
+                    // ! [ERROR] Invalid date format
+                    ConsoleDisplay.dialogBox("error", "Invalid date format! Use yyyy-MM-dd.");
+
+                    ConsoleUI.clearInputFields(yPositions, xPositions, maxLength);
+                    continue;
+                }
+            }
             if (!inputs[5].isEmpty()) student.setAddress(inputs[5]);
             if (!inputs[6].isEmpty()) student.setContactNumber(inputs[6]);
             if (!inputs[7].isEmpty()) student.setEmail(inputs[7]);
 
+            // Save changes made to the student's profile into the CSV file
             CSV.updateStudentRecord(student);
+
+            // ? [SUCCESS] Profile updated
             ConsoleDisplay.dialogBox("success", "Profile updated successfully!");
             break;
         }
 
+        // Prompt user to press [ENTER] before navigating back to 'Student Menu'
         ConsoleInput.pressEnterToContinue();
         displayStudentMenu(currentStudent);
     }
 
     // [METHOD] Display student "Edit Academics" menu
     public static void displayEditStudentAcademicsMenu(Student student) throws IOException {
+        // ! [ERROR] Null student record
         if (student == null) {
             ConsoleDisplay.dialogBox("error", "Student record is null!");
             return;
@@ -198,19 +201,20 @@ public class MainMenu {
         ConsoleDisplay.displayHeaderSubtitle("Student: Edit Academics");
         System.out.println();
 
+        // Setup input fields
         String[] academicFields = { "Department", "Course" };
         int[] yPositions = { 18, 20 };
         int[] xPositions = { 34, 31 };
         int maxLength = 82;
 
-        // Pre-fill current values
+        // Pre-fill student info's current values
         String[] currentValues = {
             student.getDepartment() != null ? student.getDepartment().toString() : "",
             student.getCourse() != null ? student.getCourse().getTitle() : ""
         };
 
-        // Display input boxes
-        ConsoleUI.drawInputBoxes(60, academicFields);
+        // Display input fields
+        ConsoleUI.drawInputFields(60, academicFields);
 
         // Fill initial values
         for (int i = 0; i < academicFields.length; i++) {
@@ -218,19 +222,22 @@ public class MainMenu {
             System.out.print(currentValues[i]);
         }
 
+        // This loop runs until user performs a successful operation
         while (true) {
-            String[] inputs = ConsoleInput.navigateInputs(yPositions, xPositions, maxLength);
+            // Prompt user to fill out input fields
+            String[] inputs = ConsoleInput.captureFormInputs(yPositions, xPositions, maxLength);
 
-            // Cancel edit
+            // ? [INFO] Cancel form editing
             if (inputs == null) {
                 ConsoleDisplay.dialogBox("info", "Edit canceled. No changes were made.");
                 return;
             }
 
-            // --- DEPARTMENT ---
+            // Validate input fields (department & course)
             Department newDept = null;
             if (!inputs[0].isEmpty()) {
                 newDept = Department.fromCodeOrFullName(inputs[0]);
+                // ! [ERRROR] Invalid department
                 if (newDept == Department.UNASSIGNED) {
                     ConsoleDisplay.dialogBox("error", "Invalid department. Please try again.");
                     ConsoleUI.clearInputFields(yPositions, xPositions, maxLength);
@@ -238,12 +245,11 @@ public class MainMenu {
                 }
             }
 
-            // --- COURSE ---
             Course newCourse = null;
             if (!inputs[1].isEmpty()) {
                 String courseInput = inputs[1].trim();
 
-                // Map course input to Course object using department
+                // Map course input to 'Course' object using department
                 Department deptToUse = newDept != null ? newDept : student.getDepartment();
                 switch (deptToUse) {
                     case CAS -> newCourse = Course.mapCourseInput(courseInput, Courses.CASCourse.values(), Department.CAS);
@@ -257,8 +263,10 @@ public class MainMenu {
                     case COL -> newCourse = Course.mapCourseInput(courseInput, Courses.COLCourse.values(), Department.COL);
                     case COD -> newCourse = Course.mapCourseInput(courseInput, Courses.CODCourse.values(), Department.COD);
                     case ILS -> newCourse = Course.mapCourseInput(courseInput, Courses.ILSCourse.values(), Department.ILS);
+                    default -> throw new IllegalArgumentException("Unexpected value: " + deptToUse);
                 }
 
+                // ! [ERROR] Invalid course
                 if (newCourse == null) {
                     ConsoleDisplay.dialogBox("error", "Invalid course for the selected department.");
                     ConsoleUI.clearInputFields(yPositions, xPositions, maxLength);
@@ -266,56 +274,67 @@ public class MainMenu {
                 }
             }
 
-            // --- UPDATE STUDENT ---
+            // Update fields
             if (newDept != null) student.setDepartment(newDept);
             if (newCourse != null) student.setCourse(newCourse);
 
+            // Save changes made to the student's profile into the CSV file
             CSV.updateStudentRecord(student);
+
+            // ? [SUCCESS] Academics information updated
             ConsoleDisplay.dialogBox("success", "Academics updated successfully!");
             break;
         }
 
+        // Prompt user to press [ENTER] before navigating back to 'Student Menu'
         ConsoleInput.pressEnterToContinue();
         displayStudentMenu(student);
     }
 
     // [METHOD] Display student "Enroll in Course Offering" menu
     public static void displayStudentEnrollInCourseOfferingMenu(Student student) throws IOException {
+        // ! [ERROR] Null student record
         if (student == null) {
             ConsoleDisplay.dialogBox("error", "Student record is null!");
             return;
         }
 
+        // Display UI
         ConsoleDisplay.setupScreen();
         ConsoleUI.goTo(15, 0);
         ConsoleDisplay.displayHeaderSubtitle("Student: Enroll in Course Offering");
         System.out.println();
 
+        // Get available course offerings from CSV file
         List<CourseOffering> availableOfferings = CSV.readCourseOfferings();
+
+        // ? [INFO] No course offerings
         if (availableOfferings.isEmpty()) {
             ConsoleDisplay.dialogBox("info", "No course offerings available at this time.");
+
+            // Prompt user to press [ENTER] before navigating back to 'Student Menu'
             ConsoleInput.pressEnterToContinue();
             displayStudentMenu(student);
             return;
         }
 
-        int tableWidth = 90; // total width of table
+        // Course offerings table setup
+        int tableWidth = 90;
         String border = "=".repeat(tableWidth);
         String separator = "-".repeat(tableWidth);
 
-        while (true) {
-            // Table Header
+            // Display table for course offerings
             ConsoleUI.moveCursor(5); ConsoleInput.printCentered(border, Settings.CONSOLE_WIDTH - 10);
             ConsoleUI.moveCursor(5); ConsoleInput.printCentered("Available Course Offerings", Settings.CONSOLE_WIDTH - 10);
             ConsoleUI.moveCursor(5); ConsoleInput.printCentered(separator, Settings.CONSOLE_WIDTH - 10);
 
-            // Column headers
+            // Display table column headers
             String header = String.format("| %-3s | %-12s | %-12s | %-4s | %-25s | %-9s |",
                     "No", "Course", "Semester", "Year", "Instructor", "Seats");
             ConsoleUI.moveCursor(5); ConsoleInput.printCentered(header, Settings.CONSOLE_WIDTH - 10);
             ConsoleUI.moveCursor(5); ConsoleInput.printCentered(separator, Settings.CONSOLE_WIDTH - 10);
 
-            // Table rows
+            // Display table rows
             for (int i = 0; i < availableOfferings.size(); i++) {
                 CourseOffering offering = availableOfferings.get(i);
                 String instructorName = (offering.getInstructor() != null)
@@ -340,33 +359,37 @@ public class MainMenu {
 
             ConsoleUI.moveCursor(5); ConsoleInput.printCentered(border, Settings.CONSOLE_WIDTH - 10, true);
 
-            ConsoleUI.drawInputBoxes(40, "Course Offering No. to Enroll");
+            // Display input fields
+            ConsoleUI.drawInputFields(40, "Course Offering No. to Enroll");
 
-            int[] yPositions = { 27 }; // y coordinates of each input line
-            int[] xPositions = { 63 }; // cursor start position
+            // Setup input fields
+            int[] yPositions = { 27 };
+            int[] xPositions = { 63 };
             int maxLength = 32;
-
-            String[] inputArray;
 
             // This loop runs indefinitely until user enters valid credentials
             while (true) {
-                inputArray = ConsoleInput.navigateInputs(yPositions, xPositions, maxLength);
+                // Prompt user to fill out input fields
+                String[] input = ConsoleInput.captureFormInputs(yPositions, xPositions, maxLength);
 
-                if (inputArray == null) {
-                    displayStudentMenu(student);
+                // ? [INFO] Cancel form editing
+                if (input == null) {
+                    ConsoleDisplay.dialogBox("info", "Edit canceled. No changes were made.");
                     return;
                 }
 
-                String inputStr = inputArray[0].trim();
+                // Validate input field
+                String inputStr = input[0].trim();
                 int choice;
                 try {
                     choice = Integer.parseInt(inputStr);
                 } catch (NumberFormatException e) {
+                    // ! [ERROR] Invalid input
                     ConsoleDisplay.dialogBox("error", "Invalid input. Please enter a number.");
                     continue;
                 }
 
-                if (choice == 0) return; // go back
+                // ! [ERROR] Out-of-range choice
                 if (choice < 1 || choice > availableOfferings.size()) {
                     ConsoleDisplay.dialogBox("error", "Invalid choice. Please try again.");
                     continue;
@@ -375,7 +398,7 @@ public class MainMenu {
                 // Enroll student
                 CourseOffering selected = availableOfferings.get(choice - 1);
 
-                // Update in-memory student object
+                // Update in-memory 'Student' object
                 student.enrollInOffering(selected);
 
                 // Update offering seats
@@ -387,16 +410,20 @@ public class MainMenu {
                     selected.getOfferingId(),
                     LocalDate.now().toString()
                 };
+
+                // Append the student's enrollment record to the enrollments CSV
                 CSV.appendRow(Settings.ENROLLMENTS_FILE, enrollmentRow);
                 break;
             }
-            ConsoleInput.pressEnterToContinue();
-            displayStudentMenu(student);
-        }
+
+        // Prompt user to press [ENTER] before navigating back to 'Student Menu'
+        ConsoleInput.pressEnterToContinue();
+        displayStudentMenu(student);
     }
 
     // [METHOD] Display student "Drop Course Offering" menu
     public static void displayStudentDropCourseOfferingMenu(Student student) throws IOException {
+        // ! [ERROR] Null student record
         if (student == null) {
             ConsoleDisplay.dialogBox("error", "Student record is null!");
             return;
@@ -408,51 +435,91 @@ public class MainMenu {
         ConsoleDisplay.displayHeaderSubtitle("Student: Drop Course Offering");
         System.out.println();
 
+        // Get available course offerings from CSV file
         List<CourseOffering> enrolledCourses = student.getEnrolledCourses();
+
+        // ? [INFO] No course offerings
         if (enrolledCourses.isEmpty()) {
             ConsoleDisplay.dialogBox("info", "You are not enrolled in any course offerings.");
+
+            // Prompt user to press [ENTER] before navigating back to 'Student Menu'
             ConsoleInput.pressEnterToContinue();
             displayStudentMenu(student);
             return;
         }
 
-        while (true) {
-            ConsoleFormatting.displayFormat(Settings.CONSOLE_WIDTH, '=', true);
-            System.out.println("Enrolled Course Offerings:");
-            ConsoleFormatting.displayFormat(Settings.CONSOLE_WIDTH, '-', false);
+        // Display table for course offerings
+        ConsoleFormatting.displayFormat(Settings.CONSOLE_WIDTH, '=', true);
+        System.out.println("Enrolled Course Offerings:");
+        ConsoleFormatting.displayFormat(Settings.CONSOLE_WIDTH, '-', false);
 
-            // Display enrolled offerings
-            for (int i = 0; i < enrolledCourses.size(); i++) {
-                CourseOffering offering = enrolledCourses.get(i);
-                System.out.printf("[%d] %s | %s | %s | Instructor: %s\n",
-                        i + 1,
-                        offering.getCourse().getTitle(),
-                        offering.getSemester(),
-                        offering.getYear(),
-                        offering.getInstructor().getFullName()
-                );
+        // Display enrolled offerings
+        for (int i = 0; i < enrolledCourses.size(); i++) {
+            CourseOffering offering = enrolledCourses.get(i);
+            System.out.printf("[%d] %s | %s | %s | Instructor: %s\n",
+                    i + 1,
+                    offering.getCourse().getTitle(),
+                    offering.getSemester(),
+                    offering.getYear(),
+                    offering.getInstructor().getFullName()
+            );
+        }
+
+        ConsoleFormatting.displayFormat(Settings.CONSOLE_WIDTH, '=', true);
+
+        // Display input fields
+        ConsoleUI.drawInputFields(40, "Course Offering No. to drop");
+
+        // Setup input fields
+        int[] yPositions = { 27 };
+        int[] xPositions = { 63 };
+        int maxLength = 32;
+
+        // This loop runs indefinitely until user enters valid credentials
+        while (true) {
+            // Prompt user to fill out input field
+            String[] inputArray = ConsoleInput.captureFormInputs(yPositions, xPositions, maxLength);
+
+            // ? [INFO] Cancel form editing
+            if (inputArray == null) {
+                ConsoleDisplay.dialogBox("info", "Drop canceled. No changes were made.");
+                return;
             }
 
-            ConsoleFormatting.displayFormat(Settings.CONSOLE_WIDTH, '=', true);
-            System.out.println("[0] Go Back");
+            // Validate input field
+            String inputStr = inputArray[0].trim();
+            int choice;
+            try {
+                choice = Integer.parseInt(inputStr);
+            } catch (NumberFormatException e) {
+                // ! [ERROR] Invalid input
+                ConsoleDisplay.dialogBox("error", "Invalid input. Please enter a number.");
+                continue;
+            }
 
-            int choice = ConsoleInput.getInt("Enter the number of the course offering to drop: ");
-            if (choice == 0) return; // go back
+            // ! [ERROR] Out-of-range choice
             if (choice < 1 || choice > enrolledCourses.size()) {
                 ConsoleDisplay.dialogBox("error", "Invalid choice. Please try again.");
                 continue;
             }
 
             CourseOffering selected = enrolledCourses.get(choice - 1);
-
-            // Drop course
+            
+            // Drop course offering
             student.dropOffering(selected);
-            CSV.updateCourseOffering(selected); // update enrolled count in CSV
+
+            // Update course offering from course offering's CSV
+            CSV.updateCourseOffering(selected);
             CSV.appendRow(Settings.STUDENTS_FILE, student.toCSVRow());
+
+            // ? [SUCCESS] Course offering dropped
             ConsoleDisplay.dialogBox("success", "Successfully dropped " + selected.getCourse().getTitle() + "!");
-            ConsoleInput.pressEnterToContinue();
-            return;
+            break;
         }
+
+        // Prompt user to press [ENTER] before navigating back to 'Student Menu'
+        ConsoleInput.pressEnterToContinue();
+        displayStudentMenu(student);
     }
 
     // * UI: Student Menu
@@ -500,11 +567,9 @@ public class MainMenu {
         }
     }
 
-
-
     // [METHOD] Display student "Profile" menu
     public static void displayStudentProfileMenu(Student student) throws IOException {
-        // ! [ERROR] No student record
+        // ! [ERROR] Null student record
         if (student == null) {
             ConsoleDisplay.dialogBox("error", "Student record is null!");
             return;
@@ -516,17 +581,17 @@ public class MainMenu {
         ConsoleDisplay.displayHeaderSubtitle("Student: Profile");
         System.out.println();
 
+        // Setup input fields
         String[] profileFields = {
             "First Name", "Middle Name", "Last Name", "Date of Birth",
             "Gender", "Address", "Contact Number", "Email"
         };
-
         int[] yPositions = { 18, 20, 22, 24, 26, 28, 30, 32 }; // y coordinates of each input line
         int[] xPositions = { 34, 35, 33, 37, 30, 31, 38, 29 }; // cursor start position
         int maxLength = 32;
 
         // Display profile information
-        ConsoleUI.drawInputBoxes(60, profileFields);
+        ConsoleUI.drawInputFields(60, profileFields);
         ConsoleUI.displayInputFields(student.getProfileInformation(), yPositions, xPositions, maxLength);
 
         // Prompt user to press [ENTER] to continue
@@ -534,7 +599,7 @@ public class MainMenu {
         ConsoleUI.moveCursor(3);
         ConsoleInput.printCentered("[ESC] Back  |  [E] Edit", Settings.CONSOLE_WIDTH - 3);
 
-        // This loop runs indefinitely until the user enters a valid choice
+        // This loop runs indefinitely until the user presses a valid key
         while (true) {
             int key = ConsoleInput.readKey();
 
@@ -547,13 +612,14 @@ public class MainMenu {
             } else { continue; }
         }
 
-        // Return to student menu
-        displayStudentMenu(currentStudent);
+        // Navigate back to 'Student Menu'
+        ConsoleInput.pressEnterToContinue();
+        displayStudentMenu(student);
     }
 
     // [METHOD] Display student "Academics" menu
     public static void displayStudentAcademicsMenu(Student student) throws IOException {
-        // ! [ERROR] No student record
+        // ! [ERROR] Null student record
         if (student == null) {
             ConsoleDisplay.dialogBox("error", "Student record is null!");
             return;
@@ -565,16 +631,14 @@ public class MainMenu {
         ConsoleDisplay.displayHeaderSubtitle("Student: Academics");
         System.out.println();
 
-        String[] academicsFields = {
-            "Department", "Course"
-        };
-
+        // Setup input fields
+        String[] academicsFields = { "Department", "Course" };
         int[] yPositions = { 18, 20 }; // y coordinates of each input line
         int[] xPositions = { 34, 31 }; // cursor start position
         int maxLength = 62;
 
         // Display profile information
-        ConsoleUI.drawInputBoxes(60, academicsFields);
+        ConsoleUI.drawInputFields(60, academicsFields);
         ConsoleUI.displayInputFields(student.getStudentCoursesInformation(), yPositions, xPositions, maxLength);
 
         // Prompt user to press [ESC] to return or [E] to edit
@@ -594,8 +658,9 @@ public class MainMenu {
             } else { continue; }
         }
 
-        // Return to student menu
-        displayStudentMenu(currentStudent);
+        // Navigate back to 'Student Menu'
+        ConsoleInput.pressEnterToContinue();
+        displayStudentMenu(student);
     }
 
     // [METHOD] Display student "Courses" menu
@@ -637,6 +702,9 @@ public class MainMenu {
                 displayStudentDropCourseOfferingMenu(student);
             } else { continue; }
         }
+
+        // Navigate back to 'Student Menu'
+        displayStudentMenu(student);
     }
 
     // * UI: Faculty Menu
@@ -646,6 +714,7 @@ public class MainMenu {
     }
 
     // * UI: User Authentication
+    // [METHOD] Display "Setup Information" screen
     public static void displaySetupInformationScreen(String email, String userType) throws IOException {
         // Display UI
         ConsoleUI.clearScreen();
@@ -653,10 +722,11 @@ public class MainMenu {
         ConsoleUI.goTo(4, 0);
         ConsoleDisplay.displayHeaderSubtitle("Setup Information");
 
+        // Prompt user to fill out personal information before proceeding to 'Student Menu'
         ConsoleUI.goTo(6, 0);
         ConsoleUI.moveCursor(3); ConsoleInput.printCentered("Please fill out all personal information fields to proceed.", Settings.CONSOLE_WIDTH - 3, true);
 
-        // Fields for all students
+        // Setup input fields
         String[] fields = {
             "First Name",
             "Middle Name",
@@ -670,20 +740,19 @@ public class MainMenu {
             "Department",
             "Course"
         };
-        
-        ConsoleUI.drawInputBoxes(40, fields);
-
         int[] yPositions = {9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29};
         int[] xPositions = {44, 45, 43, 60, 60, 41, 48, 44, 62, 44, 40};
         int maxLength = 60;
 
-        String[] inputs;
+        // Display input fields
+        ConsoleUI.drawInputFields(40, fields);
 
         while (true) {
-            inputs = ConsoleInput.navigateInputs(yPositions, xPositions, maxLength);
+            String[] inputs = ConsoleInput.captureFormInputs(yPositions, xPositions, maxLength);
 
+            // IF [ESC] pressed, go to 'Login Screen'
             if (inputs == null) {
-                displayLoginScreen(); // go back if ESC pressed
+                displayLoginScreen();
                 return;
             }
 
@@ -701,6 +770,7 @@ public class MainMenu {
             String courseName = inputs[10];
 
             // Validate required fields
+            // ! [ERROR] Blank input
             if (firstName.isBlank() || lastName.isBlank() || dobStr.isBlank() || genderStr.isBlank() || studentId.isBlank() || enrollStr.isBlank()) {
                 ConsoleDisplay.dialogBox("error", "Please fill in all required fields!");
                 ConsoleUI.clearInputFields(yPositions, xPositions, maxLength);
@@ -711,19 +781,16 @@ public class MainMenu {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy"); // Date formatter
                 LocalDate dob = LocalDate.parse(dobStr, formatter);
                 LocalDate enrollmentDate = LocalDate.parse(enrollStr, formatter);
-
                 Gender gender = Gender.valueOf(genderStr.toUpperCase());
-
                 Department dept = Department.fromCodeOrFullName(deptName);
                 Course course = Course.fromCodeOrFullName(courseName);
-
                 Student student;
 
                 if (userType.equalsIgnoreCase("freshman") ||
                     userType.equalsIgnoreCase("sophomore") ||
                     userType.equalsIgnoreCase("junior") ||
                     userType.equalsIgnoreCase("senior")) {
-
+                    // Create new 'UndergraduateStudent' user
                     YearLevel yl = YearLevel.valueOf(userType.toUpperCase());
                     student = new UndergraduateStudent(
                         firstName, middleName, lastName, dob, gender,
@@ -731,8 +798,7 @@ public class MainMenu {
                         studentId, enrollmentDate, dept, course,
                         AcademicStanding.GOOD, 0.0, 0, new ArrayList<>(), yl
                     );
-
-                } else { // Graduate
+                } else { // Create new 'GraduateStudent' user
                     GraduateProgram program = GraduateProgram.valueOf(userType.toUpperCase());
                     student = new GraduateStudent(
                         firstName, middleName, lastName, dob, gender,
@@ -743,46 +809,48 @@ public class MainMenu {
                     );
                 }
 
-                // Save to CSV
+                // Append the student's personal information to student's CSV
                 CSV.appendRow(Settings.STUDENTS_FILE, student.toCSVRow());
 
                 // Set current student
                 currentStudent = student;
 
-                // Display success message
+                // ? [SUCCESS] Saved student personal info
                 ConsoleDisplay.dialogBox("success", "Student information saved successfully!");
 
                 // Prompt user to press [ENTER] before navigating to next screen
                 ConsoleInput.pressEnterToContinue();
                 displayStudentMenu(student);
                 return;
-
             } catch (Exception e) {
+                // ! [ERROR] Invalid input
                 ConsoleDisplay.dialogBox("error", "Invalid input: " + e.getMessage());
                 ConsoleUI.clearInputFields(yPositions, xPositions, maxLength);
             }
+            break;
         }
     }
 
+    // [METHOD] Display "Login" screen
     public static void displayLoginScreen() throws IOException {
         // Display UI
         ConsoleDisplay.setupScreen();
         ConsoleUI.goTo(15, 0);
         ConsoleDisplay.displayHeaderSubtitle("LOGIN");
 
-        ConsoleUI.drawInputBoxes(40, "Email", "Password");
-
-        int[] yPositions = { 17, 19 }; // y coordinates of each input line
-        int[] xPositions = { 39, 42 }; // cursor start position
+        // Setup input fields
+        int[] yPositions = { 17, 19 };
+        int[] xPositions = { 39, 42 };
         int maxLength = 32;
 
-        String[] inputs; // To store user input
-        String email;
-        String password;
+        String email, password;
+
+        // Display input fields
+        ConsoleUI.drawInputFields(40, "Email", "Password");
 
         // This loop runs indefinitely until user enters valid credentials
         while (true) {
-            inputs = ConsoleInput.navigateInputs(yPositions, xPositions, maxLength);
+            String[] inputs = ConsoleInput.captureFormInputs(yPositions, xPositions, maxLength);
 
             // If user pressed ESC, navigate to 'Register' screen
             if (inputs == null) {
@@ -813,18 +881,25 @@ public class MainMenu {
         
     // Get user type
     String userType = Auth.getUserType(email, password);
+
+    // ! [ERROR] Invalid user type
     if (userType == null) {
         ConsoleDisplay.dialogBox("error", "Unable to determine user type. Login failed.");
         return;
     }
 
+    // Convert user type to lowercase (normalization)
     userType = userType.toLowerCase();
 
+    // ? [SUCCESS] Successful login
     ConsoleDisplay.dialogBox("success", "Login successful! Press [Enter] to continue...");
+
+    // Wait until user presses [ENTER] on an empty line and ignore any non-empty input
     while (!ConsoleInput.getString("").equals("")) {}
 
     // Redirect based on user type
     switch (userType) {
+        // ? Type: UndergraduateStudent
         case "freshman":
         case "sophomore":
         case "junior":
@@ -840,6 +915,7 @@ public class MainMenu {
             displayStudentMenu(student);
             break;
 
+        // ? Type: GraduateStudent
         case "master":
         case "phd":
             Student gradStudent = Auth.getGraduateByEmail(email);
@@ -851,6 +927,7 @@ public class MainMenu {
             displayStudentMenu(gradStudent);
             break;
 
+        // ? Type: Faculty
         case "academic staff":
         case "teacher":
         case "librarian":
@@ -859,6 +936,7 @@ public class MainMenu {
             break;
 
         default:
+            // ! [ERROR] Invalid user type
             ConsoleDisplay.dialogBox("error", "Unknown user type: " + userType);
             break;
         }
@@ -870,7 +948,7 @@ public class MainMenu {
         ConsoleUI.goTo(15, 0);
         ConsoleDisplay.displayHeaderSubtitle("REGISTER");
 
-        ConsoleUI.drawInputBoxes(40, "Email", "Password", "Confirm Password", "User Type");
+        ConsoleUI.drawInputFields(40, "Email", "Password", "Confirm Password", "User Type");
 
         int[] yPositions = { 17, 19, 21, 23 }; // y coordinates of each input line
         int[] xPositions = { 39, 42, 50, 43 }; // cursor start position
@@ -881,7 +959,7 @@ public class MainMenu {
 
         // This loop runs indefinitely until user enters valid credentials
         while (true) {
-            inputs = ConsoleInput.navigateInputs(yPositions, xPositions, maxLength);
+            inputs = ConsoleInput.captureFormInputs(yPositions, xPositions, maxLength);
 
             // If user pressed ESC, navigate to 'Register' screen
             if (inputs == null) {

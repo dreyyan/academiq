@@ -169,7 +169,7 @@ public class ConsoleInput {
     }
 
     // [METHOD] Navigate input fields using [ENTER] key, with max characters per field and individual X/Y positions. Returns null if user presses [ESC] key
-    public static String[] navigateInputs(int[] fieldYPositions, int[] fieldXPositions, int maxLength) throws IOException {
+    public static String[] captureFormInputs(int[] fieldYPositions, int[] fieldXPositions, int maxLength) throws IOException {
         if (fieldYPositions.length != fieldXPositions.length) {
             throw new IllegalArgumentException("Y and X positions arrays must have the same length.");
         }

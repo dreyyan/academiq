@@ -8,6 +8,24 @@ import java.util.List;
 import ums.util.Settings;
 
 public class ConsoleUI {
+    // * Attributes
+    public static final String RESET = "\u001B[0m";
+    public static final String RED = "\u001B[31m";
+    public static final String ORANGE = "\u001B[38;5;208m";
+    public static final String YELLOW = "\u001B[33m";
+    public static final String GREEN = "\u001B[32m";
+    public static final String BLUE = "\u001B[34m";
+    public static final String VIOLET = "\u001B[35m";
+
+    // * Methods
+    // [UTILITY] Change color via ANSI color codes
+    public static void red(String text) { System.out.print(RED + text + RESET); }
+    public static void orange(String text) { System.out.print(ORANGE + text + RESET); }
+    public static void yellow(String text) { System.out.print(YELLOW + text + RESET); }
+    public static void green(String text) { System.out.print(GREEN + text + RESET); }
+    public static void blue(String text) { System.out.print(BLUE + text + RESET); }
+    public static void violet(String text) { System.out.print(VIOLET + text + RESET); }
+
     // [UTILITY] Clear the console screen
     public static void clearScreen() {
         try {
@@ -66,7 +84,7 @@ public class ConsoleUI {
     }
 
     // [METHOD] Draw one or multiple input boxes dynamically
-    public static void drawInputBoxes(int width, String... labels) {
+    public static void drawInputFields(int width, String... labels) {
         // Box drawing characters
         String topLeft = "╔", topRight = "╗";
         String bottomLeft = "╚", bottomRight = "╝";
