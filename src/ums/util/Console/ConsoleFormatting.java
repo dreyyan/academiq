@@ -1,6 +1,7 @@
 package ums.util.console;
 
 public class ConsoleFormatting {
+    // * Methods
     // [UTILITY] Prints a formatted line of 'length' characters using 'symbol'
     public static void displayFormat(int length, char symbol) {
         System.out.print(String.valueOf(symbol).repeat(length));

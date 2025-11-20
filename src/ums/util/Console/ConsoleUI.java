@@ -83,7 +83,7 @@ public class ConsoleUI {
         System.out.flush();
     }
 
-    // [METHOD] Draw one or multiple input boxes dynamically
+    // [UTILITY] Draw one or multiple input boxes dynamically
     public static void drawInputFields(int width, String... labels) {
         // Box drawing characters
         String topLeft = "╔", topRight = "╗";
@@ -134,7 +134,7 @@ public class ConsoleUI {
         ConsoleInput.printCentered(bottom, Settings.CONSOLE_WIDTH - 9);
     }
 
-    // [METHOD] Clear input fields
+    // [UTILITY] Clear input fields
     public static void clearInputFields(int[] fieldYPositions, int[] fieldXPositions, int maxLength) throws IOException {
         if (fieldYPositions.length != fieldXPositions.length) {
             throw new IllegalArgumentException("Y and X positions arrays must have the same length.");
@@ -152,7 +152,7 @@ public class ConsoleUI {
         }
     }
 
-    // [METHOD] Display information in input fields
+    // [UTILITY] Display information in input fields
     public static void displayInputFields(List<String> values, int[] fieldYPositions, int[] fieldXPositions, int maxLength) throws IOException {
         if (values.size() != fieldYPositions.length || values.size() != fieldXPositions.length) {
             throw new IllegalArgumentException("Values and positions arrays must all have the same length.");

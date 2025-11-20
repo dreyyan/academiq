@@ -11,6 +11,7 @@ import java.io.IOException;
 import ums.ui.MainMenu;
 
 public class ConsoleDisplay {
+    // * Methods
     // [UTILITY] Display a bordered frame with dynamic border thickness
     public static void displayBorder(int borderH, int borderV) {
 
@@ -37,6 +38,7 @@ public class ConsoleDisplay {
         System.out.print(String.valueOf(Settings.SYMBOL).repeat(width));
     }
 
+    // [UTILITY] Display system splash screen (pre-login)
     public static void displaySplashScreen() throws IOException {
         final int WIDTH = Settings.CONSOLE_WIDTH;
         final int HEIGHT = Settings.CONSOLE_HEIGHT;
@@ -95,6 +97,7 @@ public class ConsoleDisplay {
         MainMenu.displayLoginScreen();
     }
 
+    // [UTILITY] Display AcademIQ header title
     public static void displayHeaderTitle() {
         final int WIDTH = Settings.CONSOLE_WIDTH;
         final int HEIGHT = Settings.CONSOLE_HEIGHT;
@@ -140,11 +143,13 @@ public class ConsoleDisplay {
         }
     }
 
+    // [UTILITY] Display AcademIQ header subtitle
     public static void displayHeaderSubtitle(String subtitle) {
         ConsoleUI.moveCursor(5);
         ConsoleInput.printCentered("[ " + subtitle + " ]", Settings.CONSOLE_WIDTH - 9);
     }
 
+    // [UTILITY] Display screen setup (border & title)
     public static void setupScreen() {
         ConsoleUI.clearScreen();
         ConsoleDisplay.displayBorder(2, 3);
@@ -152,7 +157,7 @@ public class ConsoleDisplay {
         ConsoleDisplay.displayHeaderTitle();
     }
 
-    // [METHOD] Display a dialog box with a specified message
+    // [UTILITY] Display a dialog box with a specified message
     public static void dialogBox(String dialogType, String dialogMessage) {
         String type = "";
 
@@ -172,7 +177,7 @@ public class ConsoleDisplay {
         ConsoleInput.printCentered(type + " " + dialogMessage, Settings.CONSOLE_WIDTH - 9);
     }
 
-    // * ASCII Art
+    // [UTILITY] Display ASCII art of school
     public static void displaySchool() {
         String[] ASCIIArtSchool = {
             "                         %                          ",
@@ -194,7 +199,6 @@ public class ConsoleDisplay {
 
         ConsoleUI.goTo(24, 0);
 
-        // Display ASCII art
         for (String line : ASCIIArtSchool) {
             ConsoleUI.moveCursor(3);
             ConsoleInput.printCentered(line, Settings.CONSOLE_WIDTH - 3);

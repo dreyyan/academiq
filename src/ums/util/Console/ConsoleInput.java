@@ -24,10 +24,12 @@ import ums.util.Logger;
 import ums.util.Settings;
 
 public class ConsoleInput {
-    static Scanner scanner = new Scanner(System.in);
+    // * Attributes
+    static Scanner scanner = new Scanner(System.in); // Create an instance of 'Scanner'
+
+    // JLine console reader
     private static Terminal terminal;
     private static NonBlockingReader reader;
-
     static {
         try {
             terminal = TerminalBuilder.builder()
@@ -41,6 +43,7 @@ public class ConsoleInput {
         }
     }
 
+    // * Methods
     // [UTILITY] Prompts the user to press the 'Enter' key to continue execution
     public static void pressEnterToContinue() {
         ConsoleUI.moveCursor(3); ConsoleInput.printCentered("Press [ENTER] to continue...", Settings.CONSOLE_WIDTH - 3);
@@ -222,16 +225,16 @@ public class ConsoleInput {
 
             int key = reader.read();
 
-        // Handle arrow keys (escape sequences)
+        // Handle arrow keys
         if (key == 27) { // ESC
             if (reader.ready()) {
-                int next1 = reader.read(); // usually '[' -> 91
-                int next2 = reader.read(); // A/B/C/D for arrows
+                int next1 = reader.read();
+                int next2 = reader.read();
                 switch (next2) {
-                    case 65: return Settings.UP_KEY;    // Up arrow
-                    case 66: return Settings.DOWN_KEY;  // Down arrow
+                    case 65: return Settings.UP_KEY; // Up arrow
+                    case 66: return Settings.DOWN_KEY; // Down arrow
                     case 67: return Settings.RIGHT_KEY; // Right arrow
-                    case 68: return Settings.LEFT_KEY;  // Left arrow
+                    case 68: return Settings.LEFT_KEY; // Left arrow
                 }
             }
         }

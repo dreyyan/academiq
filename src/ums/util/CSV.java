@@ -24,6 +24,7 @@ import ums.model.enums.Semester;
 import static ums.util.Logger.errorMessage;
 
 public class CSV {
+    // * Methods
     // [UTILITY] Read data from a CSV file
     public static List<String[]> readCSV(String filePath, String delimiter) {
         List<String[]> rows = new ArrayList<>();
@@ -80,7 +81,7 @@ public class CSV {
         return null;
     }
 
-    // Append a single row to a CSV file
+    // [UTILITY] Append a single row to a CSV file
     public static void appendRow(String filePath, String[] row) {
         try (FileWriter writer = new FileWriter(filePath, true)) { // 'true' for append mode
             for (int i = 0; i < row.length; i++) {
@@ -96,11 +97,12 @@ public class CSV {
         }
     }
 
+    // [UTILITY] Register a new student's credentials to CSV file
     public static void registerNewStudent(String email, String password, String userType) {
-        // 1️⃣ Add credentials to credentials.csv
+        // Add credentials to credentials.csv
         CSV.appendRow(Settings.CREDENTIALS_FILE, new String[] { email, password, userType });
 
-        // 2️⃣ Add a default student row to students.csv
+        // Add a default student row to students.csv
         String[] newStudentRow = new String[Settings.TOTAL_COLS]; // total columns in students.csv
 
         // Fill known/default values
@@ -129,16 +131,17 @@ public class CSV {
         CSV.appendRow(Settings.STUDENTS_FILE, newStudentRow);
     }
 
+    // [UTILITY] Read course offerings in 'course-offerings.csv'
     public static List<CourseOffering> readCourseOfferings() {
-        List<String[]> rows = readCSV(Settings.COURSE_OFFERINGS_FILE); // Your CSV read method
+        List<String[]> rows = readCSV(Settings.COURSE_OFFERINGS_FILE);
         List<CourseOffering> offerings = new ArrayList<>();
 
         for (String[] row : rows) {
-            Course course = Course.fromCodeOrFullName(row[1]); // adjust index to match CSV
+            Course course = Course.fromCodeOrFullName(row[1]);
             Semester semester = Semester.valueOf(row[2].toUpperCase());
             int year = Integer.parseInt(row[3]);
-            AcademicStaff instructor = Auth.getAcademicStaffById(row[4]); // implement lookup
-            TimeSlot schedule = TimeSlot.fromString(row[5]); // implement parsing if needed
+            AcademicStaff instructor = Auth.getAcademicStaffById(row[4]);
+            TimeSlot schedule = TimeSlot.fromString(row[5]);
             int capacity = Integer.parseInt(row[6]);
             int enrolled = Integer.parseInt(row[7]);
 
@@ -148,6 +151,7 @@ public class CSV {
         return offerings;
     }
 
+    // [UTILITY] Update course offering details
     public static void updateCourseOffering(CourseOffering offering) {
         List<String[]> rows = readCSV(Settings.COURSE_OFFERINGS_FILE);
 
@@ -159,10 +163,10 @@ public class CSV {
             }
         }
 
-        writeCSV(Settings.COURSE_OFFERINGS_FILE, rows); // overwrite file
+        writeCSV(Settings.COURSE_OFFERINGS_FILE, rows); // overwrite
     }
 
-    // [METHOD] Update student record
+    // [UTILITY] Update student record
     public static void updateStudentRecord(Student student) {
         if (student == null || student.getStudentId() == null) {
             errorMessage("Cannot update null student or student without ID.");

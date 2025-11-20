@@ -1,6 +1,7 @@
 package ums.util.console;
 
 public class ConsoleAnimation {
+    // * Methods
     // [UTILITY] Delays execution for given 'seconds'
     public static void delayS(int s) {
         try {
