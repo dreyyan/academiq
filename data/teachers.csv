@@ -1,1 +1,11 @@
-P00003,John,Marlon,Paris,2005-07-29,Male,IC,09502271059,teacher@wvsu.edu.ph,2024M1207,College of Information & Communications Technology,Instructor,2005-07-29,IC,30000.0,12,18,false
+P00001,Alice,Marie,Smith,1980-03-15,Female,123 Oak St,09171234567,alice.smith@wvsu.edu.ph,FAC0001,College of Information & Communications Technology,Instructor,2010-08-01,Room 101,40000.0,16,18,true
+P00002,Brian,James,Johnson,1978-06-22,Male,456 Pine St,09179876543,brian.johnson@wvsu.edu.ph,FAC0002,College of Information & Communications Technology,Professor,2008-09-15,Room 102,60000.0,12,18,true
+P00003,John,Marlon,Paris,1985-07-29,Male,IC,09502271059,john.paris@wvsu.edu.ph,FAC0003,College of Information & Communications Technology,Instructor,2012-07-29,IC,30000.0,12,18,false
+P00004,Sophia,Anne,Lee,1990-11-05,Female,789 Maple Ave,09175678901,sophia.lee@wvsu.edu.ph,FAC0004,College of Information & Communications Technology,Assistant Professor,2015-01-12,Room 103,35000.0,14,18,true
+P00005,Michael,David,Brown,1982-04-18,Male,321 Birch Rd,09174561234,michael.brown@wvsu.edu.ph,FAC0005,College of Information & Communications Technology,Instructor,2011-03-20,Room 104,32000.0,15,18,true
+P00006,Emma,Grace,Davis,1988-12-10,Female,654 Cedar Ln,09173456789,emma.davis@wvsu.edu.ph,FAC0006,College of Information & Communications Technology,Instructor,2013-05-05,Room 105,31000.0,12,18,false
+P00007,Daniel,Lee,Wilson,1979-09-21,Male,987 Spruce St,09172345678,daniel.wilson@wvsu.edu.ph,FAC0007,College of Information & Communications Technology,Professor,2007-11-30,Room 106,58000.0,12,18,true
+P00008,Olivia,Rose,Martinez,1992-02-14,Female,159 Walnut St,09171239876,olivia.martinez@wvsu.edu.ph,FAC0008,College of Information & Communications Technology,Assistant Professor,2016-06-25,Room 107,36000.0,14,18,true
+P00009,William,James,Garcia,1983-08-08,Male,753 Cherry Ave,09170123456,william.garcia@wvsu.edu.ph,FAC0009,College of Information & Communications Technology,Instructor,2010-09-10,Room 108,33000.0,12,18,true
+P00010,Isabella,Marie,Hernandez,1991-05-03,Female,852 Aspen Rd,09173451234,isabella.hernandez@wvsu.edu.ph,FAC0010,College of Information & Communications Technology,Instructor,2014-03-18,Room 109,31000.0,12,18,false
+P00021,John,Mark,Doe,2005-07-29,Male,IC,09502271059,admin2@wvsu.edu.ph,2024M1207,College of Information & Communications Technology,Instructor,2005-07-29,IC,200.0,10,30,true

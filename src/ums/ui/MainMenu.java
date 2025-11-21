@@ -13,10 +13,12 @@ import ums.model.GraduateStudent;
 import ums.model.AcademicStaff;
 import ums.model.NonAcademicStaff;
 import ums.model.Student;
-import ums.model.enums.Department;
 import ums.model.UndergraduateStudent;
 import ums.model.entity.Course;
 import ums.model.entity.CourseOffering;
+
+// [IMPORT] Enums
+import ums.model.enums.Department;
 import ums.model.enums.AcademicStanding;
 import ums.model.enums.Courses;
 import ums.model.enums.Gender;
@@ -918,7 +920,7 @@ public class MainMenu {
 
                 List<CourseOffering> enrolled = new ArrayList<>();
                 Student newStudent;
-                YearLevel yearLevel = resolveYearLevel(programLevelInput);
+                YearLevel yearLevel = CSV.resolveYearLevel(programLevelInput);
 
                 if (yearLevel != null) {
                     newStudent = new UndergraduateStudent(
@@ -929,7 +931,7 @@ public class MainMenu {
                         yearLevel
                     );
                 } else {
-                    GraduateProgram gradProgram = resolveGraduateProgram(programLevelInput);
+                    GraduateProgram gradProgram = CSV.resolveGraduateProgram(programLevelInput);
                     if (gradProgram == null) {
                         throw new IllegalArgumentException("Program level must be a valid year level or graduate program.");
                     }
@@ -956,17 +958,8 @@ public class MainMenu {
     }
 
     private static void addFacultyMenu() throws IOException {
-        // Display UI
-        ConsoleUI.clearScreen();
-        ConsoleDisplay.displayBorder(2, 3);
-        ConsoleUI.goTo(4, 0);
-        ConsoleDisplay.displayHeaderSubtitle("Administrator: Add Faculty");
-
-        ConsoleUI.goTo(5, 0);
-        ConsoleUI.moveCursor(3);
-        ConsoleInput.printCentered("Enter faculty information. Press [ESC] to cancel.", Settings.CONSOLE_WIDTH - 6, true);
-
-        String[] fields = {
+        // ----------------- PAGE 1 ----------------- //
+        String[] page1Fields = {
             "First Name",
             "Middle Name",
             "Last Name",
@@ -976,8 +969,70 @@ public class MainMenu {
             "Contact Number",
             "Email",
             "Faculty ID",
+            "Faculty Type (Academic/NonAcademic)"
+        };
+
+        int[] page1Y = { 8, 10, 12, 14, 16, 18, 20, 22, 24, 26 };
+        int[] page1X = { 50, 50, 50, 50, 50, 50, 50, 50, 50, 50 };
+        int maxLength = 41;
+
+        // Draw Page 1 UI
+        ConsoleUI.clearScreen();
+        ConsoleDisplay.displayBorder(2, 3);
+        ConsoleUI.goTo(4, 0);
+        ConsoleDisplay.displayHeaderSubtitle("Administrator: Add Faculty (Page 1 of 2)");
+        ConsoleUI.goTo(5, 0);
+        ConsoleUI.moveCursor(3);
+        ConsoleInput.printCentered("Fill out all fields. Press [ESC] to cancel.", Settings.CONSOLE_WIDTH - 6, true);
+
+        ConsoleUI.drawInputFields(80, page1Fields);
+        String[] page1Input = ConsoleInput.captureFormInputs(page1Y, page1X, maxLength);
+
+        if (page1Input == null) {
+            ConsoleDisplay.dialogBox("info", "Add faculty canceled.");
+            ConsoleInput.pressEnterToContinue();
+            displayNonAcademicStaffMenu(currentNonAcademicStaff);
+            return;
+        }
+
+        // Extract page 1 inputs
+        String firstName = page1Input[0].trim();
+        String middleName = page1Input[1].trim();
+        String lastName = page1Input[2].trim();
+        String dobStr = page1Input[3].trim();
+        String genderStr = page1Input[4].trim();
+        String address = page1Input[5].trim();
+        String contact = page1Input[6].trim();
+        String email = page1Input[7].trim();
+        String facultyId = page1Input[8].trim();
+        String facultyType = page1Input[9].trim().toLowerCase();
+
+        // Validate required fields
+        if (firstName.isBlank() || lastName.isBlank() || dobStr.isBlank() ||
+            genderStr.isBlank() || address.isBlank() || contact.isBlank() ||
+            email.isBlank() || facultyId.isBlank()) {
+
+            ConsoleDisplay.dialogBox("error", "Please fill in all required fields on Page 1.");
+            ConsoleInput.pressEnterToContinue();
+            addFacultyMenu(); // restart
+            return;
+        }
+
+        if (!facultyType.equals("academic") && !facultyType.equals("nonacademic")) {
+            ConsoleDisplay.dialogBox("error", "Faculty Type must be either 'Academic' or 'NonAcademic'.");
+            ConsoleInput.pressEnterToContinue();
+            addFacultyMenu();
+            return;
+        }
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy");
+        LocalDate dob = LocalDate.parse(dobStr, formatter);
+        Gender gender = Gender.valueOf(genderStr.toUpperCase());
+
+        // ----------------- PAGE 2 ----------------- //
+        String[] page2Fields = {
             "Department",
-            "Rank",
+            "Rank / Position",
             "Hire Date (MM-dd-YYYY)",
             "Office Location",
             "Salary",
@@ -986,63 +1041,59 @@ public class MainMenu {
             "Tenured (Yes/No)"
         };
 
-        int[] yPositions = { 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40 };
-        int[] xPositions = { 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43 };
-        int maxLength = 48;
+        int[] page2Y = { 8, 10, 12, 14, 16, 18, 20, 22 };
+        int[] page2X = { 37, 37, 37, 37, 37, 37, 37, 37 };
 
-        ConsoleUI.drawInputFields(90, fields);
+        ConsoleUI.clearScreen();
+        ConsoleDisplay.displayBorder(2, 3);
+        ConsoleUI.goTo(4, 0);
+        ConsoleDisplay.displayHeaderSubtitle("Administrator: Add Faculty (Page 2 of 2)");
+        ConsoleUI.goTo(5, 0);
+        ConsoleUI.moveCursor(3);
+        ConsoleInput.printCentered("Continue filling out the remaining details.", Settings.CONSOLE_WIDTH - 6, true);
 
-        while (true) {
-            String[] inputs = ConsoleInput.captureFormInputs(yPositions, xPositions, maxLength);
+        ConsoleUI.drawInputFields(80, page2Fields);
+        String[] page2Input = ConsoleInput.captureFormInputs(page2Y, page2X, maxLength);
 
-            if (inputs == null) {
-                ConsoleDisplay.dialogBox("info", "Add faculty canceled.");
-                ConsoleInput.pressEnterToContinue();
-                displayNonAcademicStaffMenu(currentNonAcademicStaff);
-                return;
-            }
+        if (page2Input == null) {
+            ConsoleDisplay.dialogBox("info", "Add faculty canceled.");
+            ConsoleInput.pressEnterToContinue();
+            displayNonAcademicStaffMenu(currentNonAcademicStaff);
+            return;
+        }
 
-            String firstName = inputs[0].trim();
-            String middleName = inputs[1].trim();
-            String lastName = inputs[2].trim();
-            String dobStr = inputs[3].trim();
-            String genderStr = inputs[4].trim();
-            String address = inputs[5].trim();
-            String contact = inputs[6].trim();
-            String email = inputs[7].trim();
-            String facultyId = inputs[8].trim();
-            String deptStr = inputs[9].trim();
-            String rankStr = inputs[10].trim();
-            String hireDateStr = inputs[11].trim();
-            String officeLocation = inputs[12].trim();
-            String salaryStr = inputs[13].trim();
-            String hoursStr = inputs[14].trim();
-            String maxLoadStr = inputs[15].trim();
-            String tenuredStr = inputs[16].trim();
+        // Extract page 2 inputs
+        String deptStr = page2Input[0].trim();
+        String rankStr = page2Input[1].trim();
+        String hireDateStr = page2Input[2].trim();
+        String officeLocation = page2Input[3].trim();
+        String salaryStr = page2Input[4].trim();
+        String hoursStr = page2Input[5].trim();
+        String maxLoadStr = page2Input[6].trim();
+        String tenuredStr = page2Input[7].trim();
 
-            if (firstName.isBlank() || lastName.isBlank() || dobStr.isBlank() || genderStr.isBlank()
-                || facultyId.isBlank() || deptStr.isBlank() || rankStr.isBlank()
-                || hireDateStr.isBlank() || officeLocation.isBlank() || salaryStr.isBlank()
-                || hoursStr.isBlank()) {
-                ConsoleDisplay.dialogBox("error", "Please fill in all required fields.");
-                ConsoleUI.clearInputFields(yPositions, xPositions, maxLength);
-                continue;
-            }
+        // Validate required fields
+        if (deptStr.isBlank() || rankStr.isBlank() || hireDateStr.isBlank() ||
+            officeLocation.isBlank() || salaryStr.isBlank() || hoursStr.isBlank()) {
 
-            try {
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy");
-                LocalDate dob = LocalDate.parse(dobStr, formatter);
-                LocalDate hireDate = LocalDate.parse(hireDateStr, formatter);
-                Gender gender = Gender.valueOf(genderStr.toUpperCase());
+            ConsoleDisplay.dialogBox("error", "Please fill in all required fields on Page 2.");
+            ConsoleInput.pressEnterToContinue();
+            addFacultyMenu();
+            return;
+        }
+
+        try {
+            LocalDate hireDate = LocalDate.parse(hireDateStr, formatter);
+            double salary = Double.parseDouble(salaryStr);
+
+            if (facultyType.equals("academic")) {
+                // Academic-specific fields
                 Department department = Department.fromCodeOrFullName(deptStr);
-                if (department == Department.UNASSIGNED) {
-                    throw new IllegalArgumentException("Invalid department provided.");
-                }
                 FacultyRank rank = FacultyRank.fromString(rankStr);
-
-                double salary = Double.parseDouble(salaryStr);
                 int teachingHours = Integer.parseInt(hoursStr);
-                int maxTeachingLoad = maxLoadStr.isBlank() ? rank.getDefaultTeachingHours() : Integer.parseInt(maxLoadStr);
+                int maxTeachingLoad = maxLoadStr.isBlank()
+                    ? rank.getDefaultTeachingHours()
+                    : Integer.parseInt(maxLoadStr);
                 boolean isTenured = tenuredStr.equalsIgnoreCase("yes") || tenuredStr.equalsIgnoreCase("true");
 
                 AcademicStaff staffMember = new AcademicStaff(
@@ -1054,12 +1105,31 @@ public class MainMenu {
                 );
 
                 CSV.appendRow(Settings.ACADEMIC_STAFF_FILE, staffMember.toCSVRow());
-                ConsoleDisplay.dialogBox("success", "Faculty record added successfully!");
-                break;
-            } catch (Exception e) {
-                ConsoleDisplay.dialogBox("error", "Failed to add faculty: " + e.getMessage());
-                ConsoleUI.clearInputFields(yPositions, xPositions, maxLength);
+                ConsoleDisplay.dialogBox("success", "Academic Faculty added successfully!");
+
+            } else {
+                // NonAcademicStaff
+                String positionStr = rankStr; // rankStr is actually position
+                int workingHours = Integer.parseInt(hoursStr);
+
+                NonAcademicStaff staffMember = new NonAcademicStaff(
+                    firstName, middleName, lastName, dob, gender,
+                    address, contact, email,
+                    facultyId, // use facultyId as staffId
+                    Department.fromCodeOrFullName(deptStr),
+                    positionStr,
+                    hireDate,
+                    officeLocation,
+                    salary,
+                    workingHours
+                );
+
+                CSV.appendRow(Settings.NON_ACADEMIC_STAFF_FILE, staffMember.toCSVRow());
+                ConsoleDisplay.dialogBox("success", "Non-Academic Staff added successfully!");
             }
+
+        } catch (Exception e) {
+            ConsoleDisplay.dialogBox("error", "Failed to add faculty: " + e.getMessage());
         }
 
         ConsoleInput.pressEnterToContinue();
@@ -1076,7 +1146,7 @@ public class MainMenu {
         List<String[]> rows = CSV.readCSV(Settings.STUDENTS_FILE);
         List<String[]> students = new ArrayList<>();
         for (String[] row : rows) {
-            if (!safeValue(row, Settings.COL_STUDENT_ID).isBlank()) {
+            if (!CSV.safeValue(row, Settings.COL_STUDENT_ID).isBlank()) {
                 students.add(row);
             }
         }
@@ -1089,9 +1159,9 @@ public class MainMenu {
         }
 
         int tableWidth = 70;
-        String border = "=".repeat(tableWidth);
-        String separator = "-".repeat(tableWidth);
-        String header = String.format("| %-3s | %-12s | %-24s | %-14s | %-10s |",
+        String border = "=".repeat(tableWidth + 11);
+        String separator = "-".repeat(tableWidth + 11);
+        String header = String.format("| %-3s | %-12s | %-28s | %-12s | %-10s |",
                 "No", "Student ID", "Name", "Dept", "Course");
 
         ConsoleUI.moveCursor(5); ConsoleInput.printCentered(border, Settings.CONSOLE_WIDTH - 8);
@@ -1102,19 +1172,19 @@ public class MainMenu {
         int displayed = 0;
         for (int i = 0; i < students.size() && displayed < maxDisplay; i++) {
             String[] row = students.get(i);
-            String studentId = safeValue(row, Settings.COL_STUDENT_ID);
-            String firstName = safeValue(row, Settings.COL_FIRST_NAME);
-            String middleName = safeValue(row, Settings.COL_MIDDLE_NAME);
-            String lastName = safeValue(row, Settings.COL_LAST_NAME);
-            String dept = abbreviateDepartment(safeValue(row, Settings.COL_DEPARTMENT));
-            String course = abbreviateCourse(safeValue(row, Settings.COL_COURSE));
+            String studentId = CSV.safeValue(row, Settings.COL_STUDENT_ID);
+            String firstName = CSV.safeValue(row, Settings.COL_FIRST_NAME);
+            String middleName = CSV.safeValue(row, Settings.COL_MIDDLE_NAME);
+            String lastName = CSV.safeValue(row, Settings.COL_LAST_NAME);
+            String dept = CSV.abbreviateDepartment(CSV.safeValue(row, Settings.COL_DEPARTMENT));
+            String course = CSV.abbreviateCourse(CSV.safeValue(row, Settings.COL_COURSE));
             String name = (firstName + " " + (middleName.isBlank() ? "" : middleName + " ") + lastName).trim().replaceAll("\\s+", " ");
 
-            if (name.length() > 24) name = name.substring(0, 24);
-            if (dept.length() > 14) dept = dept.substring(0, 14);
+            if (name.length() > 28) name = name.substring(0, 28);
+            if (dept.length() > 12) dept = dept.substring(0, 12);
             if (course.length() > 10) course = course.substring(0, 10);
 
-            String body = String.format("| %-3d | %-12s | %-24s | %-14s | %-10s |",
+            String body = String.format("| %-3d | %-12s | %-28s | %-12s | %-10s |",
                 i + 1, studentId, name, dept, course);
             ConsoleUI.moveCursor(5); ConsoleInput.printCentered(body, Settings.CONSOLE_WIDTH - 8);
             displayed++;
@@ -1139,8 +1209,11 @@ public class MainMenu {
         ConsoleDisplay.displayHeaderSubtitle("Administrator: Faculty Records");
         System.out.println();
 
-        List<String[]> rows = CSV.readCSV(Settings.ACADEMIC_STAFF_FILE);
-        if (rows.isEmpty()) {
+        // Read both files
+        List<String[]> academicRows = CSV.readCSV(Settings.ACADEMIC_STAFF_FILE);
+        List<String[]> nonAcademicRows = CSV.readCSV(Settings.NON_ACADEMIC_STAFF_FILE);
+
+        if (academicRows.isEmpty() && nonAcademicRows.isEmpty()) {
             ConsoleDisplay.dialogBox("info", "No faculty records found.");
             ConsoleInput.pressEnterToContinue();
             displayNonAcademicStaffMenu(currentNonAcademicStaff);
@@ -1148,10 +1221,10 @@ public class MainMenu {
         }
 
         int tableWidth = 70;
-        String border = "=".repeat(tableWidth);
-        String separator = "-".repeat(tableWidth);
-        String header = String.format("| %-3s | %-12s | %-24s | %-14s | %-10s |",
-                "No", "Faculty ID", "Name", "Dept", "Rank");
+        String border = "=".repeat(tableWidth + 11);
+        String separator = "-".repeat(tableWidth + 11);
+        String header = String.format("| %-3s | %-12s | %-28s | %-12s | %-10s |",
+                "No", "Faculty ID", "Name", "Dept", "Rank/Position");
 
         ConsoleUI.moveCursor(5); ConsoleInput.printCentered(border, Settings.CONSOLE_WIDTH - 8);
         ConsoleUI.moveCursor(5); ConsoleInput.printCentered(header, Settings.CONSOLE_WIDTH - 8);
@@ -1159,33 +1232,63 @@ public class MainMenu {
 
         int maxDisplay = 15;
         int displayed = 0;
-        for (int i = 0; i < rows.size() && displayed < maxDisplay; i++) {
-            String[] row = rows.get(i);
-            String facultyId = safeValue(row, Settings.COL_FACULTY_ID);
-            String firstName = safeValue(row, Settings.COL_FIRST_NAME);
-            String middleName = safeValue(row, Settings.COL_MIDDLE_NAME);
-            String lastName = safeValue(row, Settings.COL_LAST_NAME);
-            String dept = safeValue(row, Settings.COL_DEPARTMENT_FAC);
-            String rank = safeValue(row, Settings.COL_RANK);
-            String name = (firstName + " " + (middleName.isBlank() ? "" : middleName + " ") + lastName).trim().replaceAll("\\s+", " ");
+        int index = 1;
+
+        // Display Academic Staff
+        for (String[] row : academicRows) {
+            String facultyId = CSV.safeValue(row, Settings.COL_FACULTY_ID);
+            String firstName = CSV.safeValue(row, Settings.COL_FIRST_NAME);
+            String middleName = CSV.safeValue(row, Settings.COL_MIDDLE_NAME);
+            String lastName = CSV.safeValue(row, Settings.COL_LAST_NAME);
+            String dept = CSV.abbreviateDepartment(CSV.safeValue(row, Settings.COL_DEPARTMENT_FAC));
+            String rank = CSV.abbreviateCourse(CSV.safeValue(row, Settings.COL_RANK));
+            String name = (firstName + " " + (middleName.isBlank() ? "" : middleName + " ") + lastName)
+                    .trim().replaceAll("\\s+", " ");
 
             if (facultyId.isBlank() && name.isBlank()) continue;
-            if (name.length() > 24) name = name.substring(0, 24);
-            if (dept.length() > 14) dept = dept.substring(0, 14);
+            if (name.length() > 28) name = name.substring(0, 28);
+            if (dept.length() > 12) dept = dept.substring(0, 12);
             if (rank.length() > 10) rank = rank.substring(0, 10);
 
-            String body = String.format("| %-3d | %-12s | %-24s | %-14s | %-10s |",
-                i + 1, facultyId, name, dept, rank);
+            String body = String.format("| %-3d | %-12s | %-28s | %-12s | %-10s |",
+                    index++, facultyId, name, dept, rank);
             ConsoleUI.moveCursor(5); ConsoleInput.printCentered(body, Settings.CONSOLE_WIDTH - 8);
             displayed++;
+            if (displayed >= maxDisplay) break;
+        }
+
+        // Display Non-Academic Staff if space remains
+        if (displayed < maxDisplay) {
+            for (String[] row : nonAcademicRows) {
+                String staffId = CSV.safeValue(row, Settings.COL_STAFF_ID);
+                String firstName = CSV.safeValue(row, Settings.COL_FIRST_NAME);
+                String middleName = CSV.safeValue(row, Settings.COL_MIDDLE_NAME);
+                String lastName = CSV.safeValue(row, Settings.COL_LAST_NAME);
+                String dept = CSV.abbreviateDepartment(CSV.safeValue(row, Settings.COL_DEPARTMENT_FAC));
+                String position = CSV.abbreviateCourse(CSV.safeValue(row, Settings.COL_POSITION));
+                String name = (firstName + " " + (middleName.isBlank() ? "" : middleName + " ") + lastName)
+                        .trim().replaceAll("\\s+", " ");
+
+                if (staffId.isBlank() && name.isBlank()) continue;
+                if (name.length() > 28) name = name.substring(0, 28);
+                if (dept.length() > 12) dept = dept.substring(0, 12);
+                if (position.length() > 10) position = position.substring(0, 10);
+
+                String body = String.format("| %-3d | %-12s | %-28s | %-12s | %-10s |",
+                        index++, staffId, name, dept, position);
+                ConsoleUI.moveCursor(5); ConsoleInput.printCentered(body, Settings.CONSOLE_WIDTH - 8);
+                displayed++;
+                if (displayed >= maxDisplay) break;
+            }
         }
 
         ConsoleUI.moveCursor(5); ConsoleInput.printCentered(border, Settings.CONSOLE_WIDTH - 8);
 
-        if (rows.size() > maxDisplay) {
-            ConsoleDisplay.dialogBox("info", "Displaying first " + maxDisplay + " of " + rows.size() + " faculty records.");
+        int totalRecords = academicRows.size() + nonAcademicRows.size();
+        if (totalRecords > maxDisplay) {
+            ConsoleDisplay.dialogBox("info", "Displaying first " + maxDisplay + " of " + totalRecords + " faculty records.");
         } else {
-            ConsoleDisplay.dialogBox("info", "Total faculty: " + rows.size());
+            ConsoleDisplay.dialogBox("info", "Total faculty: " + totalRecords);
         }
 
         ConsoleInput.pressEnterToContinue();
@@ -1195,22 +1298,23 @@ public class MainMenu {
     private static void removeStudentMenu() throws IOException {
         // Display UI
         ConsoleUI.clearScreen();
+        ConsoleDisplay.displayBorder(2, 3);
         ConsoleUI.goTo(4, 0);
         ConsoleDisplay.displayHeaderSubtitle("Administrator: Remove Student");
-        System.out.println();
 
-        ConsoleUI.goTo(17, 0);
+        ConsoleUI.goTo(6, 0);
         ConsoleUI.moveCursor(3);
-        ConsoleInput.printCentered("Enter a Student ID or email to remove.", Settings.CONSOLE_WIDTH - 6, true);
+        ConsoleInput.printCentered("Enter the Student ID or email. Press [ESC] to cancel.", Settings.CONSOLE_WIDTH - 6, true);
 
-        ConsoleUI.drawInputFields(50, "Student ID / Email");
-        int[] yPositions = { 21 };
-        int[] xPositions = { 52 };
-        int maxLength = 40;
+        ConsoleUI.drawInputFields(56, "Student ID / Email");
+        int[] yPositions = { 9 };
+        int[] xPositions = { 38 };
+        int maxLength = 36;
 
         String[] inputs = ConsoleInput.captureFormInputs(yPositions, xPositions, maxLength);
 
         if (inputs == null) {
+            ConsoleUI.clearDialogBox(4);
             ConsoleDisplay.dialogBox("info", "Remove student canceled.");
             ConsoleInput.pressEnterToContinue();
             displayNonAcademicStaffMenu(currentNonAcademicStaff);
@@ -1232,8 +1336,8 @@ public class MainMenu {
 
         for (int i = rows.size() - 1; i >= 0; i--) {
             String[] row = rows.get(i);
-            String studentId = safeValue(row, Settings.COL_STUDENT_ID);
-            String email = safeValue(row, Settings.COL_EMAIL);
+            String studentId = CSV.safeValue(row, Settings.COL_STUDENT_ID);
+            String email = CSV.safeValue(row, Settings.COL_EMAIL);
 
             if (identifier.equalsIgnoreCase(studentId) || identifier.equalsIgnoreCase(email)) {
                 rows.remove(i);
@@ -1245,7 +1349,7 @@ public class MainMenu {
         if (removed) {
             CSV.writeCSV(Settings.STUDENTS_FILE, rows);
             for (String id : removedIds) {
-                removeStudentEnrollments(id);
+                CSV.removeStudentEnrollments(id);
             }
             ConsoleDisplay.dialogBox("success", "Student record removed.");
         } else {
@@ -1259,22 +1363,23 @@ public class MainMenu {
     private static void removeFacultyMenu() throws IOException {
         // Display UI
         ConsoleUI.clearScreen();
+        ConsoleDisplay.displayBorder(2, 3);
         ConsoleUI.goTo(4, 0);
         ConsoleDisplay.displayHeaderSubtitle("Administrator: Remove Faculty");
-        System.out.println();
 
-        ConsoleUI.goTo(17, 0);
+        ConsoleUI.goTo(6, 0);
         ConsoleUI.moveCursor(3);
-        ConsoleInput.printCentered("Enter a Faculty ID or email to remove.", Settings.CONSOLE_WIDTH - 6, true);
+        ConsoleInput.printCentered("Enter the Faculty ID or email. Press [ESC] to cancel.", Settings.CONSOLE_WIDTH - 6, true);
 
-        ConsoleUI.drawInputFields(50, "Faculty ID / Email");
-        int[] yPositions = { 21 };
-        int[] xPositions = { 52 };
-        int maxLength = 40;
+        ConsoleUI.drawInputFields(56, "Faculty ID / Email");
+        int[] yPositions = { 9 };
+        int[] xPositions = { 38 };
+        int maxLength = 36;
 
         String[] inputs = ConsoleInput.captureFormInputs(yPositions, xPositions, maxLength);
 
         if (inputs == null) {
+            ConsoleUI.clearDialogBox(4);
             ConsoleDisplay.dialogBox("info", "Remove faculty canceled.");
             ConsoleInput.pressEnterToContinue();
             displayNonAcademicStaffMenu(currentNonAcademicStaff);
@@ -1295,8 +1400,8 @@ public class MainMenu {
 
         for (int i = rows.size() - 1; i >= 0; i--) {
             String[] row = rows.get(i);
-            String facultyId = safeValue(row, Settings.COL_FACULTY_ID);
-            String email = safeValue(row, Settings.COL_EMAIL);
+            String facultyId = CSV.safeValue(row, Settings.COL_FACULTY_ID);
+            String email = CSV.safeValue(row, Settings.COL_EMAIL);
 
             if (identifier.equalsIgnoreCase(facultyId) || identifier.equalsIgnoreCase(email)) {
                 rows.remove(i);
@@ -1313,83 +1418,6 @@ public class MainMenu {
 
         ConsoleInput.pressEnterToContinue();
         displayNonAcademicStaffMenu(currentNonAcademicStaff);
-    }
-
-    private static YearLevel resolveYearLevel(String input) {
-        if (input == null || input.isBlank()) return null;
-        String normalized = input.trim().toUpperCase().replace("-", "_").replace(" ", "_");
-        for (YearLevel level : YearLevel.values()) {
-            if (level.name().equals(normalized) || level.getDisplayName().equalsIgnoreCase(input.trim())) {
-                return level;
-            }
-        }
-        return null;
-    }
-
-    private static GraduateProgram resolveGraduateProgram(String input) {
-        if (input == null || input.isBlank()) return null;
-        String normalized = input.trim().toUpperCase().replace("'", "").replace(".", "");
-        normalized = normalized.replace(" ", "");
-        if (normalized.equals("MASTER")) normalized = "MASTERS";
-        for (GraduateProgram program : GraduateProgram.values()) {
-            if (program.name().equalsIgnoreCase(normalized) || program.getDisplayName().equalsIgnoreCase(input.trim())) {
-                return program;
-            }
-        }
-        return null;
-    }
-
-    private static String safeValue(String[] row, int index) {
-        if (row == null || index < 0 || index >= row.length) return "";
-        return row[index] != null ? row[index].trim() : "";
-    }
-
-    private static String abbreviateDepartment(String deptName) {
-        if (deptName == null || deptName.isBlank()) return "N/A";
-        Department dept = Department.fromCodeOrFullName(deptName);
-        if (dept != Department.UNASSIGNED) {
-            return dept.getCode();
-        }
-        return generateAcronym(deptName, 6);
-    }
-
-    private static String abbreviateCourse(String courseName) {
-        if (courseName == null || courseName.isBlank()) return "N/A";
-        return generateAcronym(courseName, 10);
-    }
-
-    private static String generateAcronym(String value, int maxLength) {
-        String[] tokens = value.replaceAll("[^A-Za-z0-9 ]", " ").split("\\s+");
-        StringBuilder acronym = new StringBuilder();
-        for (String token : tokens) {
-            if (token.isBlank()) continue;
-            String lower = token.toLowerCase();
-            if (lower.equals("of") || lower.equals("and") || lower.equals("in") || lower.equals("the") || lower.equals("for") || lower.equals("to")) {
-                continue;
-            }
-            acronym.append(Character.toUpperCase(token.charAt(0)));
-            if (acronym.length() >= maxLength) break;
-        }
-        if (acronym.length() == 0) {
-            return value.length() <= maxLength ? value : value.substring(0, maxLength);
-        }
-        return acronym.toString();
-    }
-
-    private static void removeStudentEnrollments(String studentId) {
-        if (studentId == null || studentId.isBlank()) return;
-        List<String[]> rows = CSV.readCSV(Settings.ENROLLMENTS_FILE);
-        boolean updated = false;
-        for (int i = rows.size() - 1; i >= 0; i--) {
-            String[] row = rows.get(i);
-            if (row.length > 0 && studentId.equalsIgnoreCase(row[0])) {
-                rows.remove(i);
-                updated = true;
-            }
-        }
-        if (updated) {
-            CSV.writeCSV(Settings.ENROLLMENTS_FILE, rows);
-        }
     }
 
     // * UI: User Authentication
@@ -1775,15 +1803,19 @@ public class MainMenu {
 
             // ! [ERROR] Invalid email input
             if (!Auth.isValidEmail(inputs[0])) {
+                ConsoleUI.clearDialogBox(5);
                 ConsoleDisplay.dialogBox("error", "Please enter a valid email address (e.g. example@domain.com).");
             } else if (!Auth.isValidPassword(password)) {
                 // ! [ERROR] Invalid password
+                ConsoleUI.clearDialogBox(5);
                 ConsoleDisplay.dialogBox("error", "Password must be 8–20 characters long and include at least one number.");
             } else if (!Auth.accountExists(email)) {
                 // ! [ERROR] Non-existing account
+                ConsoleUI.clearDialogBox(5);
                 ConsoleDisplay.dialogBox("error", "Account not found. Please register first.");
             } else if (!Auth.matchingUsernamePassword(email, password)) {
                     // ! [ERROR] Non-matching credentials
+                    ConsoleUI.clearDialogBox(5);
                     ConsoleDisplay.dialogBox("error", "Incorrect email or password. Try again.");
             } else break;
 
@@ -1796,6 +1828,7 @@ public class MainMenu {
 
     // ! [ERROR] Invalid user type
     if (userType == null) {
+        ConsoleUI.clearDialogBox(5);
         ConsoleDisplay.dialogBox("error", "Unable to determine user type. Login failed.");
         return;
     }
@@ -1804,6 +1837,7 @@ public class MainMenu {
     userType = userType.toLowerCase();
 
     // ? [SUCCESS] Successful login
+    ConsoleUI.clearDialogBox(5);
     ConsoleDisplay.dialogBox("success", "Login successful! Press [Enter] to continue...");
 
     // Wait until user presses [ENTER] on an empty line and ignore any non-empty input

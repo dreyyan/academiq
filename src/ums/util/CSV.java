@@ -11,6 +11,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+// [IMPORT] Enums
+import ums.model.enums.GraduateProgram;
+import ums.model.enums.YearLevel;
+import ums.model.enums.Department;
+
+// [IMPORT] Models
 import ums.model.AcademicStaff;
 import ums.model.Student;
 import ums.model.entity.Course;
@@ -273,5 +279,82 @@ public class CSV {
         }
 
         return "P" + String.format("%05d", maxId + 1);
+    }
+
+    public static YearLevel resolveYearLevel(String input) {
+        if (input == null || input.isBlank()) return null;
+        String normalized = input.trim().toUpperCase().replace("-", "_").replace(" ", "_");
+        for (YearLevel level : YearLevel.values()) {
+            if (level.name().equals(normalized) || level.getDisplayName().equalsIgnoreCase(input.trim())) {
+                return level;
+            }
+        }
+        return null;
+    }
+
+    public static GraduateProgram resolveGraduateProgram(String input) {
+        if (input == null || input.isBlank()) return null;
+        String normalized = input.trim().toUpperCase().replace("'", "").replace(".", "");
+        normalized = normalized.replace(" ", "");
+        if (normalized.equals("MASTER")) normalized = "MASTERS";
+        for (GraduateProgram program : GraduateProgram.values()) {
+            if (program.name().equalsIgnoreCase(normalized) || program.getDisplayName().equalsIgnoreCase(input.trim())) {
+                return program;
+            }
+        }
+        return null;
+    }
+
+    public static String safeValue(String[] row, int index) {
+        if (row == null || index < 0 || index >= row.length) return "";
+        return row[index] != null ? row[index].trim() : "";
+    }
+
+    public static String abbreviateDepartment(String deptName) {
+        if (deptName == null || deptName.isBlank()) return "N/A";
+        Department dept = Department.fromCodeOrFullName(deptName);
+        if (dept != Department.UNASSIGNED) {
+            return dept.getCode();
+        }
+        return generateAcronym(deptName, 6);
+    }
+
+    public static String abbreviateCourse(String courseName) {
+        if (courseName == null || courseName.isBlank()) return "N/A";
+        return generateAcronym(courseName, 10);
+    }
+
+    public static String generateAcronym(String value, int maxLength) {
+        String[] tokens = value.replaceAll("[^A-Za-z0-9 ]", " ").split("\\s+");
+        StringBuilder acronym = new StringBuilder();
+        for (String token : tokens) {
+            if (token.isBlank()) continue;
+            String lower = token.toLowerCase();
+            if (lower.equals("of") || lower.equals("and") || lower.equals("in") || lower.equals("the") || lower.equals("for") || lower.equals("to")) {
+                continue;
+            }
+            acronym.append(Character.toUpperCase(token.charAt(0)));
+            if (acronym.length() >= maxLength) break;
+        }
+        if (acronym.length() == 0) {
+            return value.length() <= maxLength ? value : value.substring(0, maxLength);
+        }
+        return acronym.toString();
+    }
+
+    public static void removeStudentEnrollments(String studentId) {
+        if (studentId == null || studentId.isBlank()) return;
+        List<String[]> rows = CSV.readCSV(Settings.ENROLLMENTS_FILE);
+        boolean updated = false;
+        for (int i = rows.size() - 1; i >= 0; i--) {
+            String[] row = rows.get(i);
+            if (row.length > 0 && studentId.equalsIgnoreCase(row[0])) {
+                rows.remove(i);
+                updated = true;
+            }
+        }
+        if (updated) {
+            CSV.writeCSV(Settings.ENROLLMENTS_FILE, rows);
+        }
     }
 }

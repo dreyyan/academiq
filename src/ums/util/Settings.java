@@ -66,6 +66,12 @@ public final class Settings {
     public static final int COL_SALARY          = 29; // double
     public static final int COL_FULL_TIME       = 30; // true/false
 
+    // [Non-Academic Staff] CSV columns
+    public static final int COL_STAFF_ID       = 16;
+    public static final int COL_POSITION       = 17; // correct index
+    public static final int COL_SHIFT_SCHEDULE = 18; // shift info (if present)
+    public static final int COL_SUPERVISOR_ID  = 19; // if supervisor ID exists
+
     // CSV Preferences
     public static final int STUDENTS_CSV_MAX_COLUMNS = 24;
     public static final int TOTAL_COLS = 16;

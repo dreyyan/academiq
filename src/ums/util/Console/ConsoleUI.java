@@ -3,8 +3,6 @@ package ums.util.console;
 // [IMPORT] Standard
 import java.io.IOException;
 import java.util.List;
-
-// [IMPORT] Utilities
 import ums.util.Settings;
 
 public class ConsoleUI {
@@ -198,7 +196,7 @@ public static void drawInputFields(int boxInnerWidth, String... labels) {
         for (int i = startPosition; i > 2; --i) {
             ConsoleUI.goTo(Settings.CONSOLE_HEIGHT - i, 0);
             ConsoleUI.moveCursor(3);
-            ConsoleInput.printCentered(" ".repeat(Settings.CONSOLE_WIDTH - 8), Settings.CONSOLE_WIDTH - 3);
+            System.out.println((" ".repeat(Settings.CONSOLE_WIDTH - 6)));
         }
     }
 }
