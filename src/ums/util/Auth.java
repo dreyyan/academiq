@@ -1,26 +1,25 @@
 package ums.util;
 
 // [IMPORT] Standard
-import java.util.List;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-// [IMPORT] Models
-import ums.model.Faculty;
-import ums.model.Student;
 import ums.model.AcademicStaff;
+import ums.model.Faculty;
 import ums.model.GraduateStudent;
+import ums.model.NonAcademicStaff;
+import ums.model.Student;
 import ums.model.UndergraduateStudent;
-import ums.model.enums.Department;
 import ums.model.entity.Course;
 import ums.model.entity.CourseOffering;
 import ums.model.enums.AcademicStanding;
+import ums.model.enums.Department;
+import ums.model.enums.FacultyRank;
 import ums.model.enums.Gender;
 import ums.model.enums.GraduateProgram;
 import ums.model.enums.YearLevel;
-import ums.model.enums.FacultyRank;
 
 public class Auth {
     // [AUTH] Check if email is valid
@@ -144,6 +143,93 @@ public class Auth {
         return row.length > idx && "true".equalsIgnoreCase(row[idx].trim());
     }
 
+    private static int parseWorkHours(String shift) {
+        if (shift == null || shift.isBlank()) return 40;
+
+        Matcher matcher = Pattern.compile("(\\d+)").matcher(shift);
+        if (matcher.find()) {
+            try {
+                return Integer.parseInt(matcher.group(1));
+            } catch (NumberFormatException ignored) {
+                // fall through
+            }
+        }
+
+        return 40;
+    }
+
+    private static AcademicStaff parseAcademicStaffRow(String[] row) {
+        if (row == null || row.length == 0) return null;
+
+        try {
+            String firstName  = row.length > 1 ? row[1] : "";
+            String middleName = row.length > 2 ? row[2] : "";
+            String lastName   = row.length > 3 ? row[3] : "";
+            LocalDate dob     = row.length > 4 && !row[4].isBlank() ? LocalDate.parse(row[4]) : LocalDate.now();
+            Gender gender     = safeGender(row.length > 5 ? row[5] : null);
+            String address    = row.length > 6 ? row[6] : "";
+            String contact    = row.length > 7 ? row[7] : "";
+            String email      = row.length > 8 ? row[8] : "";
+
+            String facultyId  = row.length > 9 ? row[9] : "";
+            Department dept   = row.length > 10 ? Department.fromCodeOrFullName(row[10]) : Department.UNASSIGNED;
+            FacultyRank rank  = row.length > 11 ? safeFacultyRank(row[11]) : FacultyRank.INSTRUCTOR;
+            LocalDate hire    = row.length > 12 && !row[12].isBlank() ? LocalDate.parse(row[12]) : LocalDate.now();
+            String office     = row.length > 13 ? row[13] : "";
+            double salary     = row.length > 14 ? safeDouble(row, 14) : 0.0;
+            int teachingHours = row.length > 15 ? safeInt(row, 15) : 0;
+            int maxTeaching   = row.length > 16 ? safeInt(row, 16) : 12;
+            boolean isTenured = row.length > 17 && "true".equalsIgnoreCase(row[17]);
+
+            return new AcademicStaff(
+                firstName, middleName, lastName, dob, gender,
+                address, contact, email,
+                facultyId, dept, rank, hire, office,
+                salary, isTenured, new ArrayList<>(),
+                facultyId, teachingHours, maxTeaching
+            );
+        } catch (Exception e) {
+            System.out.println("[ERROR][parseAcademicStaffRow] " + e.getMessage());
+            return null;
+        }
+    }
+
+    private static NonAcademicStaff parseNonAcademicStaffRow(String[] row) {
+        if (row == null || row.length == 0) return null;
+
+        try {
+            String firstName  = row.length > 0 ? row[0] : "";
+            String middleName = row.length > 1 ? row[1] : "";
+            String lastName   = row.length > 2 ? row[2] : "";
+            LocalDate dob     = row.length > 3 && !row[3].isBlank() ? LocalDate.parse(row[3]) : LocalDate.now();
+            Gender gender     = safeGender(row.length > 4 ? row[4] : null);
+            String address    = row.length > 5 ? row[5] : "";
+            String contact    = row.length > 6 ? row[6] : "";
+            String email      = row.length > 7 ? row[7] : "";
+
+            String staffIdPrimary = row.length > 16 ? row[16] : "";
+            String staffIdFallback = row.length > 8 ? row[8] : "";
+            String staffId = !staffIdPrimary.isBlank() ? staffIdPrimary : staffIdFallback;
+
+            Department department = row.length > 9 ? Department.fromCodeOrFullName(row[9]) : Department.UNASSIGNED;
+            String position = row.length > 17 ? row[17] : "Staff";
+            LocalDate hireDate = row.length > 11 && !row[11].isBlank() ? LocalDate.parse(row[11]) : LocalDate.now();
+            String officeLocation = row.length > 12 ? row[12] : "";
+            double salary = row.length > 13 ? safeDouble(row, 13) : 0.0;
+            int workHours = parseWorkHours(row.length > 18 ? row[18] : "");
+
+            return new NonAcademicStaff(
+                firstName, middleName, lastName, dob, gender,
+                address, contact, email,
+                staffId, department, position,
+                hireDate, officeLocation, salary, workHours
+            );
+        } catch (Exception e) {
+            System.out.println("[ERROR][parseNonAcademicStaffRow] " + e.getMessage());
+            return null;
+        }
+    }
+
     // [HELPER] Safely parse GraduateProgram from CSV row
     public static GraduateProgram safeProgramLevel(String[] row, int index) {
         if (row.length <= index || row[index] == null || row[index].isBlank()) {
@@ -163,8 +249,8 @@ public class Auth {
             return null; // no advisor assigned
         }
         String advisorId = row[index].trim();
-        // You can look up a Faculty object by ID if you have a getFacultyById method
-        Faculty faculty = Auth.getFacultyById(advisorId); // implement this method
+        // Look up advisor using academic staff records
+        Faculty faculty = Auth.getAcademicStaffById(advisorId);
         if (faculty == null) {
             System.out.println("Warning: Advisor with ID '" + advisorId + "' not found.");
         }
@@ -220,54 +306,18 @@ public class Auth {
         }
     }
 
-    public static Faculty getFacultyById(String facultyId) {
-        if (facultyId == null || facultyId.isBlank()) return null;
+    public static NonAcademicStaff getNonAcademicStaffById(String staffId) {
+        if (staffId == null || staffId.isBlank()) return null;
 
-        List<String[]> rows = CSV.readCSV(Settings.FACULTY_FILE);
-        for (String[] r : rows) {
-            if (r.length == 0) continue;
+        List<String[]> rows = CSV.readCSV(Settings.NON_ACADEMIC_STAFF_FILE);
+        for (String[] row : rows) {
+            if (row.length == 0) continue;
 
-            if (r[0].trim().equalsIgnoreCase(facultyId.trim())) {
-                try {
-                    // Person attributes
-                    String id         = r[0];
-                    String firstName  = r[1];
-                    String middleName = r[2];
-                    String lastName   = r[3];
-                    LocalDate dob     = r.length > 4 && !r[4].isBlank() ? LocalDate.parse(r[4]) : LocalDate.now();
-                    Gender gender     = r.length > 5 ? Gender.valueOf(r[5].toUpperCase()) : Gender.OTHER;
-                    String email      = r.length > 6 ? r[6] : "";
-                    String contact    = r.length > 7 ? r[7] : "";
-                    String departmentName = r.length > 8 ? r[8] : null;
+            String primaryId  = row.length > 16 ? row[16] : "";
+            String fallbackId = row.length > 8 ? row[8] : "";
 
-                    Department dept = null;
-                    if (departmentName != null && !departmentName.isBlank()) {
-                        dept = Department.fromCodeOrFullName(departmentName);
-                    }
-
-                    // Faculty attributes (default:s if missing)
-                    FacultyRank rank = r.length > 9 ? safeFacultyRank(r[9]) : FacultyRank.INSTRUCTOR;
-                    LocalDate hireDate    = r.length > 10 && !r[10].isBlank() ? LocalDate.parse(r[10]) : LocalDate.now();
-                    String officeLocation = r.length > 11 ? r[11] : "Office TBD";
-                    double salary         = r.length > 12 && !r[12].isBlank() ? Double.parseDouble(r[12]) : 0.0;
-                    boolean isTenured     = r.length > 13 && !r[13].isBlank() && r[13].equalsIgnoreCase("true");
-                    List<GraduateStudent> advisees = new ArrayList<>(); // empty for now
-
-                    // AcademicStaff attributes
-                    String teacherId = r.length > 14 ? r[14] : id;
-                    int teachingHoursPerWeek = r.length > 15 ? Integer.parseInt(r[15]) : 0;
-                    int maxTeachingLoad       = r.length > 16 ? Integer.parseInt(r[16]) : 12;
-
-                    return new AcademicStaff(
-                        firstName, middleName, lastName, dob, gender, "", contact, email,
-                        id, dept, rank, hireDate, officeLocation, salary, isTenured, advisees,
-                        teacherId, teachingHoursPerWeek, maxTeachingLoad
-                    );
-
-                } catch (Exception e) {
-                    System.out.println("Error parsing faculty with ID: " + facultyId);
-                    e.printStackTrace();
-                }
+            if (staffId.equalsIgnoreCase(primaryId) || staffId.equalsIgnoreCase(fallbackId)) {
+                return parseNonAcademicStaffRow(row);
             }
         }
         return null;
@@ -357,58 +407,31 @@ public class Auth {
         return null;
     }
 
-    public static AcademicStaff getFacultyByEmail(String email) {
-        List<String[]> rows = CSV.readCSV(Settings.FACULTY_FILE);
+    public static AcademicStaff getAcademicStaffByEmail(String email) {
+        if (email == null || email.isBlank()) return null;
+
+        List<String[]> rows = CSV.readCSV(Settings.ACADEMIC_STAFF_FILE);
 
         for (String[] r : rows) {
+            if (r.length <= 8) continue;
+            if (!r[8].trim().equalsIgnoreCase(email.trim())) continue;
 
-            // Skip invalid / non-matching rows
-            if (r.length <= Settings.COL_EMAIL ||
-                !r[Settings.COL_EMAIL].trim().equalsIgnoreCase(email.trim())) {
-                continue;
-            }
+            AcademicStaff staff = parseAcademicStaffRow(r);
+            if (staff != null) return staff;
+        }
 
-            try {
-                // Basic person info
-                String personId   = r[Settings.COL_PERSON_ID];
-                String firstName  = r[Settings.COL_FIRST_NAME];
-                String middleName = r[Settings.COL_MIDDLE_NAME];
-                String lastName   = r[Settings.COL_LAST_NAME];
-                LocalDate dob     = LocalDate.parse(r[Settings.COL_DOB]);
-                Gender gender     = Gender.valueOf(r[Settings.COL_GENDER].toUpperCase());
-                String address    = r[Settings.COL_ADDRESS];
-                String contact    = r[Settings.COL_CONTACT];
+        return null;
+    }
 
-                // Faculty-specific info
-                String facultyId  = r[Settings.COL_FACULTY_ID];
-                LocalDate hire    = LocalDate.parse(r[Settings.COL_HIRE_DATE]);
+    public static NonAcademicStaff getNonAcademicStaffByEmail(String email) {
+        List<String[]> rows = CSV.readCSV(Settings.NON_ACADEMIC_STAFF_FILE);
 
-                Department dept   = safeDept(r, Settings.COL_DEPARTMENT);
-                FacultyRank rank = safeFacultyRank(r[Settings.COL_RANK]);
+        for (String[] r : rows) {
+            if (r.length <= 7) continue;
+            if (!r[7].trim().equalsIgnoreCase(email.trim())) continue;
 
-                String office     = r.length > Settings.COL_OFFICE ? r[Settings.COL_OFFICE] : "";
-                double salary     = safeDouble(r, Settings.COL_SALARY);
-                boolean fullTime  = Boolean.parseBoolean(r[Settings.COL_FULL_TIME]);
-
-                // Construct object
-                return new AcademicStaff(
-                    firstName, middleName, lastName, dob, gender, address, contact, email,
-                    facultyId,       // Faculty ID
-                    dept,            // Department
-                    rank,            // FacultyRank
-                    hire,            // Hire Date
-                    office,          // Office Location
-                    salary,          // Salary
-                    fullTime,        // IsTenured
-                    new ArrayList<>(), // Advisees list (empty if unknown)
-                    facultyId,       // Teacher ID
-                    0,               // teachingHoursPerWeek
-                    12               // maxTeachingLoad (or any default)
-                );
-
-            } catch (Exception e) {
-                System.out.println("[ERROR][getFacultyByEmail] " + e.getMessage());
-            }
+            NonAcademicStaff staff = parseNonAcademicStaffRow(r);
+            if (staff != null) return staff;
         }
 
         return null;
@@ -420,41 +443,8 @@ public class Auth {
         List<AcademicStaff> staffList = new ArrayList<>();
 
         for (String[] r : rows) {
-            if (r.length == 0) continue;
-
-            try {
-                String id         = r[0];
-                String firstName  = r[1];
-                String middleName = r.length > 2 ? r[2] : "";
-                String lastName   = r.length > 3 ? r[3] : "";
-                LocalDate dob     = r.length > 4 && !r[4].isBlank() ? LocalDate.parse(r[4]) : LocalDate.now();
-                Gender gender     = safeGender(r.length > 5 ? r[5] : null);
-                String address    = r.length > 6 ? r[6] : "";
-                String contact    = r.length > 7 ? r[7] : "";
-                String email      = r.length > 8 ? r[8] : "";
-                Department dept   = safeDept(r, 9); // column 9 = Department
-                FacultyRank rank  = safeFacultyRank(r.length > 10 ? r[10] : null); // column 10 = FacultyRank
-                LocalDate hireDate = r.length > 11 && !r[11].isBlank() ? LocalDate.parse(r[11]) : LocalDate.now();
-                String officeLocation = r.length > 12 ? r[12] : "Office TBD";
-                double salary     = r.length > 13 && !r[13].isBlank() ? Double.parseDouble(r[13]) : 0.0;
-                boolean isTenured = r.length > 14 && "true".equalsIgnoreCase(r[14]);
-                List<GraduateStudent> advisees = new ArrayList<>();
-
-                String teacherId = r.length > 15 ? r[15] : id;
-                int teachingHoursPerWeek = r.length > 16 ? Integer.parseInt(r[16]) : 0;
-                int maxTeachingLoad = r.length > 17 ? Integer.parseInt(r[17]) : 12;
-
-                AcademicStaff staff = new AcademicStaff(
-                        firstName, middleName, lastName, dob, gender, address, contact, email,
-                        id, dept, rank, hireDate, officeLocation, salary, isTenured, advisees,
-                        teacherId, teachingHoursPerWeek, maxTeachingLoad
-                );
-
-                staffList.add(staff);
-            } catch (Exception e) {
-                System.out.println("Error parsing academic staff row: " + String.join(",", r));
-                e.printStackTrace();
-            }
+            AcademicStaff staff = parseAcademicStaffRow(r);
+            if (staff != null) staffList.add(staff);
         }
 
         return staffList;
@@ -470,4 +460,16 @@ public class Auth {
         }
         return null; // or throw an exception if not found
     }
+
+public static List<NonAcademicStaff> readAllNonAcademicStaff() {
+    List<String[]> rows = CSV.readCSV(Settings.NON_ACADEMIC_STAFF_FILE);
+    List<NonAcademicStaff> staffList = new ArrayList<>();
+
+    for (String[] r : rows) {
+        NonAcademicStaff staff = parseNonAcademicStaffRow(r);
+        if (staff != null) staffList.add(staff);
+    }
+
+    return staffList;
+}
 }

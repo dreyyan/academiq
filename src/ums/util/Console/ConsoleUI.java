@@ -194,8 +194,8 @@ public static void drawInputFields(int boxInnerWidth, String... labels) {
         }
     }
 
-    public static void clearDialogBox() {
-        for (int i = 5; i > 2; --i) {
+    public static void clearDialogBox(int startPosition) {
+        for (int i = startPosition; i > 2; --i) {
             ConsoleUI.goTo(Settings.CONSOLE_HEIGHT - i, 0);
             ConsoleUI.moveCursor(3);
             ConsoleInput.printCentered(" ".repeat(Settings.CONSOLE_WIDTH - 8), Settings.CONSOLE_WIDTH - 3);

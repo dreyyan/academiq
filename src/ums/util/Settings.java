@@ -16,9 +16,8 @@ public final class Settings {
     // * File Paths
     public static final String CREDENTIALS_FILE = "data/credentials.csv";
     public static final String STUDENTS_FILE = "data/students.csv";
-    public static final String FACULTY_FILE = "data/faculty.csv";
-    public static final String ACADEMIC_STAFF_FILE = "data/faculty.csv";
-    public static final String NON_ACAD_STAFF_FILE = "data/faculty.csv";
+    public static final String ACADEMIC_STAFF_FILE = "data/teachers.csv";
+    public static final String NON_ACADEMIC_STAFF_FILE = "data/administrators.csv";
     public static final String COURSES_FILE = "data/courses.csv";
     public static final String COURSE_OFFERINGS_FILE = "data/course-offerings.csv";
     public static final String ENROLLMENTS_FILE = "data/enrollments.csv";

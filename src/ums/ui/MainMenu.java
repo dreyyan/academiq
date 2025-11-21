@@ -129,13 +129,6 @@ public class MainMenu {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }),
-        new MenuOperation(new String[]{"ESC"}, "Logout", () -> {
-            try {
-                displayLoginScreen(); // go back to login
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         })
     };
     
@@ -503,7 +496,7 @@ public class MainMenu {
                 break; // Return to student menu
             } else if (key == 'E' || key == 'e') {
                 ConsoleUI.clearInputFields(yPositions, xPositions, maxLength);
-                ConsoleUI.clearDialogBox();
+                ConsoleUI.clearDialogBox(5);
 
                 // Prompt user to navigate using pressing a key
                 ConsoleUI.goTo(Settings.CONSOLE_HEIGHT - 3, 0);
@@ -626,7 +619,7 @@ public class MainMenu {
                 break; // Return to student menu
             } else if (key == 'E' || key == 'e') {
                 ConsoleUI.clearInputFields(yPositions, xPositions, maxLength);
-                ConsoleUI.clearDialogBox();
+                ConsoleUI.clearDialogBox(5);
 
                 // Prompt user to navigate using pressing a key
                 ConsoleUI.goTo(Settings.CONSOLE_HEIGHT - 3, 0);
@@ -761,17 +754,17 @@ public class MainMenu {
 
         // Display top border
         ConsoleUI.moveCursor(3);
-        ConsoleInput.printCentered("=".repeat(16), Settings.CONSOLE_WIDTH - 6);
+        ConsoleInput.printCentered("=".repeat(23), Settings.CONSOLE_WIDTH - 5);
         
         // Display operations
         for (MenuOperation operation : studentMenuOperations) {
-            ConsoleUI.moveCursor(42);
+            ConsoleUI.moveCursor(39);
             ConsoleAnimation.lineDelayAnimation('[' + operation.inputKeys[0] + "] " + operation.getDisplayName(), 50); System.out.println();
         }
 
         // Display bottom border
         ConsoleUI.moveCursor(3);
-        ConsoleInput.printCentered("=".repeat(16), Settings.CONSOLE_WIDTH - 6);
+        ConsoleInput.printCentered("=".repeat(23), Settings.CONSOLE_WIDTH - 5);
 
         // Display ASCII art of school
         ConsoleUI.moveCursor(42);
@@ -783,7 +776,7 @@ public class MainMenu {
             int key = ConsoleInput.readKey();
 
             // Handle keypress
-            if (key == Settings.ESC_KEY) {  
+            if (key == Settings.ESC_KEY) {
                 displayLoginScreen();
             } else if (key == '1') {
                 
@@ -805,21 +798,17 @@ public class MainMenu {
 
         // Display top border
         ConsoleUI.moveCursor(3);
-        ConsoleInput.printCentered("=".repeat(16), Settings.CONSOLE_WIDTH - 6);
+        ConsoleInput.printCentered("=".repeat(22), Settings.CONSOLE_WIDTH - 6);
         
         // Display operations
         for (MenuOperation operation : NonAcademicStaffMenuOperations) {
-            ConsoleUI.moveCursor(42);
+            ConsoleUI.moveCursor(39);
             ConsoleAnimation.lineDelayAnimation('[' + operation.inputKeys[0] + "] " + operation.getDisplayName(), 50); System.out.println();
         }
 
         // Display bottom border
         ConsoleUI.moveCursor(3);
-        ConsoleInput.printCentered("=".repeat(16), Settings.CONSOLE_WIDTH - 6);
-
-        // Display ASCII art of school
-        ConsoleUI.moveCursor(42);
-        ConsoleDisplay.displaySchool();
+        ConsoleInput.printCentered("=".repeat(22), Settings.CONSOLE_WIDTH - 6);
 
         // This loop runs indefinitely until the user enters a valid choice
         while (true) {
@@ -847,12 +836,15 @@ public class MainMenu {
         }
     }
 
+    // * UI: Administrator Menu
     private static void addStudentMenu() throws IOException {
-        ConsoleDisplay.setupScreen();
-        ConsoleUI.goTo(15, 0);
+        // Display UI
+        ConsoleUI.clearScreen();
+        ConsoleDisplay.displayBorder(2, 3);
+        ConsoleUI.goTo(4, 0);
         ConsoleDisplay.displayHeaderSubtitle("Administrator: Add Student");
 
-        ConsoleUI.goTo(17, 0);
+        ConsoleUI.goTo(5, 0);
         ConsoleUI.moveCursor(3);
         ConsoleInput.printCentered("Complete all fields. Press [ESC] at any time to cancel.", Settings.CONSOLE_WIDTH - 6, true);
 
@@ -869,13 +861,13 @@ public class MainMenu {
             "Enrollment Date (MM-dd-YYYY)",
             "Department",
             "Course",
-            "Program Level (Freshman/Sophomore/Junior/Senior/Master/PhD)",
+            "Program Level",
             "Thesis Title (Graduate only)"
         };
 
-        int[] yPositions = { 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35 };
-        int[] xPositions = { 44, 44, 44, 60, 60, 42, 48, 44, 44, 60, 32, 36, 7, 36 };
-        int maxLength = 40;
+        int[] yPositions = { 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34 };
+        int[] xPositions = { 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43 };
+        int maxLength = 48;
 
         ConsoleUI.drawInputFields(80, fields);
 
@@ -883,9 +875,10 @@ public class MainMenu {
             String[] inputs = ConsoleInput.captureFormInputs(yPositions, xPositions, maxLength);
 
             if (inputs == null) {
+                ConsoleUI.clearDialogBox(4);
                 ConsoleDisplay.dialogBox("info", "Add student canceled.");
                 ConsoleInput.pressEnterToContinue();
-                returnToNonAcademicStaffMenu();
+                displayNonAcademicStaffMenu(currentNonAcademicStaff);
                 return;
             }
 
@@ -959,15 +952,17 @@ public class MainMenu {
         }
 
         ConsoleInput.pressEnterToContinue();
-        returnToNonAcademicStaffMenu();
+        displayNonAcademicStaffMenu(currentNonAcademicStaff);
     }
 
     private static void addFacultyMenu() throws IOException {
-        ConsoleDisplay.setupScreen();
-        ConsoleUI.goTo(15, 0);
+        // Display UI
+        ConsoleUI.clearScreen();
+        ConsoleDisplay.displayBorder(2, 3);
+        ConsoleUI.goTo(4, 0);
         ConsoleDisplay.displayHeaderSubtitle("Administrator: Add Faculty");
 
-        ConsoleUI.goTo(17, 0);
+        ConsoleUI.goTo(5, 0);
         ConsoleUI.moveCursor(3);
         ConsoleInput.printCentered("Enter faculty information. Press [ESC] to cancel.", Settings.CONSOLE_WIDTH - 6, true);
 
@@ -982,7 +977,7 @@ public class MainMenu {
             "Email",
             "Faculty ID",
             "Department",
-            "Rank (Instructor/Assistant/Associate/Full Professor)",
+            "Rank",
             "Hire Date (MM-dd-YYYY)",
             "Office Location",
             "Salary",
@@ -992,8 +987,8 @@ public class MainMenu {
         };
 
         int[] yPositions = { 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40 };
-        int[] xPositions = { 44, 44, 44, 60, 60, 42, 48, 44, 44, 45, 6, 60, 44, 44, 52, 50, 45 };
-        int maxLength = 40;
+        int[] xPositions = { 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43 };
+        int maxLength = 48;
 
         ConsoleUI.drawInputFields(90, fields);
 
@@ -1003,7 +998,7 @@ public class MainMenu {
             if (inputs == null) {
                 ConsoleDisplay.dialogBox("info", "Add faculty canceled.");
                 ConsoleInput.pressEnterToContinue();
-                returnToNonAcademicStaffMenu();
+                displayNonAcademicStaffMenu(currentNonAcademicStaff);
                 return;
             }
 
@@ -1068,13 +1063,15 @@ public class MainMenu {
         }
 
         ConsoleInput.pressEnterToContinue();
-        returnToNonAcademicStaffMenu();
+        displayNonAcademicStaffMenu(currentNonAcademicStaff);
     }
 
     private static void viewAllStudents() throws IOException {
+        // Display UI
         ConsoleDisplay.setupScreen();
         ConsoleUI.goTo(15, 0);
         ConsoleDisplay.displayHeaderSubtitle("Administrator: Student Records");
+        System.out.println();
 
         List<String[]> rows = CSV.readCSV(Settings.STUDENTS_FILE);
         List<String[]> students = new ArrayList<>();
@@ -1087,14 +1084,15 @@ public class MainMenu {
         if (students.isEmpty()) {
             ConsoleDisplay.dialogBox("info", "No student records found.");
             ConsoleInput.pressEnterToContinue();
-            returnToNonAcademicStaffMenu();
+            displayNonAcademicStaffMenu(currentNonAcademicStaff);
             return;
         }
 
-        String border = "=".repeat(92);
-        String separator = "-".repeat(92);
-        String header = String.format("| %-3s | %-12s | %-28s | %-20s | %-20s |",
-                "No", "Student ID", "Name", "Department", "Course");
+        int tableWidth = 70;
+        String border = "=".repeat(tableWidth);
+        String separator = "-".repeat(tableWidth);
+        String header = String.format("| %-3s | %-12s | %-24s | %-14s | %-10s |",
+                "No", "Student ID", "Name", "Dept", "Course");
 
         ConsoleUI.moveCursor(5); ConsoleInput.printCentered(border, Settings.CONSOLE_WIDTH - 8);
         ConsoleUI.moveCursor(5); ConsoleInput.printCentered(header, Settings.CONSOLE_WIDTH - 8);
@@ -1108,11 +1106,15 @@ public class MainMenu {
             String firstName = safeValue(row, Settings.COL_FIRST_NAME);
             String middleName = safeValue(row, Settings.COL_MIDDLE_NAME);
             String lastName = safeValue(row, Settings.COL_LAST_NAME);
-            String dept = safeValue(row, Settings.COL_DEPARTMENT);
-            String course = safeValue(row, Settings.COL_COURSE);
+            String dept = abbreviateDepartment(safeValue(row, Settings.COL_DEPARTMENT));
+            String course = abbreviateCourse(safeValue(row, Settings.COL_COURSE));
             String name = (firstName + " " + (middleName.isBlank() ? "" : middleName + " ") + lastName).trim().replaceAll("\\s+", " ");
 
-            String body = String.format("| %-3d | %-12s | %-28s | %-20s | %-20s |",
+            if (name.length() > 24) name = name.substring(0, 24);
+            if (dept.length() > 14) dept = dept.substring(0, 14);
+            if (course.length() > 10) course = course.substring(0, 10);
+
+            String body = String.format("| %-3d | %-12s | %-24s | %-14s | %-10s |",
                 i + 1, studentId, name, dept, course);
             ConsoleUI.moveCursor(5); ConsoleInput.printCentered(body, Settings.CONSOLE_WIDTH - 8);
             displayed++;
@@ -1127,26 +1129,29 @@ public class MainMenu {
         }
 
         ConsoleInput.pressEnterToContinue();
-        returnToNonAcademicStaffMenu();
+        displayNonAcademicStaffMenu(currentNonAcademicStaff);
     }
 
     private static void viewAllFaculty() throws IOException {
+        // Display UI
         ConsoleDisplay.setupScreen();
         ConsoleUI.goTo(15, 0);
         ConsoleDisplay.displayHeaderSubtitle("Administrator: Faculty Records");
+        System.out.println();
 
         List<String[]> rows = CSV.readCSV(Settings.ACADEMIC_STAFF_FILE);
         if (rows.isEmpty()) {
             ConsoleDisplay.dialogBox("info", "No faculty records found.");
             ConsoleInput.pressEnterToContinue();
-            returnToNonAcademicStaffMenu();
+            displayNonAcademicStaffMenu(currentNonAcademicStaff);
             return;
         }
 
-        String border = "=".repeat(92);
-        String separator = "-".repeat(92);
-        String header = String.format("| %-3s | %-12s | %-28s | %-20s | %-20s |",
-                "No", "Faculty ID", "Name", "Department", "Rank");
+        int tableWidth = 70;
+        String border = "=".repeat(tableWidth);
+        String separator = "-".repeat(tableWidth);
+        String header = String.format("| %-3s | %-12s | %-24s | %-14s | %-10s |",
+                "No", "Faculty ID", "Name", "Dept", "Rank");
 
         ConsoleUI.moveCursor(5); ConsoleInput.printCentered(border, Settings.CONSOLE_WIDTH - 8);
         ConsoleUI.moveCursor(5); ConsoleInput.printCentered(header, Settings.CONSOLE_WIDTH - 8);
@@ -1165,8 +1170,11 @@ public class MainMenu {
             String name = (firstName + " " + (middleName.isBlank() ? "" : middleName + " ") + lastName).trim().replaceAll("\\s+", " ");
 
             if (facultyId.isBlank() && name.isBlank()) continue;
+            if (name.length() > 24) name = name.substring(0, 24);
+            if (dept.length() > 14) dept = dept.substring(0, 14);
+            if (rank.length() > 10) rank = rank.substring(0, 10);
 
-            String body = String.format("| %-3d | %-12s | %-28s | %-20s | %-20s |",
+            String body = String.format("| %-3d | %-12s | %-24s | %-14s | %-10s |",
                 i + 1, facultyId, name, dept, rank);
             ConsoleUI.moveCursor(5); ConsoleInput.printCentered(body, Settings.CONSOLE_WIDTH - 8);
             displayed++;
@@ -1181,13 +1189,15 @@ public class MainMenu {
         }
 
         ConsoleInput.pressEnterToContinue();
-        returnToNonAcademicStaffMenu();
+        displayNonAcademicStaffMenu(currentNonAcademicStaff);
     }
 
     private static void removeStudentMenu() throws IOException {
-        ConsoleDisplay.setupScreen();
-        ConsoleUI.goTo(15, 0);
+        // Display UI
+        ConsoleUI.clearScreen();
+        ConsoleUI.goTo(4, 0);
         ConsoleDisplay.displayHeaderSubtitle("Administrator: Remove Student");
+        System.out.println();
 
         ConsoleUI.goTo(17, 0);
         ConsoleUI.moveCursor(3);
@@ -1203,7 +1213,7 @@ public class MainMenu {
         if (inputs == null) {
             ConsoleDisplay.dialogBox("info", "Remove student canceled.");
             ConsoleInput.pressEnterToContinue();
-            returnToNonAcademicStaffMenu();
+            displayNonAcademicStaffMenu(currentNonAcademicStaff);
             return;
         }
 
@@ -1212,7 +1222,7 @@ public class MainMenu {
         if (identifier.isBlank()) {
             ConsoleDisplay.dialogBox("error", "Identifier cannot be empty.");
             ConsoleInput.pressEnterToContinue();
-            returnToNonAcademicStaffMenu();
+            displayNonAcademicStaffMenu(currentNonAcademicStaff);
             return;
         }
 
@@ -1243,13 +1253,15 @@ public class MainMenu {
         }
 
         ConsoleInput.pressEnterToContinue();
-        returnToNonAcademicStaffMenu();
+        displayNonAcademicStaffMenu(currentNonAcademicStaff);
     }
 
     private static void removeFacultyMenu() throws IOException {
-        ConsoleDisplay.setupScreen();
-        ConsoleUI.goTo(15, 0);
+        // Display UI
+        ConsoleUI.clearScreen();
+        ConsoleUI.goTo(4, 0);
         ConsoleDisplay.displayHeaderSubtitle("Administrator: Remove Faculty");
+        System.out.println();
 
         ConsoleUI.goTo(17, 0);
         ConsoleUI.moveCursor(3);
@@ -1265,7 +1277,7 @@ public class MainMenu {
         if (inputs == null) {
             ConsoleDisplay.dialogBox("info", "Remove faculty canceled.");
             ConsoleInput.pressEnterToContinue();
-            returnToNonAcademicStaffMenu();
+            displayNonAcademicStaffMenu(currentNonAcademicStaff);
             return;
         }
 
@@ -1274,7 +1286,7 @@ public class MainMenu {
         if (identifier.isBlank()) {
             ConsoleDisplay.dialogBox("error", "Identifier cannot be empty.");
             ConsoleInput.pressEnterToContinue();
-            returnToNonAcademicStaffMenu();
+            displayNonAcademicStaffMenu(currentNonAcademicStaff);
             return;
         }
 
@@ -1300,15 +1312,7 @@ public class MainMenu {
         }
 
         ConsoleInput.pressEnterToContinue();
-        returnToNonAcademicStaffMenu();
-    }
-
-    private static void returnToNonAcademicStaffMenu() throws IOException {
-        if (currentNonAcademicStaff != null) {
-            displayNonAcademicStaffMenu(currentNonAcademicStaff);
-        } else {
-            displayLoginScreen();
-        }
+        displayNonAcademicStaffMenu(currentNonAcademicStaff);
     }
 
     private static YearLevel resolveYearLevel(String input) {
@@ -1340,6 +1344,38 @@ public class MainMenu {
         return row[index] != null ? row[index].trim() : "";
     }
 
+    private static String abbreviateDepartment(String deptName) {
+        if (deptName == null || deptName.isBlank()) return "N/A";
+        Department dept = Department.fromCodeOrFullName(deptName);
+        if (dept != Department.UNASSIGNED) {
+            return dept.getCode();
+        }
+        return generateAcronym(deptName, 6);
+    }
+
+    private static String abbreviateCourse(String courseName) {
+        if (courseName == null || courseName.isBlank()) return "N/A";
+        return generateAcronym(courseName, 10);
+    }
+
+    private static String generateAcronym(String value, int maxLength) {
+        String[] tokens = value.replaceAll("[^A-Za-z0-9 ]", " ").split("\\s+");
+        StringBuilder acronym = new StringBuilder();
+        for (String token : tokens) {
+            if (token.isBlank()) continue;
+            String lower = token.toLowerCase();
+            if (lower.equals("of") || lower.equals("and") || lower.equals("in") || lower.equals("the") || lower.equals("for") || lower.equals("to")) {
+                continue;
+            }
+            acronym.append(Character.toUpperCase(token.charAt(0)));
+            if (acronym.length() >= maxLength) break;
+        }
+        if (acronym.length() == 0) {
+            return value.length() <= maxLength ? value : value.substring(0, maxLength);
+        }
+        return acronym.toString();
+    }
+
     private static void removeStudentEnrollments(String studentId) {
         if (studentId == null || studentId.isBlank()) return;
         List<String[]> rows = CSV.readCSV(Settings.ENROLLMENTS_FILE);
@@ -1364,6 +1400,7 @@ public class MainMenu {
         ConsoleDisplay.displayBorder(2, 3);
         ConsoleUI.goTo(4, 0);
         ConsoleDisplay.displayHeaderSubtitle("Setup Information");
+        System.out.println();
 
         // Prompt user to fill out personal information before proceeding to 'Student Menu'
         ConsoleUI.goTo(6, 0);
@@ -1675,12 +1712,19 @@ public class MainMenu {
 
                 // Create NonAcademicStaff/Administrator object
                 NonAcademicStaff admin = new NonAcademicStaff(
-                    firstName, middleName, lastName, dob, gender, address, contact, email,
-                    adminId, department, jobTitle, hireDate, officeLocation, salary, workHours
+                    firstName, middleName, lastName, dob, gender,
+                    address, contact, email,
+                    adminId,           // staffId
+                    department,        // Department
+                    jobTitle,          // Position
+                    hireDate,          // Hire Date
+                    officeLocation,    // Office Location
+                    salary,            // Salary
+                    workHours          // Work hours per week (int)
                 );
 
                 // Save to CSV
-                CSV.appendRow(Settings.NON_ACAD_STAFF_FILE, admin.toCSVRow());
+                CSV.appendRow(Settings.NON_ACADEMIC_STAFF_FILE, admin.toCSVRow());
 
                 // Set currently logged-in admin
                 currentNonAcademicStaff = admin;
@@ -1798,7 +1842,13 @@ public class MainMenu {
         // ? Type: AcademicStaff
         case "academic staff":
         case "teacher":
-            displayAcademicStaffSetupInformationScreen(email, userType);
+            AcademicStaff staff = Auth.getAcademicStaffByEmail(email);
+            if (staff == null) {
+                displayAcademicStaffSetupInformationScreen(email, userType);
+                return;
+            }
+            currentAcademicStaff = staff;
+            displayAcademicStaffMenu(staff);
             break;
 
         // ? Type: Librarian
@@ -1807,7 +1857,13 @@ public class MainMenu {
 
         // ? Type: Administrator
         case "administrator":
-            displayNonAcademicStaffSetupInformationScreen(email, userType);
+            NonAcademicStaff admin = Auth.getNonAcademicStaffByEmail(email);
+            if (admin == null) {
+                displayNonAcademicStaffSetupInformationScreen(email, userType);
+                return;
+            }
+            currentNonAcademicStaff = admin;
+            displayNonAcademicStaffMenu(admin);
             break;
 
         default:
