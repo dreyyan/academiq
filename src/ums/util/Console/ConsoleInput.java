@@ -172,44 +172,47 @@ public class ConsoleInput {
     }
 
     // [METHOD] Navigate input fields using [ENTER] key, with max characters per field and individual X/Y positions. Returns null if user presses [ESC] key
-    public static String[] captureFormInputs(int[] fieldYPositions, int[] fieldXPositions, int maxLength) throws IOException {
-        if (fieldYPositions.length != fieldXPositions.length) {
-            throw new IllegalArgumentException("Y and X positions arrays must have the same length.");
-        }
+public static String[] captureFormInputs(int[] fieldYPositions, int[] fieldXPositions, int maxLength) throws IOException {
+    if (fieldYPositions.length != fieldXPositions.length) {
+        throw new IllegalArgumentException("Y and X positions arrays must have the same length.");
+    }
 
-        String[] inputs = new String[fieldYPositions.length];
-        Arrays.fill(inputs, ""); // initialize
+    String[] inputs = new String[fieldYPositions.length];
+    Arrays.fill(inputs, ""); // initialize
 
-        for (int current = 0; current < fieldYPositions.length; current++) {
+    for (int current = 0; current < fieldYPositions.length; current++) {
+        StringBuilder input = new StringBuilder();
+
+        while (true) {
+            // Move cursor to the start of the current field
             ConsoleUI.goTo(fieldYPositions[current], fieldXPositions[current]);
 
-            StringBuilder input = new StringBuilder();
+            // Display current input and clear leftover characters
+            String value = input.toString();
+            System.out.print(value + " ".repeat(maxLength - value.length()));
 
-            while (true) {
-                // Move cursor to the start of the current field
-                ConsoleUI.goTo(fieldYPositions[current], fieldXPositions[current]);
+            // Move cursor to the end of current input
+            ConsoleUI.goTo(fieldYPositions[current], fieldXPositions[current] + value.length());
 
-                // Display current input
-                System.out.print(input.toString()); // extra space to clear leftover characters
+            int key = readKey(); // use JLine or fallback to System.in
 
-                int key = readKey(); // use JLine or fallback to System.in
-
-                if (key == 27) { // ESC key
-                    return null; // user cancelled
-                } else if (key == 10 || key == 13) { // ENTER key (LF or CR)
-                    break; // done with this field
-                } else if (key == 8 || key == 127) { // Backspace
-                    if (input.length() > 0) input.deleteCharAt(input.length() - 1);
-                } else if (key >= 32 && key <= 126) { // Printable ASCII
-                    if (input.length() < maxLength) input.append((char) key);
-                }
+            if (key == 27) { // ESC key
+                return null; // user cancelled
+            } else if (key == 10 || key == 13) { // ENTER key (LF or CR)
+                break; // done with this field
+            } else if (key == 8 || key == 127) { // Backspace
+                if (input.length() > 0) input.deleteCharAt(input.length() - 1);
+            } else if (key >= 32 && key <= 126) { // Printable ASCII
+                if (input.length() < maxLength) input.append((char) key);
             }
-
-            inputs[current] = input.toString();
         }
 
-        return inputs;
+        // Save the captured input
+        inputs[current] = input.toString();
     }
+
+    return inputs;
+}
 
     // [METHOD] Read keyboard input with JLine
     public static int readKey() throws IOException {

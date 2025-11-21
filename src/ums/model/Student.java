@@ -70,7 +70,7 @@ public abstract class Student extends Person {
     // [METHOD] Enroll student in an existing course offering
     public void enrollInOffering(CourseOffering offering){
         if (getEnrolledCourses().contains(offering)){ // ! [ERROR] Student already enrolled in course offering
-            Logger.errorMessage(getStudentId() + " is already enrolled in " + offering.getCourse());
+            ConsoleDisplay.dialogBox("error", getStudentId() + " is already enrolled in " + offering.getCourse());
         } else {
             getEnrolledCourses().add(offering); // Enroll in course offering
             ConsoleDisplay.dialogBox("success", "Successfully enrolled in " + offering.getCourse() + "!");
@@ -80,9 +80,9 @@ public abstract class Student extends Person {
     // [METHOD] Drop student's existing course offering
     public void dropOffering(CourseOffering offering) {
         if(getEnrolledCourses().remove(offering)){
-            Logger.successMessage(getStudentId() + " dropped " + offering.getCourse());
+            ConsoleDisplay.dialogBox("success", "Successfully dropped in " + offering.getCourse() + "!");
         } else {
-            Logger.errorMessage(getStudentId() + " is stil enrolled in " + offering.getCourse());
+            ConsoleDisplay.dialogBox("error", getStudentId() + " is stil enrolled in " + offering.getCourse());
         }
     }
 

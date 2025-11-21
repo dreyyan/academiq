@@ -219,4 +219,39 @@ public class CSV {
             errorMessage("Student ID not found in CSV: " + student.getStudentId());
         }
     }
+
+    // [UTILITY] Check if a student is already enrolled in a course offering
+    public static boolean isStudentEnrolled(String studentId, String offeringId) {
+        List<String[]> rows = readCSV(Settings.ENROLLMENTS_FILE);
+
+        for (String[] row : rows) {
+            if (row.length >= 2) { // Ensure there are at least two columns: studentId and offeringId
+                String sId = row[0].trim();
+                String oId = row[1].trim();
+                if (sId.equals(studentId) && oId.equals(offeringId)) {
+                    return true; // Found a match
+                }
+            }
+        }
+
+        return false; // Not enrolled
+    }
+
+    // [UTILITY] Check and remove a student's enrollment
+    public static void removeEnrollment(String studentId, String offeringId) {
+        List<String[]> rows = readCSV(Settings.ENROLLMENTS_FILE);
+        boolean removed = false;
+
+        for (int i = rows.size() - 1; i >= 0; i--) { // iterate backwards to safely remove
+            String[] row = rows.get(i);
+            if (row.length >= 2 && row[0].equals(studentId) && row[1].equals(offeringId)) {
+                rows.remove(i);
+                removed = true;
+            }
+        }
+
+        if (removed) {
+            writeCSV(Settings.ENROLLMENTS_FILE, rows);
+        }
+    }
 }

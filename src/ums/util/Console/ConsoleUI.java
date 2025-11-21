@@ -83,56 +83,75 @@ public class ConsoleUI {
         System.out.flush();
     }
 
-    // [UTILITY] Draw one or multiple input boxes dynamically
-    public static void drawInputFields(int width, String... labels) {
-        // Box drawing characters
-        String topLeft = "╔", topRight = "╗";
-        String bottomLeft = "╚", bottomRight = "╝";
-        String horizontal = "═";
-        String vertical = "║";
-        String dividerLeft = "╠", dividerRight = "╣";
+// [UTILITY] Draw one or multiple input boxes with a vertical divider between label and value.
+// boxInnerWidth = desired width inside the outer borders (characters between ╔ and ╗)
+public static void drawInputFields(int boxInnerWidth, String... labels) {
+    if (boxInnerWidth < 10) boxInnerWidth = 10; // minimum sane width
 
-        // Compute box width based on longest label
-        int maxLabelLength = 0;
-        for (String label : labels) {
-            maxLabelLength = Math.max(maxLabelLength, label.length());
-        }
-        int innerWidth = Math.max(width, maxLabelLength + 2);
+    // box drawing chars
+    final String TL = "╔", TR = "╗", BL = "╚", BR = "╝";
+    final String H  = "═";
+    final String V  = "║";
+    final String DL = "╠", DR = "╣";
+    final String SEP = "║"; // inner separator between label and value
 
-        // If only one field, use the simple box
-        if (labels.length == 1) {
-            String top = topLeft + horizontal.repeat(innerWidth) + topRight;
-            String labelLine = String.format("%s %-" + (innerWidth - 1) + "s%s", vertical, labels[0] + ":", vertical);
-            String bottom = bottomLeft + horizontal.repeat(innerWidth) + bottomRight;
-
-            ConsoleUI.moveCursor(5); ConsoleInput.printCentered(top, Settings.CONSOLE_WIDTH - 9);
-            ConsoleUI.moveCursor(5); ConsoleInput.printCentered(labelLine, Settings.CONSOLE_WIDTH - 9);
-            ConsoleUI.moveCursor(5); ConsoleInput.printCentered(bottom, Settings.CONSOLE_WIDTH - 9);
-            return;
-        }
-
-        // Otherwise, build a stacked multi-input box
-        String top = topLeft + horizontal.repeat(innerWidth) + topRight;
-        String bottom = bottomLeft + horizontal.repeat(innerWidth) + bottomRight;
-        ConsoleUI.moveCursor(5);
-        ConsoleInput.printCentered(top, Settings.CONSOLE_WIDTH - 9);
-
-        for (int i = 0; i < labels.length; i++) {
-            String labelLine = String.format("%s %-" + (innerWidth - 1) + "s%s", vertical, labels[i] + ":", vertical);
-            ConsoleUI.moveCursor(5);
-            ConsoleInput.printCentered(labelLine, Settings.CONSOLE_WIDTH - 9);
-
-            // Add divider if not the last field
-            if (i < labels.length - 1) {
-                String divider = dividerLeft + horizontal.repeat(innerWidth) + dividerRight;
-                ConsoleUI.moveCursor(5);
-                ConsoleInput.printCentered(divider, Settings.CONSOLE_WIDTH - 9);
-            }
-        }
-
-        ConsoleUI.moveCursor(5);
-        ConsoleInput.printCentered(bottom, Settings.CONSOLE_WIDTH - 9);
+    // longest label
+    int maxLabelLength = 0;
+    for (String label : labels) {
+        if (label != null) maxLabelLength = Math.max(maxLabelLength, label.length());
     }
+
+    // Ensure inner width can contain label + sep + at least small value area
+    int innerWidth = Math.max(boxInnerWidth, maxLabelLength + 6); // +6 safe padding
+    // label block will be right-aligned into maxLabelLength and surrounded by one space each side:
+    // " " + <rightAlignedLabel(maxLabelLength)> + " "  => length = maxLabelLength + 2
+    int labelBlockLen = maxLabelLength + 2;
+
+    // Remaining space for value block after we reserve 1 char for inner separator
+    int valueBlockLen = innerWidth - labelBlockLen - 1; // -1 for SEP char
+    if (valueBlockLen < 1) valueBlockLen = 1; // at least 1 char for value area
+
+    // Top border
+    String top = TL + H.repeat(innerWidth) + TR;
+    String divider = DL + H.repeat(innerWidth) + DR;
+    String bottom = BL + H.repeat(innerWidth) + BR;
+
+    ConsoleUI.moveCursor(5);
+    ConsoleInput.printCentered(top, Settings.CONSOLE_WIDTH - 9);
+
+    for (int i = 0; i < labels.length; i++) {
+        String rawLabel = labels[i] == null ? "" : labels[i];
+
+        // right-align label inside maxLabelLength
+        String labelRightAligned = String.format("%" + maxLabelLength + "s", rawLabel);
+
+        // label block: " " + labelRightAligned + " "  => length = maxLabelLength + 2
+        String labelBlock = " " + labelRightAligned + " ";
+
+        // value block: single string of exactly valueBlockLen characters (initially spaces)
+        String valueBlock = String.format("%-" + valueBlockLen + "s", "");
+
+        // inner content must be exactly innerWidth characters:
+        // labelBlock (labelBlockLen) + SEP (1) + valueBlock (valueBlockLen) == innerWidth
+        String innerContent = labelBlock + SEP + valueBlock;
+
+        // full row = outer vertical + innerContent + outer vertical
+        String fullRow = V + innerContent + V;
+
+        ConsoleUI.moveCursor(5);
+        ConsoleInput.printCentered(fullRow, Settings.CONSOLE_WIDTH - 9);
+
+        // draw divider between rows (except after last)
+        if (i < labels.length - 1) {
+            ConsoleUI.moveCursor(5);
+            ConsoleInput.printCentered(divider, Settings.CONSOLE_WIDTH - 9);
+        }
+    }
+
+    ConsoleUI.moveCursor(5);
+    ConsoleInput.printCentered(bottom, Settings.CONSOLE_WIDTH - 9);
+}
+
 
     // [UTILITY] Clear input fields
     public static void clearInputFields(int[] fieldYPositions, int[] fieldXPositions, int maxLength) throws IOException {
@@ -172,6 +191,14 @@ public class ConsoleUI {
             }
 
             System.out.print(value);
+        }
+    }
+
+    public static void clearDialogBox() {
+        for (int i = 5; i > 2; --i) {
+            ConsoleUI.goTo(Settings.CONSOLE_HEIGHT - i, 0);
+            ConsoleUI.moveCursor(3);
+            ConsoleInput.printCentered(" ".repeat(Settings.CONSOLE_WIDTH - 8), Settings.CONSOLE_WIDTH - 3);
         }
     }
 }
