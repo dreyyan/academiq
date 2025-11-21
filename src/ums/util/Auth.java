@@ -81,7 +81,7 @@ public class Auth {
 
     // * [AUTH] Check if user type is valid
     public static boolean isValidUserType(String userType) {
-        return isValidStudentType(userType) || isValidStudentType(userType);
+        return isValidStudentType(userType) || isValidFacultyType(userType);
     }
 
     // [AUTH] Check if email/password exists and return user type
@@ -175,21 +175,36 @@ public class Auth {
     private static FacultyRank safeFacultyRank(String value) {
         if (value == null || value.isBlank()) return FacultyRank.INSTRUCTOR;
 
-        switch (value.trim().toUpperCase()) {
-            case "INSTRUCTOR": return FacultyRank.INSTRUCTOR;
+        // Normalize input:
+        // - trim
+        // - replace spaces or hyphens with underscore
+        // - uppercase everything
+        String normalized = value
+                .trim()
+                .replace("-", "_")
+                .replace(" ", "_")
+                .toUpperCase();
+
+        switch (normalized) {
+            case "INSTRUCTOR":
+                return FacultyRank.INSTRUCTOR;
+
             case "ASSISTANT_PROFESSOR":
-            case "ASSISTANT PROFESSOR":
                 return FacultyRank.ASSISTANT_PROFESSOR;
+
             case "ASSOCIATE_PROFESSOR":
-            case "ASSOCIATE PROFESSOR":
                 return FacultyRank.ASSOCIATE_PROFESSOR;
+
             case "FULL_PROFESSOR":
-            case "FULL PROFESSOR":
                 return FacultyRank.FULL_PROFESSOR;
-            case "PROFESSOR": // map old generic "PROFESSOR" to FULL_PROFESSOR
+
+            case "PROFESSOR":
+                // CSV may store "PROFESSOR" (generic)
                 return FacultyRank.FULL_PROFESSOR;
+
             default:
-                System.out.println("Warning: Invalid FacultyRank '" + value + "'. Defaulting to INSTRUCTOR.");
+                System.out.println("Warning: Invalid FacultyRank '" + value + "' normalized to '" + normalized +
+                                "'. Defaulting to INSTRUCTOR.");
                 return FacultyRank.INSTRUCTOR;
         }
     }
@@ -230,7 +245,7 @@ public class Auth {
                         dept = Department.fromCodeOrFullName(departmentName);
                     }
 
-                    // Faculty attributes (defaults if missing)
+                    // Faculty attributes (default:s if missing)
                     FacultyRank rank = r.length > 9 ? safeFacultyRank(r[9]) : FacultyRank.INSTRUCTOR;
                     LocalDate hireDate    = r.length > 10 && !r[10].isBlank() ? LocalDate.parse(r[10]) : LocalDate.now();
                     String officeLocation = r.length > 11 ? r[11] : "Office TBD";
@@ -339,6 +354,63 @@ public class Auth {
                 System.out.println(e);
             }
         }
+        return null;
+    }
+
+    public static AcademicStaff getFacultyByEmail(String email) {
+        List<String[]> rows = CSV.readCSV(Settings.FACULTY_FILE);
+
+        for (String[] r : rows) {
+
+            // Skip invalid / non-matching rows
+            if (r.length <= Settings.COL_EMAIL ||
+                !r[Settings.COL_EMAIL].trim().equalsIgnoreCase(email.trim())) {
+                continue;
+            }
+
+            try {
+                // Basic person info
+                String personId   = r[Settings.COL_PERSON_ID];
+                String firstName  = r[Settings.COL_FIRST_NAME];
+                String middleName = r[Settings.COL_MIDDLE_NAME];
+                String lastName   = r[Settings.COL_LAST_NAME];
+                LocalDate dob     = LocalDate.parse(r[Settings.COL_DOB]);
+                Gender gender     = Gender.valueOf(r[Settings.COL_GENDER].toUpperCase());
+                String address    = r[Settings.COL_ADDRESS];
+                String contact    = r[Settings.COL_CONTACT];
+
+                // Faculty-specific info
+                String facultyId  = r[Settings.COL_FACULTY_ID];
+                LocalDate hire    = LocalDate.parse(r[Settings.COL_HIRE_DATE]);
+
+                Department dept   = safeDept(r, Settings.COL_DEPARTMENT);
+                FacultyRank rank = safeFacultyRank(r[Settings.COL_RANK]);
+
+                String office     = r.length > Settings.COL_OFFICE ? r[Settings.COL_OFFICE] : "";
+                double salary     = safeDouble(r, Settings.COL_SALARY);
+                boolean fullTime  = Boolean.parseBoolean(r[Settings.COL_FULL_TIME]);
+
+                // Construct object
+                return new AcademicStaff(
+                    firstName, middleName, lastName, dob, gender, address, contact, email,
+                    facultyId,       // Faculty ID
+                    dept,            // Department
+                    rank,            // FacultyRank
+                    hire,            // Hire Date
+                    office,          // Office Location
+                    salary,          // Salary
+                    fullTime,        // IsTenured
+                    new ArrayList<>(), // Advisees list (empty if unknown)
+                    facultyId,       // Teacher ID
+                    0,               // teachingHoursPerWeek
+                    12               // maxTeachingLoad (or any default)
+                );
+
+            } catch (Exception e) {
+                System.out.println("[ERROR][getFacultyByEmail] " + e.getMessage());
+            }
+        }
+
         return null;
     }
 

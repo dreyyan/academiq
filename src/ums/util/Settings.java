@@ -18,6 +18,7 @@ public final class Settings {
     public static final String STUDENTS_FILE = "data/students.csv";
     public static final String FACULTY_FILE = "data/faculty.csv";
     public static final String ACADEMIC_STAFF_FILE = "data/faculty.csv";
+    public static final String NON_ACAD_STAFF_FILE = "data/faculty.csv";
     public static final String COURSES_FILE = "data/courses.csv";
     public static final String COURSE_OFFERINGS_FILE = "data/course-offerings.csv";
     public static final String ENROLLMENTS_FILE = "data/enrollments.csv";
@@ -58,9 +59,19 @@ public final class Settings {
     public static final int COL_PHD_CANDIDACY           = 22; // true/false
     public static final int COL_PHD_DEFENSE_DATE         = 23; // yyyy-MM-dd or empty
 
+    public static final int COL_FACULTY_ID      = 24; // e.g., F001
+    public static final int COL_HIRE_DATE       = 25; // yyyy-MM-dd
+    public static final int COL_RANK            = 26; // Assistant, Associate, Full
+    public static final int COL_DEPARTMENT_FAC  = 27; // Department full name (override / separate from student dept)
+    public static final int COL_OFFICE          = 28; // Office location (Room 101)
+    public static final int COL_SALARY          = 29; // double
+    public static final int COL_FULL_TIME       = 30; // true/false
+
     // CSV Preferences
     public static final int STUDENTS_CSV_MAX_COLUMNS = 24;
     public static final int TOTAL_COLS = 16;
+    public static final int COL_TEACHING_HOURS  = 31; // e.g., 18
+    public static final int COL_MAX_COURSES     = 32; // e.g., 3 (or use your default)
 
     // Keys - ASCII Value
     public static final int ESC_KEY = 27;

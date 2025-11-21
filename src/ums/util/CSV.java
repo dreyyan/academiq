@@ -254,4 +254,24 @@ public class CSV {
             writeCSV(Settings.ENROLLMENTS_FILE, rows);
         }
     }
+
+    public static String generatePersonId() {
+        int maxId = 0;
+
+        // Check students.csv
+        List<String[]> studentRows = CSV.readCSV(Settings.STUDENTS_FILE);
+        for (String[] row : studentRows) {
+            String id = row[0];
+            if (id.startsWith("P")) maxId = Math.max(maxId, Integer.parseInt(id.substring(1)));
+        }
+
+        // Check faculty.csv
+        List<String[]> facultyRows = CSV.readCSV(Settings.ACADEMIC_STAFF_FILE);
+        for (String[] row : facultyRows) {
+            String id = row[0];
+            if (id.startsWith("P")) maxId = Math.max(maxId, Integer.parseInt(id.substring(1)));
+        }
+
+        return "P" + String.format("%05d", maxId + 1);
+    }
 }

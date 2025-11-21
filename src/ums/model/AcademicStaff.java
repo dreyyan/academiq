@@ -5,6 +5,9 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+// [IMPORT] Models
+import ums.model.GraduateStudent;
+
 // [IMPORT] Entities
 import ums.model.entity.CourseOffering;
 
@@ -123,5 +126,29 @@ public class AcademicStaff extends Faculty {
     @Override
     public String generateReport() {
         return generatePerformanceReport();
+    }
+
+    // [METHOD] Convert AcademicStaff to CSV row
+    public String[] toCSVRow() {
+        return new String[] {
+            getPersonId(),
+            getFirstName(),
+            getMiddleName(),
+            getLastName(),
+            getDateOfBirth().toString(),
+            getGender().toString(),
+            getAddress(),
+            getContactNumber(),
+            getEmail(),
+            getTeacherId(),
+            getDepartment() != null ? getDepartment().toString() : "",
+            getRank() != null ? getRank().toString() : "",
+            getHireDate() != null ? getHireDate().toString() : "",
+            getOfficeLocation() != null ? getOfficeLocation() : "",
+            String.valueOf(getSalary()),
+            String.valueOf(getTeachingHoursPerWeek()),
+            String.valueOf(maxTeachingLoad),
+            String.valueOf(isTenured())
+        };
     }
 }

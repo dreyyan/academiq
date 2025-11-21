@@ -1,6 +1,7 @@
 package ums.model;
 
 // [IMPORT] Standard
+import java.util.ArrayList;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -10,7 +11,7 @@ import ums.model.enums.Department;
 import ums.model.enums.FacultyRank;
 import ums.model.enums.Gender;
 
-public abstract class NonAcademicStaff extends Faculty {
+public class NonAcademicStaff extends Faculty {
     // * Attributes
     private String staffId;
     private String position;
@@ -37,6 +38,28 @@ public abstract class NonAcademicStaff extends Faculty {
         this.position = position;
         this.shiftSchedule = shiftSchedule;
         this.supervisor = supervisor;
+    }
+
+    public NonAcademicStaff(
+        String firstName, String middleName, String lastName, LocalDate dob, Gender gender,
+        String address, String contact, String email,
+        String staffId, Department department, String position,
+        LocalDate hireDate, String officeLocation, double salary, int workHours
+    ) {
+        super(
+            firstName, middleName, lastName, dob, gender,
+            address, contact, email,
+            staffId, department,
+            FacultyRank.INSTRUCTOR,
+            hireDate, officeLocation,
+            salary, false, 
+            new ArrayList<GraduateStudent>()
+        );
+
+        this.staffId = staffId;
+        this.position = position;
+        this.shiftSchedule = workHours + " hrs/week";
+        this.supervisor = null;
     }
 
     // * Getters
@@ -118,5 +141,30 @@ public abstract class NonAcademicStaff extends Faculty {
         }
         report.append("Advisees: ").append(getAdvisees().size()).append("\n");
         return report.toString();
+    }
+
+    public String[] toCSVRow() {
+        return new String[] {
+            getFirstName(),
+            getMiddleName(),
+            getLastName(),
+            getDateOfBirth().toString(),
+            getGender().toString(),
+            getAddress(),
+            getContactNumber(),
+            getEmail(),
+            getFacultyId(),
+            getDepartment() != null ? getDepartment().toString() : "",
+            getRank() != null ? getRank().toString() : "",
+            getHireDate().toString(),
+            getOfficeLocation(),
+            String.valueOf(getSalary()),
+            String.valueOf(isTenured()),
+            "0", // placeholder for advisees
+            getStaffId(),
+            getPosition(),
+            getShiftSchedule() != null ? getShiftSchedule() : "",
+            supervisor != null ? supervisor.getStaffId() : ""
+        };
     }
 }
