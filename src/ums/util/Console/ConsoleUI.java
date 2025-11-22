@@ -152,43 +152,49 @@ public static void drawInputFields(int boxInnerWidth, String... labels) {
 
 
     // [UTILITY] Clear input fields
-    public static void clearInputFields(int[] fieldYPositions, int[] fieldXPositions, int maxLength) throws IOException {
-        if (fieldYPositions.length != fieldXPositions.length) {
-            throw new IllegalArgumentException("Y and X positions arrays must have the same length.");
-        }
+    public static void clearInputFields(int startY, int fieldX, int maxLength, int totalFields) throws IOException {
+        int currentY = startY;
 
-        for (int i = 0; i < fieldYPositions.length; i++) {
-            // Move cursor to start of the field
-            ConsoleUI.goTo(fieldYPositions[i], fieldXPositions[i]);
+        for (int i = 0; i < totalFields; i++) {
+            // Move cursor to the start of the current field
+            ConsoleUI.goTo(currentY, fieldX);
 
             // Overwrite the field with spaces
             System.out.print(" ".repeat(maxLength));
 
             // Move cursor back to start of the field
-            ConsoleUI.goTo(fieldYPositions[i], fieldXPositions[i]);
+            ConsoleUI.goTo(currentY, fieldX);
+
+            // Increment Y for next field
+            currentY += 2;
         }
     }
 
     // [UTILITY] Display information in input fields
-    public static void displayInputFields(List<String> values, int[] fieldYPositions, int[] fieldXPositions, int maxLength) throws IOException {
-        if (values.size() != fieldYPositions.length || values.size() != fieldXPositions.length) {
-            throw new IllegalArgumentException("Values and positions arrays must all have the same length.");
-        }
+    public static void displayInputFields(List<String> values, int startY, int fieldX, int maxLength) throws IOException {
+        int currentY = startY;
 
-        for (int i = 0; i < values.size(); i++) {
-            // Move cursor to the position
-            ConsoleUI.goTo(fieldYPositions[i], fieldXPositions[i]);
+        for (String rawValue : values) {
 
-            // Truncate displayed value if it exceeds maxLength
-            String value = values.get(i);
-            if (value.length() > maxLength) value = value.substring(0, maxLength);
+            // Move cursor to the field position
+            ConsoleUI.goTo(currentY, fieldX);
 
-            // Pad with spaces to visually fill the input box
+            // Prepare displayed value
+            String value = rawValue;
+
+            // Truncate if too long
+            if (value.length() > maxLength) {
+                value = value.substring(0, maxLength);
+            }
+
+            // Pad for clean display
             if (value.length() < maxLength) {
                 value = String.format("%-" + maxLength + "s", value);
             }
 
             System.out.print(value);
+
+            currentY += 2; // Auto-increment Y
         }
     }
 
@@ -198,5 +204,11 @@ public static void drawInputFields(int boxInnerWidth, String... labels) {
             ConsoleUI.moveCursor(3);
             System.out.println((" ".repeat(Settings.CONSOLE_WIDTH - 6)));
         }
+    }
+
+    public static String truncate(String value, int maxLength) {
+        if (value.length() <= maxLength) return value;
+        if (maxLength <= 3) return "..."; // minimal space for ellipsis
+        return value.substring(0, maxLength - 3) + "...";
     }
 }

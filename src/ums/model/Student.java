@@ -25,17 +25,16 @@ public abstract class Student extends Person {
     private Department department;
     private Course course;
     private AcademicStanding academicStanding;
-
     private double GPA;
     private int creditsEarned; 
-    private List<CourseOffering> enrolledCourses;
+    private List<CourseOffering> enrolledCourseOfferings;
 
     // * Constructor (Parameterized)
         public Student(
             // Person Attributes
             String firstName, String middleName, String lastName, LocalDate dateOfBirth, Gender gender, String address, String contactNumber, String email,
             // Student Attributes
-            String studentId, LocalDate enrollmentDate, Department department, Course course, AcademicStanding academicStanding, double GPA, int creditsEarned,  List<CourseOffering> enrolledCourses) {
+            String studentId, LocalDate enrollmentDate, Department department, Course course, AcademicStanding academicStanding) {
             super(
                 // Person Attributes
                 firstName, middleName, lastName, dateOfBirth, gender, address, contactNumber, email
@@ -46,9 +45,9 @@ public abstract class Student extends Person {
             this.department = department; 
             this.course = course;
             this.academicStanding = academicStanding;
-            this.GPA = GPA;
-            this.creditsEarned = creditsEarned;
-            this.enrolledCourses = new ArrayList<>();
+            this.GPA = 0.0;
+            this.creditsEarned = 0;
+            this.enrolledCourseOfferings = new ArrayList<>();
         }
 
     // * Getters
@@ -59,7 +58,7 @@ public abstract class Student extends Person {
     public AcademicStanding getAcademicStanding() { return this.academicStanding; }
     public double getGPA() { return this.GPA; }
     public int getCreditsEarned() { return this.creditsEarned; }
-    public List<CourseOffering> getEnrolledCourses() { return this.enrolledCourses; }
+    public List<CourseOffering> getEnrolledCourseOfferings() { return this.enrolledCourseOfferings; }
 
     // * Setters
     public void setDepartment(Department department) { this.department = department; }
@@ -68,18 +67,18 @@ public abstract class Student extends Person {
 
     // * Methods
     // [METHOD] Enroll student in an existing course offering
-    public void enrollInOffering(CourseOffering offering){
-        if (getEnrolledCourses().contains(offering)){ // ! [ERROR] Student already enrolled in course offering
+    public void enrollInCourseOffering(CourseOffering offering){
+        if (getEnrolledCourseOfferings().contains(offering)){ // ! [ERROR] Student already enrolled in course offering
             ConsoleDisplay.dialogBox("error", getStudentId() + " is already enrolled in " + offering.getCourse());
         } else {
-            getEnrolledCourses().add(offering); // Enroll in course offering
+            getEnrolledCourseOfferings().add(offering); // Enroll in course offering
             ConsoleDisplay.dialogBox("success", "Successfully enrolled in " + offering.getCourse() + "!");
         }
     }
 
     // [METHOD] Drop student's existing course offering
-    public void dropOffering(CourseOffering offering) {
-        if(getEnrolledCourses().remove(offering)){
+    public void dropFromCourseOffering(CourseOffering offering) {
+        if(getEnrolledCourseOfferings().remove(offering)){
             ConsoleDisplay.dialogBox("success", "Successfully dropped in " + offering.getCourse() + "!");
         } else {
             ConsoleDisplay.dialogBox("error", getStudentId() + " is stil enrolled in " + offering.getCourse());
@@ -121,21 +120,8 @@ public abstract class Student extends Person {
     public List<String> getAcademicsInformation() {
         List<String> info = new ArrayList<>(); // Stores student's academics information
 
-        info.add(getAcademicStanding().toString());
-        info.add(calculateYearLevel());
-        info.add(String.valueOf(getGPA()));
-        info.add(String.valueOf(getCreditsEarned()));
-        info.add((isEligibleForGraduation() ? "Yes" : "No"));
-
-        return info;
-    }
-
-    // [METHOD] Display student's academics information
-    public List<String> getStudentAcademicsInformation() {
-        List<String> info = new ArrayList<>(); // Stores student's academics information
-
-        info.add(getEnrollmentDate().toString());
         info.add(getStudentId());
+        info.add(getEnrollmentDate().toString());
         info.add(getDepartment() != null ? getDepartment().toString() : "Not Assigned");
         info.add(getCourse() != null ? getCourse().toString() : "Not Assigned");
         info.add(String.valueOf(getCreditsEarned()));
@@ -169,7 +155,9 @@ public abstract class Student extends Person {
             getStudentId(), getEnrollmentDate().toString(),
             getDepartment() != null ? getDepartment().toString() : "",
             getCourse() != null ? getCourse().toString() : "",
-            // Add any other fields like standing, credits, year/program as needed
+            String.valueOf(getGPA()),
+            String.valueOf(getCreditsEarned()),
+            getAcademicStanding().toString()
         };
     }
 }

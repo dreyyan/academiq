@@ -111,17 +111,6 @@ public class AcademicStaff extends Faculty {
         } return report.toString();
     }
 
-    // [METHOD: Override] Display academic staff's information
-    @Override
-    public void displayInfo() {
-        super.displayInfo(); // Call parent's displayInfo()
-        System.out.println("Teacher ID: " + getTeacherId());
-        System.out.println("Teaching Hours Per Week: " + getTeachingHoursPerWeek());
-        System.out.println("Max Teaching Load: " + maxTeachingLoad);
-        System.out.println("Overloaded: " + (isOverloaded() ? "Yes" : "No"));
-        System.out.println("Number of Courses: " + getCoursesTaught().size());
-    }
-
     // [METHOD: Override] Generate academic staff's stringified report
     @Override
     public String generateReport() {

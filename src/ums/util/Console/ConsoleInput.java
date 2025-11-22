@@ -172,47 +172,48 @@ public class ConsoleInput {
     }
 
     // [METHOD] Navigate input fields using [ENTER] key, with max characters per field and individual X/Y positions. Returns null if user presses [ESC] key
-public static String[] captureFormInputs(int[] fieldYPositions, int[] fieldXPositions, int maxLength) throws IOException {
-    if (fieldYPositions.length != fieldXPositions.length) {
-        throw new IllegalArgumentException("Y and X positions arrays must have the same length.");
-    }
+    public static String[] captureFormInputs(int startY, int fieldX, int maxLength, int totalFields) throws IOException {
 
-    String[] inputs = new String[fieldYPositions.length];
-    Arrays.fill(inputs, ""); // initialize
+        String[] inputs = new String[totalFields];
+        Arrays.fill(inputs, "");
 
-    for (int current = 0; current < fieldYPositions.length; current++) {
-        StringBuilder input = new StringBuilder();
+        int currentY = startY;
 
-        while (true) {
-            // Move cursor to the start of the current field
-            ConsoleUI.goTo(fieldYPositions[current], fieldXPositions[current]);
+        for (int i = 0; i < totalFields; i++) {
 
-            // Display current input and clear leftover characters
-            String value = input.toString();
-            System.out.print(value + " ".repeat(maxLength - value.length()));
+            StringBuilder input = new StringBuilder();
 
-            // Move cursor to the end of current input
-            ConsoleUI.goTo(fieldYPositions[current], fieldXPositions[current] + value.length());
+            while (true) {
+                // Move cursor to the current field
+                ConsoleUI.goTo(currentY, fieldX);
 
-            int key = readKey(); // use JLine or fallback to System.in
+                String value = input.toString();
 
-            if (key == 27) { // ESC key
-                return null; // user cancelled
-            } else if (key == 10 || key == 13) { // ENTER key (LF or CR)
-                break; // done with this field
-            } else if (key == 8 || key == 127) { // Backspace
-                if (input.length() > 0) input.deleteCharAt(input.length() - 1);
-            } else if (key >= 32 && key <= 126) { // Printable ASCII
-                if (input.length() < maxLength) input.append((char) key);
+                // Draw value + wipe leftovers
+                System.out.print(value + " ".repeat(maxLength - value.length()));
+
+                // Move cursor back to end of text
+                ConsoleUI.goTo(currentY, fieldX + value.length());
+
+                int key = readKey();
+
+                if (key == 27) {               // ESC → cancel
+                    return null;
+                } else if (key == 10 || key == 13) { // ENTER
+                    break;
+                } else if (key == 8 || key == 127) { // Backspace
+                    if (input.length() > 0) input.deleteCharAt(input.length() - 1);
+                } else if (key >= 32 && key <= 126) { // Printable ASCII
+                    if (input.length() < maxLength) input.append((char) key);
+                }
             }
+
+            inputs[i] = input.toString(); // Save
+            currentY += 2;                // Auto-increment Y
         }
 
-        // Save the captured input
-        inputs[current] = input.toString();
+        return inputs;
     }
-
-    return inputs;
-}
 
     // [METHOD] Read keyboard input with JLine
     public static int readKey() throws IOException {

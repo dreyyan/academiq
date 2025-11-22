@@ -80,17 +80,6 @@ public abstract class Faculty extends Person {
         return LocalDate.now().getYear() - hireDate.getYear();
     }
 
-    // [METHOD] Display faculty's information 
-    public void displayInfo() {
-        System.out.println("Faculty ID: " + getFacultyId());
-        System.out.println("Department: " + getDepartment());
-        System.out.println("Rank: " + getRank());
-        System.out.println("Office: " + getOfficeLocation());
-        System.out.println("Salary: $" + getSalary());
-        System.out.println("Tenured: " + (isTenured() ? "Yes" : "No"));
-        System.out.println("Number of Advisees: " + getAdvisees().size());
-    }
-
     // [METHOD] Generate faculty's stringified report
     public String generateReport() {
         StringBuilder report = new StringBuilder();

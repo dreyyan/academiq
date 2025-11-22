@@ -41,8 +41,8 @@ public class NonAcademicStaff extends Faculty {
     }
 
     public NonAcademicStaff(
-        String firstName, String middleName, String lastName, LocalDate dob, Gender gender,
-        String address, String contact, String email,
+        // Person Attributes
+        String firstName, String middleName, String lastName, LocalDate dob, Gender gender, String address, String contact, String email,
         String staffId, Department department, String position,
         LocalDate hireDate, String officeLocation, double salary, int workHours
     ) {
@@ -92,28 +92,6 @@ public class NonAcademicStaff extends Faculty {
         } else {
             schedule.append("Supervisor: None\n");
         } return schedule.toString();
-    }
-
-    // [METHOD: Override] Display non-academic staff's information
-    @Override
-    public void displayInfo() {
-        System.out.println("Staff ID: " + staffId);
-        System.out.println("Faculty ID: " + getFacultyId());
-        System.out.println("Department: " + getDepartment());
-        System.out.println("Position: " + position);
-        System.out.println("Rank: " + getRank());
-        System.out.println("Office: " + getOfficeLocation());
-        System.out.println("Hire Date: " + getHireDate().format(DateTimeFormatter.ofPattern("MM/dd/yyyy")));
-        System.out.println("Years of Service: " + calculateYearsOfService());
-        System.out.println("Salary: $" + String.format("%.2f", getSalary()));
-        System.out.println("Shift Schedule: " + shiftSchedule);
-        System.out.println("Tenured: " + (isTenured() ? "Yes" : "No"));
-
-        if (supervisor != null) {
-            System.out.println("Supervisor: " + supervisor.getStaffId() + " - " + supervisor.getPosition());
-        } else {
-            System.out.println("Supervisor: None");
-        } System.out.println("Number of Advisees: " + getAdvisees().size());
     }
 
     // [METHOD: Override] Generate staff's stringified report

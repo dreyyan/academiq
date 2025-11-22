@@ -31,7 +31,7 @@ public class UndergraduateStudent extends Student {
             // Person Attributes
             firstName, middleName, lastName, dateOfBirth, gender, address, contactNumber, email,
             // Student Attributes
-            studentId, enrollmentDate, department, course, academicStanding, GPA, creditsEarned, enrolledCourses
+            studentId, enrollmentDate, department, course, academicStanding
         );
 
         this.yearLevel = yearLevel;
