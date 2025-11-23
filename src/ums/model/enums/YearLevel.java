@@ -2,10 +2,10 @@ package ums.model.enums;
 
 // * [POSITION] Student Year Levels
 public enum YearLevel {
-    FRESHMAN("1st Year"),
-    SOPHOMORE("2nd Year"),
-    JUNIOR("3rd Year"),
-    SENIOR("4th Year");
+    FRESHMAN("Freshman (1st Year)"),
+    SOPHOMORE("Sophomore (2nd Year)"),
+    JUNIOR("Junior (3rd Year)"),
+    SENIOR("Senior (4th Year)");
 
     // * Attribute
     private final String displayName;
@@ -15,6 +15,15 @@ public enum YearLevel {
 
     // * Getter
     public String getDisplayName() { return displayName; }
+
+    public static YearLevel fromDisplayName(String displayName) {
+        for (YearLevel yl : YearLevel.values()) {
+            if (yl.displayName.equalsIgnoreCase(displayName.trim())) {
+                return yl;
+            }
+        }
+        throw new IllegalArgumentException("No enum constant for display name: " + displayName);
+    }
 
     // [METHOD] Return stringified name
     @Override

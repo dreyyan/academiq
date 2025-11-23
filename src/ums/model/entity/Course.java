@@ -62,7 +62,7 @@ public class Course {
     }
 
     // [METHOD] Generate shorthand for a course from its full name
-    private static String generateCourseShortName(String fullName) {
+    public static String generateCourseShortName(String fullName) {
         if (fullName.startsWith("Bachelor of Science in ")) {
             return "BS " + fullName.substring("Bachelor of Science in ".length());
         } else if (fullName.startsWith("Bachelor of Arts in ")) {
@@ -144,6 +144,65 @@ public class Course {
 
         // If not found, return a course with input as title
         return new Course(input.replace("_", " "));
+    }
+
+    // =========================
+    // HELPER: Map short name to Course object
+    // =========================
+    public static Course fromShortName(String shortName) {
+        if (shortName == null || shortName.isBlank()) return null;
+
+        // Search all course enums
+        for (Class<?> c : Courses.class.getDeclaredClasses()) {
+            try {
+                Object[] constants = c.getEnumConstants();
+                for (Object constant : constants) {
+                    String fullName = constant.toString();
+                    String mappedShortName = mapToShortName(fullName);
+                    if (mappedShortName.equalsIgnoreCase(shortName)) {
+                        // Determine department from enum name prefix
+                        String enumName = c.getSimpleName();
+                        Department dept = mapEnumNameToDepartment(enumName);
+                        return new Course(fullName, dept);
+                    }
+                }
+            } catch (Exception ignored) { }
+        }
+
+        return null;
+    }
+
+    // Convert full name to the short form used in selectOptions
+    public static String mapToShortName(String fullName) {
+        if (fullName.startsWith("Bachelor of Science in ")) {
+            return "BS " + fullName.substring("Bachelor of Science in ".length());
+        } else if (fullName.startsWith("Bachelor of Arts in ")) {
+            return "BA " + fullName.substring("Bachelor of Arts in ".length());
+        } else if (fullName.equalsIgnoreCase("Doctor of Medicine")) {
+            return "MD";
+        } else if (fullName.equalsIgnoreCase("Doctor of Dental Medicine")) {
+            return "DMD";
+        } else {
+            return fullName;
+        }
+    }
+
+    // Map enum class name to Department
+    public static Department mapEnumNameToDepartment(String enumClassName) {
+        switch (enumClassName) {
+            case "CASCourse": return Department.CAS;
+            case "CICTCourse": return Department.CICT;
+            case "CBMCourse": return Department.CBM;
+            case "COMCourse": return Department.COM;
+            case "COPCourse": return Department.COP;
+            case "COECourse": return Department.COE;
+            case "CONCourse": return Department.CON;
+            case "COCCourse": return Department.COC;
+            case "COLCourse": return Department.COL;
+            case "CODCourse": return Department.COD;
+            case "ILSCourse": return Department.ILS;
+            default: return Department.UNASSIGNED;
+        }
     }
 
     // [METHOD: Override] Return course as string

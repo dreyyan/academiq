@@ -162,19 +162,24 @@ public class ConsoleDisplay {
         String type = "";
 
         ConsoleUI.goTo(Settings.CONSOLE_HEIGHT - 4, 0);
+        // Set dialog type and color
         switch (dialogType) {
             case "success":
                 type = "[SUCCESS]";
+                ConsoleUI.green(type);
                 break;
             case "error":
                 type = "[ERROR]";
+                ConsoleUI.red(type);
                 break;
             case "info":
                 type = "[INFO]";
+                ConsoleUI.blue(type);
                 break;
         }
-        ConsoleUI.moveCursor(5);
-        ConsoleInput.printCentered(type + " " + dialogMessage, Settings.CONSOLE_WIDTH - 9);
+
+        ConsoleUI.moveCursor(3);
+        ConsoleInput.printCentered(type + ConsoleUI.RESET + " " + dialogMessage, Settings.CONSOLE_WIDTH - 3);
     }
 
     // [UTILITY] Display ASCII art of school

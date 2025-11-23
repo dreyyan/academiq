@@ -149,7 +149,7 @@ public abstract class Student extends Person {
         return new String[] {
             getPersonId(), getFirstName(), getMiddleName(), getLastName(), getDateOfBirth().toString(),
             getGender().toString(), getAddress(), getContactNumber(), getEmail(),
-            getPersonId(), getEnrollmentDate().toString(),
+            getEnrollmentDate().toString(),
             getDepartment() != null ? getDepartment().toString() : "",
             getCourse() != null ? getCourse().toString() : "",
             String.valueOf(getGPA()),

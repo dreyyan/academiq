@@ -17,12 +17,12 @@ public class ConsoleUI {
 
     // * Methods
     // [UTILITY] Change color via ANSI color codes
-    public static void red(String text) { System.out.print(RED + text + RESET); }
-    public static void orange(String text) { System.out.print(ORANGE + text + RESET); }
-    public static void yellow(String text) { System.out.print(YELLOW + text + RESET); }
-    public static void green(String text) { System.out.print(GREEN + text + RESET); }
-    public static void blue(String text) { System.out.print(BLUE + text + RESET); }
-    public static void violet(String text) { System.out.print(VIOLET + text + RESET); }
+    public static void red(String text) { System.out.println(RED); }
+    public static void orange(String text) { System.out.print(ORANGE); }
+    public static void yellow(String text) { System.out.print(YELLOW); }
+    public static void green(String text) { System.out.print(GREEN); }
+    public static void blue(String text) { System.out.print(BLUE); }
+    public static void violet(String text) { System.out.print(VIOLET); }
 
     // [UTILITY] Clear the console screen
     public static void clearScreen() {

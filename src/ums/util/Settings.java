@@ -6,10 +6,10 @@ public final class Settings {
     // * Console Settings
     public static final int CONSOLE_WIDTH = 100;
     public static final int CONSOLE_HEIGHT = 40;
-    public static final String SYMBOL = "#"; // Default symbol for UI display
+    public static final String SYMBOL = "#";
     public static final int MS_DELAY = 50;
-    
-    // * User Interface (UI) Labels
+
+    // * Labels
     public static final String SYSTEM_TITLE = "AcademIQ";
     public static final String SYSTEM_VERSION = "v1.0";
 
@@ -23,64 +23,67 @@ public final class Settings {
     public static final String ENROLLMENTS_FILE = "data/enrollments.csv";
 
     // ======================
-    // * CSV Col Indices
+    // Common Columns (ALL USERS)
     // ======================
-
-    // --- Students ---
-    public static final int COL_PERSON_ID       = 0;  // e.g., P001
-    public static final int COL_FIRST_NAME      = 1;
-    public static final int COL_MIDDLE_NAME     = 2;
-    public static final int COL_LAST_NAME       = 3;
-    public static final int COL_DOB             = 4;  // yyyy-MM-dd
-    public static final int COL_GENDER          = 5;
-    public static final int COL_ADDRESS         = 6;
-    public static final int COL_CONTACT         = 7;
-    public static final int COL_EMAIL           = 8;  // login key
-    public static final int COL_STUDENT_ID      = 9;
-    public static final int COL_ENROLL_DATE     = 10;
-    public static final int COL_DEPARTMENT      = 11;
-    public static final int COL_COURSE          = 12;
-    public static final int COL_ACAD_STANDING   = 13;
-    public static final int COL_GPA             = 14;
-    public static final int COL_CREDITS         = 15;
-
-    // Graduate-specific (optional)
-    public static final int COL_PROGRAM_LEVEL   = 16;
-    public static final int COL_THESIS_TITLE    = 17;
-    public static final int COL_ADVISOR_ID      = 18;
-
-    // --- Teachers (Academic Staff) ---
-    public static final int COL_FACULTY_ID      = 9;
-    public static final int COL_DEPARTMENT_FAC  = 10;
-    public static final int COL_RANK            = 11;
-    public static final int COL_HIRE_DATE       = 12;
-    public static final int COL_OFFICE          = 13;
-    public static final int COL_SALARY          = 14;
-    public static final int COL_TEACHING_HOURS  = 15;
-    public static final int COL_MAX_COURSES     = 16;
-    public static final int COL_FULL_TIME       = 17;
-
-    // --- Administrators (Non-Academic Staff) ---
-    public static final int COL_STAFF_ID           = 9;
-    public static final int COL_DEPARTMENT_STAFF   = 10;
-    public static final int COL_POSITION           = 11;
-    public static final int COL_HIRE_DATE_ADMIN    = 12;
-    public static final int COL_OFFICE_ADMIN       = 13;
-    public static final int COL_SALARY_ADMIN       = 14;
-    public static final int COL_ACTIVE             = 15;
-    public static final int COL_LEAVE_DAYS         = 16;
-    public static final int COL_ROLE_START_DATE    = 17;
-    public static final int COL_ROLE_TITLE         = 18;
-    public static final int COL_SHIFT_SCHEDULE     = 19;
+    public static final int COL_PERSON_ID   = 0;
+    public static final int COL_FIRST_NAME  = 1;
+    public static final int COL_MIDDLE_NAME = 2;
+    public static final int COL_LAST_NAME   = 3;
+    public static final int COL_DOB         = 4;
+    public static final int COL_GENDER      = 5;
+    public static final int COL_ADDRESS     = 6;
+    public static final int COL_CONTACT     = 7;
+    public static final int COL_EMAIL       = 8; // login key
 
     // ======================
-    // CSV Preferences
+    // Students.csv
+    // ======================
+    public static final int COL_ENROLL_DATE     = 9;
+    public static final int COL_DEPARTMENT      = 10;
+    public static final int COL_COURSE          = 11;
+    public static final int COL_ACAD_STANDING   = 12;
+    public static final int COL_GPA             = 13;
+    public static final int COL_CREDITS         = 14;
+
+    // Graduate-specific
+    public static final int COL_PROGRAM_LEVEL   = 15;
+    public static final int COL_THESIS_TITLE    = 16;
+    public static final int COL_ADVISOR_ID      = 17;
+
+    // ======================
+    // Teachers.csv (Academic Staff)
+    // ======================
+    public static final int COL_DEPARTMENT_FAC  = 9;
+    public static final int COL_RANK            = 10;
+    public static final int COL_HIRE_DATE       = 11;
+    public static final int COL_OFFICE          = 12;
+    public static final int COL_SALARY          = 13;
+    public static final int COL_TEACHING_HOURS  = 14;
+    public static final int COL_MAX_COURSES     = 15;
+    public static final int COL_FULL_TIME       = 16;
+
+    // ======================
+    // Administrators.csv (Non-Academic Staff)
+    // ======================
+    public static final int COL_DEPARTMENT_STAFF = 9;
+    public static final int COL_POSITION         = 10;
+    public static final int COL_HIRE_DATE_ADMIN  = 11;
+    public static final int COL_OFFICE_ADMIN     = 12;
+    public static final int COL_SALARY_ADMIN     = 13;
+    public static final int COL_ACTIVE           = 14;
+    public static final int COL_LEAVE_DAYS       = 15;
+    public static final int COL_ROLE_START_DATE  = 16;
+    public static final int COL_ROLE_TITLE       = 17;
+    public static final int COL_SHIFT_SCHEDULE   = 18;
+
+    // ======================
+    // CSV Limits
     // ======================
     public static final int STUDENTS_CSV_MAX_COLUMNS = 24;
-    public static final int TOTAL_COLS = 20; // largest column index + 1
+    public static final int TOTAL_COLS = 19; // highest index + 1
 
     // ======================
-    // Keys - ASCII Value
+    // Keys
     // ======================
     public static final int ESC_KEY = 27;
     public static final int UP_KEY = 1001;

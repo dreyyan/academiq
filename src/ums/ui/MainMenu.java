@@ -6,7 +6,9 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 // [IMPORT] Models
 import ums.model.GraduateStudent;
@@ -1166,7 +1168,7 @@ private static void addStudentMenu() throws IOException {
         List<String[]> rows = CSV.readCSV(Settings.STUDENTS_FILE);
         List<String[]> students = new ArrayList<>();
         for (String[] row : rows) {
-            if (!CSV.safeValue(row, Settings.COL_STUDENT_ID).isBlank()) {
+            if (!CSV.safeValue(row, Settings.COL_PERSON_ID).isBlank()) {
                 students.add(row);
             }
         }
@@ -1192,7 +1194,7 @@ private static void addStudentMenu() throws IOException {
         int displayed = 0;
         for (int i = 0; i < students.size() && displayed < maxDisplay; i++) {
             String[] row = students.get(i);
-            String studentId = CSV.safeValue(row, Settings.COL_STUDENT_ID);
+            String studentId = CSV.safeValue(row, Settings.COL_PERSON_ID);
             String firstName = CSV.safeValue(row, Settings.COL_FIRST_NAME);
             String middleName = CSV.safeValue(row, Settings.COL_MIDDLE_NAME);
             String lastName = CSV.safeValue(row, Settings.COL_LAST_NAME);
@@ -1266,7 +1268,7 @@ private static void addStudentMenu() throws IOException {
 
         // Display Academic Staff
         for (String[] row : academicRows) {
-            String facultyId = CSV.safeValue(row, Settings.COL_FACULTY_ID);
+            String facultyId = CSV.safeValue(row, Settings.COL_PERSON_ID);
             String firstName = CSV.safeValue(row, Settings.COL_FIRST_NAME);
             String middleName = CSV.safeValue(row, Settings.COL_MIDDLE_NAME);
             String lastName = CSV.safeValue(row, Settings.COL_LAST_NAME);
@@ -1292,7 +1294,7 @@ private static void addStudentMenu() throws IOException {
         // Display Non-Academic Staff if space remains
         if (displayed < maxDisplay) {
             for (String[] row : nonAcademicRows) {
-                String facultyId = CSV.safeValue(row, Settings.COL_FACULTY_ID);
+                String facultyId = CSV.safeValue(row, Settings.COL_PERSON_ID);
                 String firstName = CSV.safeValue(row, Settings.COL_FIRST_NAME);
                 String middleName = CSV.safeValue(row, Settings.COL_MIDDLE_NAME);
                 String lastName = CSV.safeValue(row, Settings.COL_LAST_NAME);
@@ -1370,7 +1372,7 @@ private static void addStudentMenu() throws IOException {
 
         for (int i = rows.size() - 1; i >= 0; i--) {
             String[] row = rows.get(i);
-            String studentId = CSV.safeValue(row, Settings.COL_STUDENT_ID);
+            String studentId = CSV.safeValue(row, Settings.COL_PERSON_ID);
             String email = CSV.safeValue(row, Settings.COL_EMAIL);
 
             if (identifier.equalsIgnoreCase(studentId) || identifier.equalsIgnoreCase(email)) {
@@ -1394,263 +1396,292 @@ private static void addStudentMenu() throws IOException {
         displayNonAcademicStaffMenu(currentNonAcademicStaff);
     }
 
-private static void removeFacultyMenu() throws IOException {
-    // Display UI
-    ConsoleUI.clearScreen();
-    ConsoleDisplay.displayBorder(2, 3);
-    ConsoleUI.goTo(4, 0);
-    ConsoleDisplay.displayHeaderSubtitle("Administrator: Remove Faculty");
-
-    ConsoleUI.goTo(6, 0);
-    ConsoleUI.moveCursor(3);
-    ConsoleInput.printCentered("Enter the Faculty ID or email. Press [ESC] to cancel.", Settings.CONSOLE_WIDTH - 6, true);
-
-    ConsoleUI.drawInputFields(56, "Faculty ID / Email");
-    int yPosition = 9;
-    int xPosition = 45;
-    int maxLength = 34;
-
-    String[] inputs = ConsoleInput.captureFormInputs(yPosition, xPosition, maxLength, 1);
-
-    if (inputs == null) {
-        ConsoleUI.clearDialogBox(4);
-        ConsoleDisplay.dialogBox("info", "Remove faculty canceled.");
-        ConsoleInput.pressEnterToContinue();
-        displayNonAcademicStaffMenu(currentNonAcademicStaff);
-        return;
-    }
-
-    String identifier = inputs[0].trim();
-
-    if (identifier.isBlank()) {
-        ConsoleDisplay.dialogBox("error", "Identifier cannot be empty.");
-        ConsoleInput.pressEnterToContinue();
-        displayNonAcademicStaffMenu(currentNonAcademicStaff);
-        return;
-    }
-
-    boolean removed = false;
-
-    // --- Remove from Teachers CSV ---
-    List<String[]> teacherRows = CSV.readCSV(Settings.ACADEMIC_STAFF_FILE);
-    for (int i = teacherRows.size() - 1; i >= 0; i--) {
-        String[] row = teacherRows.get(i);
-        String facultyId = CSV.safeValue(row, Settings.COL_FACULTY_ID);
-        String email = CSV.safeValue(row, Settings.COL_EMAIL);
-
-        if (identifier.equalsIgnoreCase(facultyId) || identifier.equalsIgnoreCase(email)) {
-            teacherRows.remove(i);
-            removed = true;
-        }
-    }
-    if (removed) {
-        CSV.writeCSV(Settings.ACADEMIC_STAFF_FILE, teacherRows);
-    }
-
-    // --- Remove from Administrators CSV ---
-    List<String[]> adminRows = CSV.readCSV(Settings.NON_ACADEMIC_STAFF_FILE);
-    for (int i = adminRows.size() - 1; i >= 0; i--) {
-        String[] row = adminRows.get(i);
-        String staffId = CSV.safeValue(row, Settings.COL_STAFF_ID);
-        String email = CSV.safeValue(row, Settings.COL_EMAIL);
-
-        if (identifier.equalsIgnoreCase(staffId) || identifier.equalsIgnoreCase(email)) {
-            adminRows.remove(i);
-            removed = true;
-        }
-    }
-    if (removed) {
-        CSV.writeCSV(Settings.NON_ACADEMIC_STAFF_FILE, adminRows);
-    }
-
-    // --- Result Message ---
-    if (removed) {
-        ConsoleDisplay.dialogBox("success", "Faculty/Administrator record removed.");
-    } else {
-        ConsoleDisplay.dialogBox("error", "Faculty/Administrator not found.");
-    }
-
-    ConsoleInput.pressEnterToContinue();
-    displayNonAcademicStaffMenu(currentNonAcademicStaff);
-}
-
-
-    // * UI: User Authentication
-    // [METHOD] Display "Setup Information" screen
-    public static void displayStudentSetupInformationScreen(String email, String userType) throws IOException {
+    private static void removeFacultyMenu() throws IOException {
         // Display UI
+        ConsoleUI.clearScreen();
+        ConsoleDisplay.displayBorder(2, 3);
+        ConsoleUI.goTo(4, 0);
+        ConsoleDisplay.displayHeaderSubtitle("Administrator: Remove Faculty");
+
+        ConsoleUI.goTo(6, 0);
+        ConsoleUI.moveCursor(3);
+        ConsoleInput.printCentered("Enter the Faculty ID or email. Press [ESC] to cancel.", Settings.CONSOLE_WIDTH - 6, true);
+
+        ConsoleUI.drawInputFields(56, "Faculty ID / Email");
+        int yPosition = 9;
+        int xPosition = 45;
+        int maxLength = 34;
+
+        String[] inputs = ConsoleInput.captureFormInputs(yPosition, xPosition, maxLength, 1);
+
+        if (inputs == null) {
+            ConsoleUI.clearDialogBox(4);
+            ConsoleDisplay.dialogBox("info", "Remove faculty canceled.");
+            ConsoleInput.pressEnterToContinue();
+            displayNonAcademicStaffMenu(currentNonAcademicStaff);
+            return;
+        }
+
+        String identifier = inputs[0].trim();
+
+        if (identifier.isBlank()) {
+            ConsoleDisplay.dialogBox("error", "Identifier cannot be empty.");
+            ConsoleInput.pressEnterToContinue();
+            displayNonAcademicStaffMenu(currentNonAcademicStaff);
+            return;
+        }
+
+        boolean removed = false;
+
+        // --- Remove from Teachers CSV ---
+        List<String[]> teacherRows = CSV.readCSV(Settings.ACADEMIC_STAFF_FILE);
+        for (int i = teacherRows.size() - 1; i >= 0; i--) {
+            String[] row = teacherRows.get(i);
+            String facultyId = CSV.safeValue(row, Settings.COL_PERSON_ID);
+            String email = CSV.safeValue(row, Settings.COL_EMAIL);
+
+            if (identifier.equalsIgnoreCase(facultyId) || identifier.equalsIgnoreCase(email)) {
+                teacherRows.remove(i);
+                removed = true;
+            }
+        }
+        if (removed) {
+            CSV.writeCSV(Settings.ACADEMIC_STAFF_FILE, teacherRows);
+        }
+
+        // --- Remove from Administrators CSV ---
+        List<String[]> adminRows = CSV.readCSV(Settings.NON_ACADEMIC_STAFF_FILE);
+        for (int i = adminRows.size() - 1; i >= 0; i--) {
+            String[] row = adminRows.get(i);
+            String staffId = CSV.safeValue(row, Settings.COL_PERSON_ID);
+            String email = CSV.safeValue(row, Settings.COL_EMAIL);
+
+            if (identifier.equalsIgnoreCase(staffId) || identifier.equalsIgnoreCase(email)) {
+                adminRows.remove(i);
+                removed = true;
+            }
+        }
+        if (removed) {
+            CSV.writeCSV(Settings.NON_ACADEMIC_STAFF_FILE, adminRows);
+        }
+
+        // --- Result Message ---
+        if (removed) {
+            ConsoleDisplay.dialogBox("success", "Faculty/Administrator record removed.");
+        } else {
+            ConsoleDisplay.dialogBox("error", "Faculty/Administrator not found.");
+        }
+
+        ConsoleInput.pressEnterToContinue();
+        displayNonAcademicStaffMenu(currentNonAcademicStaff);
+    }
+
+
+        // * UI: User Authentication
+        public static void displayStudentSetupInformationScreen(String email, String userType) throws IOException {
+            ConsoleUI.clearScreen();
+            ConsoleDisplay.displayBorder(2, 3);
+            ConsoleUI.goTo(4, 0);
+            ConsoleDisplay.displayHeaderSubtitle("Setup Information");
+            System.out.println();
+
+            ConsoleUI.goTo(5, 0);
+            ConsoleUI.moveCursor(3);
+            ConsoleInput.printCentered("Please fill out all personal information fields to proceed.", Settings.CONSOLE_WIDTH - 3, true);
+
+            String[] fields = {
+                "First Name", "Middle Name", "Last Name", "Date of Birth (MM-dd-YYYY)",
+                "Gender", "Address", "Contact Number", "Enrollment Date (MM-dd-YYYY)",
+                "Department", "Course", "Year Level"
+            };
+            int yPosition = 8;
+            int xPosition = 43;
+            int maxLength = 47;
+            ConsoleUI.drawInputFields(80, fields);
+
+            while (true) {
+                // Step 1: Capture basic info + Department
+                String[][] selectOptions = new String[fields.length][];
+                selectOptions[0] = null; selectOptions[1] = null; selectOptions[2] = null; selectOptions[3] = null;
+                selectOptions[4] = new String[]{"Male", "Female", "Prefer not to say"};
+                selectOptions[5] = null; selectOptions[6] = null; selectOptions[7] = null;
+
+                Department[] allDepts = Department.values();
+                selectOptions[8] = Arrays.stream(allDepts)
+                                        .filter(d -> d != Department.UNASSIGNED)
+                                        .map(Department::getCode)
+                                        .toArray(String[]::new);
+
+                selectOptions[9] = new String[0]; // Course empty for now
+                selectOptions[10] = new String[]{"Freshman (1st Year)", "Sophomore (2nd Year)", "Junior (3rd Year)", "Senior (4th Year)"};
+
+                boolean[] hiddenFields = new boolean[fields.length];
+                Arrays.fill(hiddenFields, false);
+
+                String[] inputs = ConsoleInput.captureFormInputs(yPosition, xPosition, maxLength, 9, hiddenFields, selectOptions);
+                if (inputs == null) { displayLoginScreen(); return; }
+
+                // Step 2: Populate Course based on selected Department
+                String deptCode = inputs[8];
+                Department dept = Department.fromCodeOrFullName(deptCode);
+                String[] courseOptions = switch (dept) {
+                    case CAS -> Arrays.stream(Courses.CASCourse.values())
+                                    .map(c -> Course.generateCourseShortName(c.getFullName()))
+                                    .toArray(String[]::new);
+                    case CICT -> Arrays.stream(Courses.CICTCourse.values())
+                                    .map(c -> Course.generateCourseShortName(c.getFullName()))
+                                    .toArray(String[]::new);
+                    case CBM -> Arrays.stream(Courses.CBMCourse.values())
+                                    .map(c -> Course.generateCourseShortName(c.getFullName()))
+                                    .toArray(String[]::new);
+                    case COP -> Arrays.stream(Courses.COPCourse.values())
+                                    .map(c -> Course.generateCourseShortName(c.getFullName()))
+                                    .toArray(String[]::new);
+                    case COM -> Arrays.stream(Courses.COMCourse.values())
+                                    .map(c -> Course.generateCourseShortName(c.getFullName()))
+                                    .toArray(String[]::new);
+                    case COE -> Arrays.stream(Courses.COECourse.values())
+                                    .map(c -> Course.generateCourseShortName(c.getFullName()))
+                                    .toArray(String[]::new);
+                    case CON -> Arrays.stream(Courses.CONCourse.values())
+                                    .map(c -> Course.generateCourseShortName(c.getFullName()))
+                                    .toArray(String[]::new);
+                    case COC -> Arrays.stream(Courses.COCCourse.values())
+                                    .map(c -> Course.generateCourseShortName(c.getFullName()))
+                                    .toArray(String[]::new);
+                    case COL -> Arrays.stream(Courses.COLCourse.values())
+                                    .map(c -> Course.generateCourseShortName(c.getFullName()))
+                                    .toArray(String[]::new);
+                    case COD -> Arrays.stream(Courses.CODCourse.values())
+                                    .map(c -> Course.generateCourseShortName(c.getFullName()))
+                                    .toArray(String[]::new);
+                    case ILS -> Arrays.stream(Courses.ILSCourse.values())
+                                    .map(c -> Course.generateCourseShortName(c.getFullName()))
+                                    .toArray(String[]::new);
+                    default -> new String[0];
+                };
+
+                // Step 3: Capture Course + Year Level
+                selectOptions[9] = courseOptions; // update course options
+                String[] courseAndYear = ConsoleInput.captureFormInputs(
+                    yPosition + 18, xPosition, maxLength, 2, hiddenFields, new String[][]{courseOptions, selectOptions[10]}
+                );
+                if (courseAndYear == null) { displayLoginScreen(); return; }
+
+                // Merge inputs
+                String[] finalInputs = Arrays.copyOf(inputs, fields.length);
+                finalInputs[9] = courseAndYear[0]; // Course
+                finalInputs[10] = courseAndYear[1]; // Year Level
+
+                // Extract and validate
+                String firstName = finalInputs[0], middleName = finalInputs[1], lastName = finalInputs[2];
+                String dobStr = finalInputs[3], genderStr = finalInputs[4], address = finalInputs[5];
+                String contact = finalInputs[6], enrollStr = finalInputs[7], courseName = finalInputs[9], yearLevelStr = finalInputs[10];
+
+                if (firstName.isBlank() || lastName.isBlank() || dobStr.isBlank() || genderStr.isBlank() ||
+                    enrollStr.isBlank() || deptCode.isBlank() || courseName.isBlank() || yearLevelStr.isBlank()) {
+                    ConsoleUI.clearDialogBox(5);
+                    ConsoleDisplay.dialogBox("error", "Please fill in all required fields!");
+                    ConsoleUI.clearInputFields(yPosition, xPosition, maxLength, fields.length);
+                    continue;
+                }
+
+                try {
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy");
+                    LocalDate dob = LocalDate.parse(dobStr, formatter);
+                    LocalDate enrollmentDate = LocalDate.parse(enrollStr, formatter);
+                    Gender gender = Gender.valueOf(genderStr.toUpperCase());
+                    Course course = Course.fromShortName(courseName);
+                    YearLevel yearLevel = YearLevel.fromDisplayName(yearLevelStr);
+
+                    Student student = new UndergraduateStudent(
+                        firstName, middleName, lastName, dob, gender,
+                        address, contact, email, enrollmentDate, dept, course,
+                        AcademicStanding.GOOD, yearLevel
+                    );
+
+                    CSV.appendRow(Settings.STUDENTS_FILE, student.toCSVRow());
+                    currentStudent = student;
+                    ConsoleUI.clearDialogBox(5);
+                    ConsoleDisplay.dialogBox("success", "Student information saved successfully!");
+                    ConsoleInput.pressEnterToContinue();
+                    displayStudentMenu(student);
+                    return;
+
+                } catch (Exception e) {
+                    ConsoleUI.clearDialogBox(5);
+                    ConsoleDisplay.dialogBox("error", "Invalid input: " + e.getMessage());
+                    ConsoleUI.clearInputFields(yPosition, xPosition, maxLength, fields.length);
+                }
+            }
+        }
+
+        // [METHOD] Display "Setup Information" screen for Academic Staff
+    // [METHOD] Display "Setup Information" screen for Academic Staff
+    public static void displayAcademicStaffSetupInformationScreen(String email, String userType) throws IOException {
+
         ConsoleUI.clearScreen();
         ConsoleDisplay.displayBorder(2, 3);
         ConsoleUI.goTo(4, 0);
         ConsoleDisplay.displayHeaderSubtitle("Setup Information");
         System.out.println();
 
-        // Prompt user to fill out personal information before proceeding to 'Student Menu'
-        ConsoleUI.goTo(6, 0);
-        ConsoleUI.moveCursor(3); ConsoleInput.printCentered("Please fill out all personal information fields to proceed.", Settings.CONSOLE_WIDTH - 3, true);
-
-        // Setup input fields
-        String[] fields = {
-            "First Name",
-            "Middle Name",
-            "Last Name",
-            "Date of Birth (MM-dd-YYYY)",
-            "Gender (Male/Female/Other)",
-            "Address",
-            "Contact Number",
-            "Enrollment Date (MM-dd-YYYY)",
-            "Department",
-            "Course",
-            "Year Level"
-        };
-        int yPosition = 9;
-        int xPosition = 53;
-        int maxLength = 28;
-
-        // Display input fields
-        ConsoleUI.drawInputFields(60, fields);
-
-        while (true) {
-            String[] inputs = ConsoleInput.captureFormInputs(yPosition, xPosition, maxLength, fields.length);
-
-            // IF [ESC] pressed, go to 'Login Screen'
-            if (inputs == null) {
-                displayLoginScreen();
-                return;
-            }
-
-            // Extract values
-            String firstName  = inputs[0];
-            String middleName = inputs[1];
-            String lastName   = inputs[2];
-            String dobStr     = inputs[3];
-            String genderStr  = inputs[4];
-            String address    = inputs[5];
-            String contact    = inputs[6];
-            String enrollStr  = inputs[7];
-            String deptName   = inputs[8];
-            String courseName = inputs[9];
-            String yearLevelStr  = inputs[10];
-
-            // Validate required fields
-            // ! [ERROR] Blank input
-            if (firstName.isBlank() || lastName.isBlank() || dobStr.isBlank() || genderStr.isBlank() || enrollStr.isBlank() || yearLevelStr.isBlank()) {
-                ConsoleDisplay.dialogBox("error", "Please fill in all required fields!");
-                ConsoleUI.clearInputFields(yPosition, xPosition, maxLength, fields.length);
-                continue;
-            }
-
-            try {
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy"); // Date formatter
-                LocalDate dob = LocalDate.parse(dobStr, formatter);
-                LocalDate enrollmentDate = LocalDate.parse(enrollStr, formatter);
-                Gender gender = Gender.valueOf(genderStr.toUpperCase());
-                Department dept = Department.fromCodeOrFullName(deptName);
-                Course course = Course.fromCodeOrFullName(courseName);
-                YearLevel yearLevel = YearLevel.valueOf(yearLevelStr.toUpperCase());
-                Student student;
-
-                if (userType.equalsIgnoreCase("freshman") ||
-                    userType.equalsIgnoreCase("sophomore") ||
-                    userType.equalsIgnoreCase("junior") ||
-                    userType.equalsIgnoreCase("senior")) {
-                    // Create new 'UndergraduateStudent' user
-                    student = new UndergraduateStudent(
-                        firstName, middleName, lastName, dob, gender,
-                        address, contact, email,
-                        enrollmentDate, dept, course,
-                        AcademicStanding.GOOD, yearLevel
-                    );
-                } else {
-                    ConsoleUI.clearDialogBox(4);
-                    ConsoleDisplay.dialogBox("error", "Invalid student type for undergraduate setup!");
-                    return;
-                }
-
-                // Append the student's personal information to student's CSV
-                CSV.appendRow(Settings.STUDENTS_FILE, student.toCSVRow());
-
-                // Set current student
-                currentStudent = student;
-
-                // ? [SUCCESS] Saved student personal info
-                ConsoleDisplay.dialogBox("success", "Student information saved successfully!");
-
-                // Prompt user to press [ENTER] before navigating to next screen
-                ConsoleInput.pressEnterToContinue();
-                displayStudentMenu(student);
-                return;
-            } catch (Exception e) {
-                // ! [ERROR] Invalid input
-                ConsoleDisplay.dialogBox("error", "Invalid input: " + e.getMessage());
-                ConsoleUI.clearInputFields(yPosition, xPosition, maxLength, fields.length);
-            }
-            break;
-        }
-    }
-
-    // [METHOD] Display "Setup Information" screen for Academic Staff
-    public static void displayAcademicStaffSetupInformationScreen(String email, String userType) throws IOException {
-        // Display UI
-        ConsoleUI.clearScreen();
-        ConsoleDisplay.displayBorder(2, 3);
-        ConsoleUI.goTo(4, 0);
-        ConsoleDisplay.displayHeaderSubtitle("Academic Staff Setup Information");
-
-        // Prompt user to fill out personal information before proceeding to 'Academic Staff Menu'
-        ConsoleUI.goTo(6, 0);
+        ConsoleUI.goTo(5, 0);
         ConsoleUI.moveCursor(3);
         ConsoleInput.printCentered("Please fill out all personal information fields to proceed.", Settings.CONSOLE_WIDTH - 3, true);
 
-        // Setup input fields
         String[] fields = {
-            "First Name",
-            "Middle Name",
-            "Last Name",
-            "Date of Birth (MM-dd-YYYY)",
-            "Gender (Male/Female/Other)",
-            "Address",
-            "Contact Number",
-            "Teacher ID",
-            "Department",
-            "Rank",
-            "Hire Date (MM-dd-YYYY)",
-            "Office Location"
+            "First Name", "Middle Name", "Last Name", "Date of Birth (MM-dd-YYYY)",
+            "Gender", "Address", "Contact Number",
+            "Department", "Rank", "Hire Date (MM-dd-YYYY)", "Office Location"
         };
 
-        int yPosition = 9;
-        int xPosition = 51;
-        int maxLength = 30;
+        int yPosition = 8;
+        int xPosition = 41;
+        int maxLength = 49;
 
-        // Display input fields
-        ConsoleUI.drawInputFields(60, fields);
+        ConsoleUI.drawInputFields(80, fields);
 
         while (true) {
-            String[] inputs = ConsoleInput.captureFormInputs(yPosition, xPosition, maxLength, fields.length);
 
-            // IF [ESC] pressed, go to 'Login Screen'
-            if (inputs == null) {
-                displayLoginScreen();
-                return;
-            }
+            // === Step 1: Basic Info + Department ===
+            String[][] selectOptions = new String[fields.length][];
+            selectOptions[0] = null; selectOptions[1] = null; selectOptions[2] = null;
+            selectOptions[3] = null;
+            selectOptions[4] = new String[]{"Male", "Female", "Prefer not to say"};
+            selectOptions[5] = null; selectOptions[6] = null;
 
-            // Extract values
-            String firstName = inputs[0];
-            String middleName = inputs[1];
-            String lastName = inputs[2];
-            String dobStr = inputs[3];
-            String genderStr = inputs[4];
-            String address = inputs[5];
-            String contact = inputs[6];
-            String deptStr = inputs[7];
-            String rankStr = inputs[8];
-            String hireDateStr = inputs[9];
-            String officeLocation = inputs[10];
+            selectOptions[7] = Arrays.stream(Department.values())
+                                    .filter(d -> d != Department.UNASSIGNED)
+                                    .map(Department::getCode)
+                                    .toArray(String[]::new);
 
-            // Validate required fields
+            selectOptions[8] = Arrays.stream(FacultyRank.values())
+                                    .map(FacultyRank::getDisplayName)
+                                    .toArray(String[]::new);
+
+            selectOptions[9] = null;
+            selectOptions[10] = null;
+
+            boolean[] hiddenFields = new boolean[fields.length];
+            Arrays.fill(hiddenFields, false);
+
+            String[] inputs = ConsoleInput.captureFormInputs(
+                yPosition, xPosition, maxLength, fields.length, hiddenFields, selectOptions
+            );
+
+            if (inputs == null) { displayLoginScreen(); return; }
+
+            // Extract Inputs
+            String firstName = inputs[0], middleName = inputs[1], lastName = inputs[2];
+            String dobStr = inputs[3], genderStr = inputs[4], address = inputs[5];
+            String contact = inputs[6], deptCode = inputs[7];
+            String rankStr = inputs[8], hireDateStr = inputs[9], officeLocation = inputs[10];
+
             if (firstName.isBlank() || lastName.isBlank() || dobStr.isBlank() || genderStr.isBlank()
-                || deptStr.isBlank() || rankStr.isBlank() || hireDateStr.isBlank()
-                || officeLocation.isBlank()) {
+                    || deptCode.isBlank() || rankStr.isBlank() || hireDateStr.isBlank()
+                    || officeLocation.isBlank()) {
+                ConsoleUI.clearDialogBox(5);
                 ConsoleDisplay.dialogBox("error", "Please fill in all required fields!");
                 ConsoleUI.clearInputFields(yPosition, xPosition, maxLength, fields.length);
                 continue;
@@ -1659,116 +1690,106 @@ private static void removeFacultyMenu() throws IOException {
             try {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy");
                 LocalDate dob = LocalDate.parse(dobStr, formatter);
-                Gender gender = Gender.valueOf(genderStr.toUpperCase());
-                Department department = Department.fromCodeOrFullName(deptStr);
-                FacultyRank rank = FacultyRank.fromString(rankStr);
                 LocalDate hireDate = LocalDate.parse(hireDateStr, formatter);
 
-                // Compute salary and teaching hours based on rank (from enum)
+                Gender gender = Gender.valueOf(genderStr.toUpperCase());
+                Department department = Department.fromCodeOrFullName(deptCode);
+                FacultyRank rank = FacultyRank.fromString(rankStr);
+
                 double salary = rank.getDefaultSalary();
                 int teachingHours = rank.getDefaultTeachingHours();
                 int maxTeachingHours = 18;
 
-                // Create AcademicStaff object
                 AcademicStaff staff = new AcademicStaff(
                     firstName, middleName, lastName, dob, gender,
                     address, contact, email,
                     department, rank, hireDate, officeLocation,
                     salary, false, new ArrayList<GraduateStudent>(),
-                    teachingHours, maxTeachingHours // academic staff attributes
+                    teachingHours, maxTeachingHours
                 );
 
-                // Append academic staff info to CSV
                 CSV.appendRow(Settings.ACADEMIC_STAFF_FILE, staff.toCSVRow());
-
-                // Set current academic staff
                 currentAcademicStaff = staff;
-
-                // Success message
-                ConsoleUI.clearDialogBox(4);
+                ConsoleUI.clearDialogBox(5);
                 ConsoleDisplay.dialogBox("success", "Academic staff information saved successfully!");
-
-                // Prompt user to press [ENTER] before navigating to Academic Staff Menu
                 ConsoleInput.pressEnterToContinue();
                 displayAcademicStaffMenu(staff);
                 return;
+
             } catch (Exception e) {
+                ConsoleUI.clearDialogBox(5);
                 ConsoleDisplay.dialogBox("error", "Invalid input: " + e.getMessage());
                 ConsoleUI.clearInputFields(yPosition, xPosition, maxLength, fields.length);
             }
         }
     }
 
-    // [METHOD] Display "Setup Information" screen for Non-Academic Staff (Administrator)
+    // [METHOD] Display "Setup Information" screen for Non-Academic Staff
     public static void displayNonAcademicStaffSetupInformationScreen(String email, String userType) throws IOException {
 
-        // Display UI
         ConsoleUI.clearScreen();
         ConsoleDisplay.displayBorder(2, 3);
         ConsoleUI.goTo(4, 0);
-        ConsoleDisplay.displayHeaderSubtitle("Non-Academic Staff Setup Information");
+        ConsoleDisplay.displayHeaderSubtitle("Setup Information");
+        System.out.println();
 
-        // Instruction
-        ConsoleUI.goTo(6, 0);
+        ConsoleUI.goTo(5, 0);
         ConsoleUI.moveCursor(3);
         ConsoleInput.printCentered(
             "Please fill out all personal information fields to proceed.",
             Settings.CONSOLE_WIDTH - 3, true
         );
 
-        // Input labels
         String[] fields = {
-            "First Name",
-            "Middle Name",
-            "Last Name",
-            "Date of Birth (MM-dd-YYYY)",
-            "Gender (Male/Female/Other)",
-            "Address",
-            "Contact Number",
-            "Department",
-            "Job Title / Position",
-            "Hire Date (MM-dd-YYYY)",
-            "Office Location"
+            "First Name", "Middle Name", "Last Name", "Date of Birth (MM-dd-YYYY)",
+            "Gender", "Address", "Contact Number",
+            "Department", "Job Title / Position",
+            "Hire Date (MM-dd-YYYY)", "Office Location"
         };
 
-        // Cursor positions
-        int yPosition = 9;
-        int xPosition = 51;
-        int maxLength = 30;
+        int yPosition = 8;
+        int xPosition = 41;
+        int maxLength = 49;
 
-        // Display input fields
-        ConsoleUI.drawInputFields(60, fields);
+        ConsoleUI.drawInputFields(80, fields);
 
         while (true) {
 
-            // Capture user inputs
-            String[] inputs = ConsoleInput.captureFormInputs(yPosition, xPosition, maxLength, fields.length);
+            String[][] selectOptions = new String[fields.length][];
+            selectOptions[0] = null; selectOptions[1] = null; selectOptions[2] = null;
+            selectOptions[3] = null;
 
-            // ESC pressed = go back to Login Screen
-            if (inputs == null) {
-                displayLoginScreen();
-                return;
-            }
+            selectOptions[4] = new String[]{"Male", "Female", "Prefer not to say"};
+            selectOptions[5] = null; selectOptions[6] = null;
 
-            // Extract values
-            String firstName = inputs[0];
-            String middleName = inputs[1];
-            String lastName = inputs[2];
-            String dobStr = inputs[3];
-            String genderStr = inputs[4];
-            String address = inputs[5];
-            String contact = inputs[6];
-            String deptStr = inputs[7];
-            String jobTitle = inputs[8];
-            String hireDateStr = inputs[9];
-            String officeLocation = inputs[10];
+            selectOptions[7] = Arrays.stream(Department.values())
+                                    .filter(d -> d != Department.UNASSIGNED)
+                                    .map(Department::getCode)
+                                    .toArray(String[]::new);
 
-            // Validation
+            selectOptions[8] = null; // Free text job title
+            selectOptions[9] = null;
+            selectOptions[10] = null;
+
+            boolean[] hiddenFields = new boolean[fields.length];
+            Arrays.fill(hiddenFields, false);
+
+            String[] inputs = ConsoleInput.captureFormInputs(
+                yPosition, xPosition, maxLength, fields.length,
+                hiddenFields, selectOptions
+            );
+
+            if (inputs == null) { displayLoginScreen(); return; }
+
+            String firstName = inputs[0], middleName = inputs[1], lastName = inputs[2];
+            String dobStr = inputs[3], genderStr = inputs[4], address = inputs[5];
+            String contact = inputs[6], deptCode = inputs[7], jobTitle = inputs[8];
+            String hireDateStr = inputs[9], officeLocation = inputs[10];
+
             if (firstName.isBlank() || lastName.isBlank() || dobStr.isBlank() || genderStr.isBlank()
-                || deptStr.isBlank() || jobTitle.isBlank()
+                || deptCode.isBlank() || jobTitle.isBlank()
                 || hireDateStr.isBlank() || officeLocation.isBlank()) {
-
-                ConsoleUI.clearDialogBox(4);
+                ConsoleUI.clearDialogBox(5);
                 ConsoleDisplay.dialogBox("error", "Please fill in all required fields!");
                 ConsoleUI.clearInputFields(yPosition, xPosition, maxLength, fields.length);
                 continue;
@@ -1776,43 +1797,32 @@ private static void removeFacultyMenu() throws IOException {
 
             try {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy");
-
                 LocalDate dob = LocalDate.parse(dobStr, formatter);
-                Gender gender = Gender.valueOf(genderStr.toUpperCase());
-                Department department = Department.fromCodeOrFullName(deptStr);
                 LocalDate hireDate = LocalDate.parse(hireDateStr, formatter);
 
-                // Default salary / hours for administrators
-                double salary = 35000; // You may change this
+                Gender gender = Gender.valueOf(genderStr.toUpperCase());
+                Department department = Department.fromCodeOrFullName(deptCode);
+
+                double salary = 35000;
                 int workHours = 40;
 
-                // Create NonAcademicStaff/Administrator object
                 NonAcademicStaff admin = new NonAcademicStaff(
                     firstName, middleName, lastName, dob, gender,
                     address, contact, email,
-                    department,        // Department
-                    jobTitle,          // Position
-                    hireDate,          // Hire Date
-                    officeLocation,    // Office Location
-                    salary,            // Salary
-                    workHours          // Work hours per week (int)
+                    department, jobTitle, hireDate, officeLocation,
+                    salary, workHours
                 );
 
-                // Save to CSV
                 CSV.appendRow(Settings.NON_ACADEMIC_STAFF_FILE, admin.toCSVRow());
-
-                // Set currently logged-in admin
                 currentNonAcademicStaff = admin;
-
-                // Success dialog
+                ConsoleUI.clearDialogBox(5);
                 ConsoleDisplay.dialogBox("success", "Administrator information saved successfully!");
-
                 ConsoleInput.pressEnterToContinue();
                 displayNonAcademicStaffMenu(admin);
                 return;
 
             } catch (Exception e) {
-                ConsoleUI.clearDialogBox(4);
+                ConsoleUI.clearDialogBox(5);
                 ConsoleDisplay.dialogBox("error", "Invalid input: " + e.getMessage());
                 ConsoleUI.clearInputFields(yPosition, xPosition, maxLength, fields.length);
             }
@@ -1823,22 +1833,24 @@ private static void removeFacultyMenu() throws IOException {
     public static void displayLoginScreen() throws IOException {
         // Display UI
         ConsoleDisplay.setupScreen();
-        ConsoleUI.goTo(15, 0);
+        ConsoleUI.goTo(17, 0);
         ConsoleDisplay.displayHeaderSubtitle("LOGIN");
 
         // Setup input fields
-        int yPosition = 17;
-        int xPosition = 43;
-        int maxLength = 28;
+        int yPosition = 19;
+        int xPosition = 38;
+        int maxLength = 37;
 
         String email, password;
 
         // Display input fields
-        ConsoleUI.drawInputFields(40, "Email", "Password");
+        ConsoleUI.goTo(18, 0);
+        ConsoleUI.drawInputFields(50, "Email", "Password");
 
         // This loop runs indefinitely until user enters valid credentials
         while (true) {
-            String[] inputs = ConsoleInput.captureFormInputs(yPosition, xPosition, maxLength, 2);
+            boolean[] hiddenFields = {false, true}; // Hide password input
+            String[] inputs = ConsoleInput.captureFormInputs(yPosition, xPosition, maxLength, 2, hiddenFields);
 
             // If user pressed ESC, navigate to 'Register' screen
             if (inputs == null) {
@@ -1856,7 +1868,7 @@ private static void removeFacultyMenu() throws IOException {
             } else if (!Auth.isValidPassword(password)) {
                 // ! [ERROR] Invalid password
                 ConsoleUI.clearDialogBox(5);
-                ConsoleDisplay.dialogBox("error", "Password must be 8–20 characters long and include at least one number.");
+                ConsoleDisplay.dialogBox("error", "Password must be 8 to 20 characters long and include at least one number.");
             } else if (!Auth.accountExists(email)) {
                 // ! [ERROR] Non-existing account
                 ConsoleUI.clearDialogBox(5);
@@ -1881,9 +1893,6 @@ private static void removeFacultyMenu() throws IOException {
         return;
     }
 
-    // Convert user type to lowercase (normalization)
-    userType = userType.toLowerCase();
-
     // ? [SUCCESS] Successful login
     ConsoleUI.clearDialogBox(5);
     ConsoleDisplay.dialogBox("success", "Login successful! Press [Enter] to continue...");
@@ -1893,11 +1902,8 @@ private static void removeFacultyMenu() throws IOException {
 
     // Redirect based on user type
     switch (userType) {
-        // ? Type: UndergraduateStudent
-        case "freshman":
-        case "sophomore":
-        case "junior":
-        case "senior":
+        // ? Type: Student
+        case "Student":
             Student student = Auth.getUndergraduateByEmail(email);
             if (student == null) {
                 // First-time login - redirect to setup information screen
@@ -1910,8 +1916,7 @@ private static void removeFacultyMenu() throws IOException {
             break;
 
         // ? Type: AcademicStaff
-        case "academic staff":
-        case "teacher":
+        case "Academic Staff":
             AcademicStaff staff = Auth.getAcademicStaffByEmail(email);
             if (staff == null) {
                 displayAcademicStaffSetupInformationScreen(email, userType);
@@ -1921,8 +1926,8 @@ private static void removeFacultyMenu() throws IOException {
             displayAcademicStaffMenu(staff);
             break;
 
-        // ? Type: Administrator
-        case "administrator":
+        // ? Type: NonAcademicStaff
+        case "Non-Academic Staff":
             NonAcademicStaff admin = Auth.getNonAcademicStaffByEmail(email);
             if (admin == null) {
                 displayNonAcademicStaffSetupInformationScreen(email, userType);
@@ -1942,21 +1947,30 @@ private static void removeFacultyMenu() throws IOException {
     public static void displayRegisterScreen() throws IOException {
         // Display UI
         ConsoleDisplay.setupScreen();
-        ConsoleUI.goTo(15, 0);
+        ConsoleUI.goTo(17, 0);
         ConsoleDisplay.displayHeaderSubtitle("REGISTER");
 
-        ConsoleUI.drawInputFields(50, "Email", "Password", "Confirm Password", "User Type");
+        ConsoleUI.drawInputFields(60, "Email", "Password", "Confirm Password", "User Type");
 
-        int yPosition = 17;
-        int xPosition = 46;
-        int maxLength = 30;
+        int yPosition = 19;
+        int xPosition = 41;
+        int maxLength = 39;
 
         String[] inputs; // To store user input
         String email, password, confirmPassword, userType;
 
         // This loop runs indefinitely until user enters valid credentials
         while (true) {
-            inputs = ConsoleInput.captureFormInputs(yPosition, xPosition, maxLength, 4);
+            boolean[] hiddenFields = {false, true, true, false}; // Hide password inputs
+            String[][] selectOptions = new String[4][];
+            selectOptions[0] = null;
+            selectOptions[1] = null;
+            selectOptions[2] = null;
+            selectOptions[3] = new String[]{
+                "Student",
+                "Academic Staff",
+                "Non-Academic Staff"}; // User type
+            inputs = ConsoleInput.captureFormInputs(yPosition, xPosition, maxLength, 4, hiddenFields, selectOptions);
 
             // If user pressed ESC, navigate to 'Register' screen
             if (inputs == null) {
@@ -1971,15 +1985,19 @@ private static void removeFacultyMenu() throws IOException {
 
             // ! [ERROR] Invalid email input
             if (!Auth.isValidEmail(email)) {
+                ConsoleUI.clearDialogBox(5);
                 ConsoleDisplay.dialogBox("error", "Please enter a valid email address (e.g. example@domain.com).");
             } else if (!Auth.isValidPassword(password)) {
                 // ! [ERROR] Invalid password input
-                ConsoleDisplay.dialogBox("error", "Password must be 8–20 characters long and at least one number.");
+                ConsoleUI.clearDialogBox(5);
+                ConsoleDisplay.dialogBox("error", "Password must be 8 to 20 characters long and at least one number.");
             } else if (!password.equals(confirmPassword)) {
                 // ! [ERROR] Mismatching password
+                ConsoleUI.clearDialogBox(5);
                 ConsoleDisplay.dialogBox("error", "Passwords do not match.");
             } else if (!Auth.isValidUserType(userType)) {
                 // ! [ERROR] Invalid user type
+                ConsoleUI.clearDialogBox(5);
                 ConsoleDisplay.dialogBox("error", "Invalid user type. Please enter a valid student or faculty type.");
             } else break;
 
@@ -1995,6 +2013,7 @@ private static void removeFacultyMenu() throws IOException {
         CSV.appendRow(Settings.CREDENTIALS_FILE, new String[]{email, password, userType});
 
         // Display success message
+        ConsoleUI.clearDialogBox(5);
         ConsoleDisplay.dialogBox("success", "Registration successful! Press [Enter] to go to login...");
 
         // This loop runs indefinitely until the user presses the 'Enter' key

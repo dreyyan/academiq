@@ -126,7 +126,6 @@ public class NonAcademicStaff extends Faculty {
             getAddress(),
             getContactNumber(),
             getEmail(),
-            getPersonId(),
             getDepartment() != null ? getDepartment().toString() : "",
             getRank() != null ? getRank().toString() : "",
             getHireDate().toString(),

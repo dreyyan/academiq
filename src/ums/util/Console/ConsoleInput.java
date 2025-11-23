@@ -215,6 +215,134 @@ public class ConsoleInput {
         return inputs;
     }
 
+    // [METHOD] Navigate input fields using [ENTER] key, with max characters per field
+    // Returns null if user presses [ESC] key
+    // hiddenFields: boolean array indicating which fields should hide input (e.g., password)
+    public static String[] captureFormInputs(int startY, int fieldX, int maxLength, int totalFields, boolean[] hiddenFields) throws IOException {
+
+        String[] inputs = new String[totalFields];
+        Arrays.fill(inputs, "");
+
+        int currentY = startY;
+
+        for (int i = 0; i < totalFields; i++) {
+            StringBuilder input = new StringBuilder();
+            boolean hidden = hiddenFields != null && i < hiddenFields.length && hiddenFields[i];
+
+            while (true) {
+                // Move cursor to the current field
+                ConsoleUI.goTo(currentY, fieldX);
+
+                String displayValue = hidden ? "*".repeat(input.length()) : input.toString();
+
+                // Draw value + wipe leftovers
+                System.out.print(displayValue + " ".repeat(maxLength - displayValue.length()));
+
+                // Move cursor back to end of text
+                ConsoleUI.goTo(currentY, fieldX + displayValue.length());
+
+                int key = readKey();
+
+                if (key == 27) {               // ESC → cancel
+                    return null;
+                } else if (key == 10 || key == 13) { // ENTER
+                    break;
+                } else if (key == 8 || key == 127) { // Backspace
+                    if (input.length() > 0) input.deleteCharAt(input.length() - 1);
+                } else if (key >= 32 && key <= 126) { // Printable ASCII
+                    if (input.length() < maxLength) input.append((char) key);
+                }
+            }
+
+            inputs[i] = input.toString(); // Save actual value
+            currentY += 2;                // Auto-increment Y
+        }
+
+        return inputs;
+    }
+
+public static String[] captureFormInputs(int startY, int fieldX, int maxLength, int totalFields,
+                                         boolean[] hiddenFields, String[][] selectOptions) throws IOException {
+
+    String[] inputs = new String[totalFields];
+    Arrays.fill(inputs, "");
+
+    int currentY = startY;
+
+    for (int i = 0; i < totalFields; i++) {
+        StringBuilder input = new StringBuilder();
+        boolean hidden = hiddenFields != null && i < hiddenFields.length && hiddenFields[i];
+        String[] options = (selectOptions != null && i < selectOptions.length) ? selectOptions[i] : null;
+        int selectedIndex = 0; // only used for selectable options
+
+        while (true) {
+            ConsoleUI.goTo(currentY, fieldX);
+
+            String displayValue;
+            if (options != null && options.length > 0) {
+                // Determine arrows
+                String leftArrow = selectedIndex > 0 ? "<" : " ";
+                String rightArrow = selectedIndex < options.length - 1 ? ">" : " ";
+
+                String optionText = options[selectedIndex];
+
+                // Center option between arrows
+                int innerSpace = maxLength - 2; // 2 for arrows
+                int paddingLeft = (innerSpace - optionText.length()) / 2;
+                int paddingRight = innerSpace - optionText.length() - paddingLeft;
+
+                displayValue = leftArrow + " ".repeat(Math.max(0, paddingLeft)) + optionText + " ".repeat(Math.max(0, paddingRight)) + rightArrow;
+            } else {
+                // Free text input
+                displayValue = hidden ? "*".repeat(input.length()) : input.toString();
+                displayValue += " ".repeat(Math.max(0, maxLength - displayValue.length()));
+            }
+
+            // Draw the field
+            System.out.print(displayValue);
+
+            // Move cursor for text input only
+            if (options == null || options.length == 0) {
+                ConsoleUI.goTo(currentY, fieldX + input.length());
+            }
+
+            int key = readKey();
+
+            if (key == 27) { // ESC
+                return null;
+            } else if (key == 10 || key == 13) { // ENTER
+                break;
+            } else if (options != null && options.length > 0) {
+                // Navigate selectable options (no wrap)
+                if (key == Settings.RIGHT_KEY && selectedIndex < options.length - 1) {
+                    selectedIndex++;
+                } else if (key == Settings.LEFT_KEY && selectedIndex > 0) {
+                    selectedIndex--;
+                }
+            } else {
+                // Normal typing
+                if (key == 8 || key == 127) { // Backspace
+                    if (input.length() > 0) input.deleteCharAt(input.length() - 1);
+                } else if (key >= 32 && key <= 126) { // Printable ASCII
+                    if (input.length() < maxLength) input.append((char) key);
+                }
+            }
+        }
+
+        // Save input
+        if (options != null && options.length > 0) {
+            inputs[i] = options[selectedIndex];
+        } else {
+            inputs[i] = input.toString();
+        }
+
+        currentY += 2; // move to next field
+    }
+
+    return inputs;
+}
+
+
     // [METHOD] Read keyboard input with JLine
     public static int readKey() throws IOException {
         if (terminal == null) return System.in.read();
