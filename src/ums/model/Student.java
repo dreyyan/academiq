@@ -105,9 +105,9 @@ public abstract class Student extends Person {
 
         // Display eligibility for graduation
         if (isEligible) {
-            Logger.infoMessage(getPersonId() + " is eligible for Undergraduate Graduation.");
+            ConsoleDisplay.dialogBox("info", getPersonId() + " is eligible for Undergraduate Graduation.");
         } else {
-            Logger.infoMessage(getPersonId() + " is not eligible for Undergraduate Graduation.");
+            ConsoleDisplay.dialogBox("info", getPersonId() + " is not eligible for Undergraduate Graduation.");
         }
 
         return isEligible; 

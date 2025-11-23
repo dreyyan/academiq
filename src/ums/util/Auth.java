@@ -1,13 +1,14 @@
 package ums.util;
 
 // [IMPORT] Standard
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+
+// [IMPORT] Regex
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 // [IMPORT] Models
 import ums.model.AcademicStaff;
@@ -30,6 +31,7 @@ import ums.model.enums.GraduateProgram;
 import ums.model.enums.YearLevel;
 
 public class Auth {
+    // * Methods: Authentication & Validation
     // [AUTH] Check if email is valid
     public static boolean isValidEmail(String email) {
         String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
@@ -38,7 +40,7 @@ public class Auth {
         return matcher.matches();
     }
 
-    // * [AUTH] Check if password is valid
+    // [AUTH] Check if password is valid
     public static boolean isValidPassword(String password) {
         String passwordRegex = "^(?=.*\\d)[A-Za-z\\d]{8,20}$";
         Pattern pattern = Pattern.compile(passwordRegex);
@@ -78,7 +80,7 @@ public class Auth {
         return subtype.equalsIgnoreCase("Academic Staff") || subtype.equalsIgnoreCase("Non-Academic Staff");
     }
 
-    // * [AUTH] Check if user type is valid
+    // [AUTH] Check if user type is valid
     public static boolean isValidUserType(String userType) {
         return isValidStudentType(userType) || isValidFacultyType(userType);
     }
@@ -94,7 +96,7 @@ public class Auth {
         return null; // credentials not found or mismatch
     }
 
-    // * Safe Parsers
+    // * Methods: Safe Parsers
     private static Department safeDept(String[] row, int idx) {
         return (row.length > idx && !row[idx].trim().isEmpty())
                 ? Department.fromCodeOrFullName(row[idx].trim())
@@ -139,25 +141,7 @@ public class Auth {
         }
     }
 
-    private static boolean safeBool(String[] row, int idx) {
-        return row.length > idx && "true".equalsIgnoreCase(row[idx].trim());
-    }
-
-    private static int parseWorkHours(String shift) {
-        if (shift == null || shift.isBlank()) return 40;
-
-        Matcher matcher = Pattern.compile("(\\d+)").matcher(shift);
-        if (matcher.find()) {
-            try {
-                return Integer.parseInt(matcher.group(1));
-            } catch (NumberFormatException ignored) {
-                // fall through
-            }
-        }
-
-        return 40;
-    }
-
+    // [HELPER] Parse AcademicStaff from CSV row
     private static AcademicStaff parseAcademicStaffRow(String[] row) {
         if (row == null || row.length == 0) return null;
 
@@ -193,39 +177,38 @@ public class Auth {
         }
     }
 
-public static NonAcademicStaff parseNonAcademicStaffRow(String[] r) {
-    try {
-        String personId   = r[Settings.COL_PERSON_ID].trim();
-        String firstName  = r[Settings.COL_FIRST_NAME].trim();
-        String middleName = r[Settings.COL_MIDDLE_NAME].trim();
-        String lastName   = r[Settings.COL_LAST_NAME].trim();
+    // [HELPER] Parse NonAcademicStaff from CSV row
+    public static NonAcademicStaff parseNonAcademicStaffRow(String[] r) {
+        try {
+            String firstName  = r[Settings.COL_FIRST_NAME].trim();
+            String middleName = r[Settings.COL_MIDDLE_NAME].trim();
+            String lastName   = r[Settings.COL_LAST_NAME].trim();
 
-        LocalDate dob = LocalDate.parse(r[Settings.COL_DOB].trim(), DateTimeFormatter.ISO_LOCAL_DATE);
-        Gender gender = Gender.valueOf(r[Settings.COL_GENDER].trim().toUpperCase());
-        String address = r[Settings.COL_ADDRESS].trim();
-        String contact = r[Settings.COL_CONTACT].trim();
-        String email = r[Settings.COL_EMAIL].trim();
+            LocalDate dob = LocalDate.parse(r[Settings.COL_DOB].trim(), DateTimeFormatter.ISO_LOCAL_DATE);
+            Gender gender = Gender.valueOf(r[Settings.COL_GENDER].trim().toUpperCase());
+            String address = r[Settings.COL_ADDRESS].trim();
+            String contact = r[Settings.COL_CONTACT].trim();
+            String email = r[Settings.COL_EMAIL].trim();
 
-        Department department = Department.fromString(r[Settings.COL_DEPARTMENT_STAFF].trim());
-        String position = r[Settings.COL_POSITION].trim();
-        LocalDate hireDate = LocalDate.parse(r[Settings.COL_HIRE_DATE_ADMIN].trim(), DateTimeFormatter.ISO_LOCAL_DATE);
-        String office = r[Settings.COL_OFFICE_ADMIN].trim();
-        double salary = Double.parseDouble(r[Settings.COL_SALARY_ADMIN].trim());
-        int workHours = Integer.parseInt(r[Settings.COL_SHIFT_SCHEDULE].replace(" hrs/week","").trim());
+            Department department = Department.fromString(r[Settings.COL_DEPARTMENT_STAFF].trim());
+            String position = r[Settings.COL_POSITION].trim();
+            LocalDate hireDate = LocalDate.parse(r[Settings.COL_HIRE_DATE_ADMIN].trim(), DateTimeFormatter.ISO_LOCAL_DATE);
+            String office = r[Settings.COL_OFFICE_ADMIN].trim();
+            double salary = Double.parseDouble(r[Settings.COL_SALARY_ADMIN].trim());
+            int workHours = Integer.parseInt(r[Settings.COL_SHIFT_SCHEDULE].replace(" hrs/week","").trim());
 
-        return new NonAcademicStaff(
-            firstName, middleName, lastName, dob, gender,
-            address, contact, email,
-            department, position,
-            hireDate, office, salary, workHours
-        );
+            return new NonAcademicStaff(
+                firstName, middleName, lastName, dob, gender,
+                address, contact, email,
+                department, position,
+                hireDate, office, salary, workHours
+            );
 
-    } catch (Exception e) {
-        System.out.println("Error parsing NonAcademicStaff row: " + e);
-        return null;
+        } catch (Exception e) {
+            System.out.println("Error parsing NonAcademicStaff row: " + e);
+            return null;
+        }
     }
-}
-
 
     // [HELPER] Safely parse GraduateProgram from CSV row
     public static GraduateProgram safeProgramLevel(String[] row, int index) {
@@ -258,16 +241,10 @@ public static NonAcademicStaff parseNonAcademicStaffRow(String[] r) {
     private static FacultyRank safeFacultyRank(String value) {
         if (value == null || value.isBlank()) return FacultyRank.INSTRUCTOR;
 
-        // Normalize input:
-        // - trim
-        // - replace spaces or hyphens with underscore
-        // - uppercase everything
-        String normalized = value
-                .trim()
-                .replace("-", "_")
-                .replace(" ", "_")
-                .toUpperCase();
+        // Normalize input
+        String normalized = value.trim().replace("-", "_").replace(" ", "_").toUpperCase();
 
+        // Switch based on normalized value
         switch (normalized) {
             case "INSTRUCTOR":
                 return FacultyRank.INSTRUCTOR;
@@ -286,8 +263,7 @@ public static NonAcademicStaff parseNonAcademicStaffRow(String[] r) {
                 return FacultyRank.FULL_PROFESSOR;
 
             default:
-                System.out.println("Warning: Invalid FacultyRank '" + value + "' normalized to '" + normalized +
-                                "'. Defaulting to INSTRUCTOR.");
+                System.out.println("Warning: Invalid FacultyRank '" + value + "' normalized to '" + normalized + "'. Defaulting to INSTRUCTOR.");
                 return FacultyRank.INSTRUCTOR;
         }
     }
@@ -295,6 +271,7 @@ public static NonAcademicStaff parseNonAcademicStaffRow(String[] r) {
     // [HELPER] Safe parser for Gender
     private static Gender safeGender(String value) {
         if (value == null || value.isBlank()) return Gender.OTHER;
+        
         try {
             return Gender.valueOf(value.trim().toUpperCase());
         } catch (IllegalArgumentException e) {
@@ -303,6 +280,8 @@ public static NonAcademicStaff parseNonAcademicStaffRow(String[] r) {
         }
     }
 
+    // * Methods: Read from CSV
+    // [METHOD] Read non-academic staff from .csv
     public static NonAcademicStaff getNonAcademicStaffById(String personId) {
         if (personId == null || personId.isBlank()) return null;
 
@@ -321,7 +300,7 @@ public static NonAcademicStaff parseNonAcademicStaffRow(String[] r) {
         return null;
     }
 
-
+    // [METHOD] Read undergraduate student from .csv by email
     public static Student getUndergraduateByEmail(String email) {
         if (email == null || email.isBlank()) return null;
 
@@ -367,7 +346,7 @@ public static NonAcademicStaff parseNonAcademicStaffRow(String[] r) {
         return null;
     }
 
-
+    // [METHOD] Read academic staff from .csv by email
     public static AcademicStaff getAcademicStaffByEmail(String email) {
         if (email == null || email.isBlank()) return null;
 
@@ -383,7 +362,7 @@ public static NonAcademicStaff parseNonAcademicStaffRow(String[] r) {
         return null;
     }
 
-
+    // [METHOD] Read non-academic staff from .csv by email
     public static NonAcademicStaff getNonAcademicStaffByEmail(String email) {
         if (email == null || email.isBlank()) return null;
 
@@ -404,7 +383,7 @@ public static NonAcademicStaff parseNonAcademicStaffRow(String[] r) {
         return null;
     }
 
-    // [METHOD] Read academic staff from .csv
+    // [METHOD] Read all academic staff from .csv
     public static List<AcademicStaff> readAllAcademicStaff() {
         List<String[]> rows = CSV.readCSV(Settings.ACADEMIC_STAFF_FILE);
         List<AcademicStaff> staffList = new ArrayList<>();
@@ -417,26 +396,27 @@ public static NonAcademicStaff parseNonAcademicStaffRow(String[] r) {
         return staffList;
     }
 
-    // [METHOD] Get
+    // [METHOD] Read academic staff from .csv by personId
     public static AcademicStaff getAcademicStaffById(String personId) {
-        List<AcademicStaff> allStaff = readAllAcademicStaff(); // you need a method that reads all staff from CSV
+        List<AcademicStaff> allStaff = readAllAcademicStaff();
         for (AcademicStaff staff : allStaff) {
             if (staff.getPersonId().equalsIgnoreCase(personId)) {
                 return staff;
             }
         }
-        return null; // or throw an exception if not found
+        return null;
     }
 
-public static List<NonAcademicStaff> readAllNonAcademicStaff() {
-    List<String[]> rows = CSV.readCSV(Settings.NON_ACADEMIC_STAFF_FILE);
-    List<NonAcademicStaff> staffList = new ArrayList<>();
+    // [METHOD] Read all undergraduate students from .csv
+    public static List<NonAcademicStaff> readAllNonAcademicStaff() {
+        List<String[]> rows = CSV.readCSV(Settings.NON_ACADEMIC_STAFF_FILE);
+        List<NonAcademicStaff> staffList = new ArrayList<>();
 
-    for (String[] r : rows) {
-        NonAcademicStaff staff = parseNonAcademicStaffRow(r);
-        if (staff != null) staffList.add(staff);
+        for (String[] r : rows) {
+            NonAcademicStaff staff = parseNonAcademicStaffRow(r);
+            if (staff != null) staffList.add(staff);
+        }
+
+        return staffList;
     }
-
-    return staffList;
-}
 }

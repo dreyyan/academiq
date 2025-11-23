@@ -6,45 +6,46 @@ import ums.util.console.ConsoleInput;
 import ums.util.console.ConsoleUI;
 import ums.util.console.ConsoleAnimation;
 
+// [IMPORT] Exceptions
 import java.io.IOException;
 
+// [IMPORT] UI
 import ums.ui.MainMenu;
 
 public class ConsoleDisplay {
     // * Methods
     // [UTILITY] Display a bordered frame with dynamic border thickness
     public static void displayBorder(int borderH, int borderV) {
-
-        // Use settings for console size
+        // Set default border thickness
         int width = Settings.CONSOLE_WIDTH;
         int height = Settings.CONSOLE_HEIGHT;
 
-        // Top border
+        // Display top border
         for (int i = 0; i < borderH; i++) {
             System.out.println(String.valueOf(Settings.SYMBOL).repeat(width));
         }
 
-        // Middle section
+        // Display middle section with left and right borders
         for (int i = 0; i < height - (borderH * 2); i++) {
             System.out.print(String.valueOf(Settings.SYMBOL).repeat(borderV)); // Left border
-            System.out.print(" ".repeat(width - (borderV * 2))); // Inside space
+            System.out.print(" ".repeat(width - (borderV * 2))); // Middle space
             System.out.println(String.valueOf(Settings.SYMBOL).repeat(borderV)); // Right border
         }
 
-        // Bottom border
+        // Display bottom border
         for (int i = 1; i < borderH; i++) {
             System.out.println(String.valueOf(Settings.SYMBOL).repeat(width));
-        }
-        System.out.print(String.valueOf(Settings.SYMBOL).repeat(width));
+        } System.out.print(String.valueOf(Settings.SYMBOL).repeat(width));
     }
 
-    // [UTILITY] Display system splash screen (pre-login)
+    // [UTILITY] Display a splash screen with title and version
     public static void displaySplashScreen() throws IOException {
+        // Constants for width, height, and version
         final int WIDTH = Settings.CONSOLE_WIDTH;
         final int HEIGHT = Settings.CONSOLE_HEIGHT;
         final String VERSION = Settings.SYSTEM_VERSION;
 
-        // Clear console screen
+        // Clear the console screen
         ConsoleUI.clearScreen();
 
         // ASCII art for title
@@ -70,6 +71,7 @@ public class ConsoleDisplay {
         headerLines.add("University Management System");
         headerLines.add(VERSION);
 
+        // Calculate padding for centering the header
         int usedLines = headerLines.size();
         int totalPadding = HEIGHT - usedLines;
         int topPadding = totalPadding / 2;
@@ -90,14 +92,13 @@ public class ConsoleDisplay {
             System.out.println();
         }
 
-        // After displaying splash screen for 2 seconds, clear the console screen and
-        // navigate to login screen
+        // After displaying splash screen for 2 seconds, clear the console screen and navigate to login screen
         ConsoleAnimation.delayS(2);
         ConsoleUI.clearScreen();
         MainMenu.displayLoginScreen();
     }
 
-    // [UTILITY] Display AcademIQ header title
+    // [UTILITY] Display header title with ASCII art and version
     public static void displayHeaderTitle() {
         final int WIDTH = Settings.CONSOLE_WIDTH;
         final int HEIGHT = Settings.CONSOLE_HEIGHT;
@@ -126,6 +127,7 @@ public class ConsoleDisplay {
         headerLines.add("University Management System");
         headerLines.add(VERSION);
 
+        // Calculate padding for centering the header
         int usedLines = headerLines.size();
         int totalPadding = HEIGHT - usedLines;
         int topPadding = totalPadding / 2;
@@ -143,13 +145,13 @@ public class ConsoleDisplay {
         }
     }
 
-    // [UTILITY] Display AcademIQ header subtitle
+    // [UTILITY] Display header subtitle
     public static void displayHeaderSubtitle(String subtitle) {
         ConsoleUI.moveCursor(5);
         ConsoleInput.printCentered("[ " + subtitle + " ]", Settings.CONSOLE_WIDTH - 9);
     }
 
-    // [UTILITY] Display screen setup (border & title)
+    // [UTILITY] Setup the console screen with a border and header
     public static void setupScreen() {
         ConsoleUI.clearScreen();
         ConsoleDisplay.displayBorder(2, 3);
@@ -157,12 +159,12 @@ public class ConsoleDisplay {
         ConsoleDisplay.displayHeaderTitle();
     }
 
-    // [UTILITY] Display a dialog box with a specified message
+    // [UTILITY] Display a dialog box with a message
     public static void dialogBox(String dialogType, String dialogMessage) {
-        String type = "";
+        String type = ""; // Initialize type variable
 
         ConsoleUI.goTo(Settings.CONSOLE_HEIGHT - 4, 0);
-        // Set dialog type and color
+        // Set the type and color based on dialogType
         switch (dialogType) {
             case "success":
                 type = "[SUCCESS]";
@@ -178,11 +180,12 @@ public class ConsoleDisplay {
                 break;
         }
 
+        // Print the dialog message with the type
         ConsoleUI.moveCursor(3);
         ConsoleInput.printCentered(type + ConsoleUI.RESET + " " + dialogMessage, Settings.CONSOLE_WIDTH - 3);
     }
 
-    // [UTILITY] Display ASCII art of school
+    // [UTILITY] Display ASCII art for the school
     public static void displaySchool() {
         String[] ASCIIArtSchool = {
             "                         %                          ",
@@ -203,7 +206,7 @@ public class ConsoleDisplay {
         };
 
         ConsoleUI.goTo(24, 0);
-
+        // Display the ASCII art centered
         for (String line : ASCIIArtSchool) {
             ConsoleUI.moveCursor(3);
             ConsoleInput.printCentered(line, Settings.CONSOLE_WIDTH - 3);

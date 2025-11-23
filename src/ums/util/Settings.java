@@ -22,9 +22,10 @@ public final class Settings {
     public static final String COURSE_OFFERINGS_FILE = "data/course-offerings.csv";
     public static final String ENROLLMENTS_FILE = "data/enrollments.csv";
 
-    // ======================
-    // Common Columns (ALL USERS)
-    // ======================
+    // * CSV Column Indices
+    // =======================================
+    // Common Columns (Person)
+    // =======================================
     public static final int COL_PERSON_ID   = 0;
     public static final int COL_FIRST_NAME  = 1;
     public static final int COL_MIDDLE_NAME = 2;
@@ -35,9 +36,9 @@ public final class Settings {
     public static final int COL_CONTACT     = 7;
     public static final int COL_EMAIL       = 8;
 
-    // ======================
-    // Students.csv
-    // ======================
+    // =======================================
+    // Students.csv (Student)
+    // =======================================
     public static final int COL_ENROLL_DATE     = 9;
     public static final int COL_DEPARTMENT      = 10;
     public static final int COL_COURSE          = 11;
@@ -45,14 +46,9 @@ public final class Settings {
     public static final int COL_GPA             = 13;
     public static final int COL_CREDITS         = 14;
 
-    // Graduate-specific
-    public static final int COL_PROGRAM_LEVEL   = 15;
-    public static final int COL_THESIS_TITLE    = 16;
-    public static final int COL_ADVISOR_ID      = 17;
-
-    // ======================
+    // =======================================
     // Teachers.csv (Academic Staff)
-    // ======================
+    // =======================================
     public static final int COL_DEPARTMENT_FAC  = 9;
     public static final int COL_RANK            = 10;
     public static final int COL_HIRE_DATE       = 11;
@@ -62,9 +58,9 @@ public final class Settings {
     public static final int COL_MAX_COURSES     = 15;
     public static final int COL_FULL_TIME       = 16;
 
-    // ======================
+    // =======================================
     // Administrators.csv (Non-Academic Staff)
-    // ======================
+    // =======================================
     public static final int COL_DEPARTMENT_STAFF = 9;    // College of Information & Communications Technology
     public static final int COL_POSITION         = 10;   // Instructor
     public static final int COL_HIRE_DATE_ADMIN  = 11;   // 2025-11-23
@@ -75,15 +71,11 @@ public final class Settings {
     public static final int COL_ROLE_TITLE       = 16;   // Full Administrator
     public static final int COL_SHIFT_SCHEDULE   = 17;   // 40 hrs/week
 
-    // ======================
-    // CSV Limits
-    // ======================
+    // * CSV Settings
     public static final int STUDENTS_CSV_MAX_COLUMNS = 24;
-    public static final int TOTAL_COLS = 19; // highest index + 1
+    public static final int TOTAL_COLS = 19;
 
-    // ======================
-    // Keys
-    // ======================
+    // * Key Codes
     public static final int ESC_KEY = 27;
     public static final int UP_KEY = 1001;
     public static final int DOWN_KEY = 1002;

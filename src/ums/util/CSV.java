@@ -5,29 +5,34 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+// [IMPORT] Exceptions
+import java.io.IOException;
 
 // [IMPORT] Enums
 import ums.model.enums.GraduateProgram;
 import ums.model.enums.YearLevel;
 import ums.model.enums.Department;
 
-// [IMPORT] Models
+// [IMPORT] Entities
 import ums.model.AcademicStaff;
 import ums.model.Student;
 import ums.model.entity.Course;
 import ums.model.entity.CourseOffering;
 import ums.model.entity.TimeSlot;
+
+// [IMPORT] Enums
 import ums.model.enums.AcademicStanding;
 import ums.model.enums.Gender;
 import ums.model.enums.Semester;
 
-// [IMPORT] Project Files
-import static ums.util.Logger.errorMessage;
+// [IMPORT] Utilities
+import ums.util.console.ConsoleDisplay;
+import ums.util.console.ConsoleInput;
 
 public class CSV {
     // * Methods
@@ -45,7 +50,7 @@ public class CSV {
             }
 
         } catch (IOException e) {
-            errorMessage("Failed to read CSV: " + e.getMessage());
+            ConsoleDisplay.dialogBox("error", "Failed to read CSV: " + e.getMessage());
         }
 
         return rows;
@@ -66,7 +71,7 @@ public class CSV {
                 bw.newLine();
             }
         } catch (IOException e) {
-            errorMessage("Failed to write CSV: " + e.getMessage());
+            ConsoleDisplay.dialogBox("error", "Failed to read CSV: " + e.getMessage());
         }
     }
 
@@ -175,7 +180,7 @@ public class CSV {
     // [UTILITY] Update student record
     public static void updateStudentRecord(Student student) {
         if (student == null || student.getPersonId() == null) {
-            errorMessage("Cannot update null student or student without ID.");
+            ConsoleDisplay.dialogBox("error", "Cannot update null student or student without ID.");
             return;
         }
 
@@ -185,7 +190,7 @@ public class CSV {
         for (int i = 0; i < rows.size(); i++) {
             String[] row = rows.get(i);
 
-            // Match by PERSON_ID column
+            // Match by Person ID
             if (row.length > Settings.COL_PERSON_ID && row[Settings.COL_PERSON_ID].equals(student.getPersonId())) {
 
                 // Ensure row has enough columns
@@ -222,7 +227,7 @@ public class CSV {
         if (updated) {
             writeCSV(Settings.STUDENTS_FILE, rows);
         } else {
-            errorMessage("Student ID not found in CSV: " + student.getPersonId());
+            ConsoleDisplay.dialogBox("error", "Student ID not found in CSV: " + student.getPersonId());
         }
     }
 
@@ -261,6 +266,7 @@ public class CSV {
         }
     }
 
+    // [UTILITY] Generate a new unique Person ID
     public static String generatePersonId() {
         int maxId = 0;
 
@@ -281,6 +287,7 @@ public class CSV {
         return "P" + String.format("%05d", maxId + 1);
     }
 
+    // [UTILITY] Resolve YearLevel from input string
     public static YearLevel resolveYearLevel(String input) {
         if (input == null || input.isBlank()) return null;
         String normalized = input.trim().toUpperCase().replace("-", "_").replace(" ", "_");
@@ -292,6 +299,7 @@ public class CSV {
         return null;
     }
 
+    // [UTILITY] Resolve GraduateProgram from input string
     public static GraduateProgram resolveGraduateProgram(String input) {
         if (input == null || input.isBlank()) return null;
         String normalized = input.trim().toUpperCase().replace("'", "").replace(".", "");
@@ -305,11 +313,13 @@ public class CSV {
         return null;
     }
 
+    // [UTILITY] Safely get value from CSV row by index
     public static String safeValue(String[] row, int index) {
         if (row == null || index < 0 || index >= row.length) return "";
         return row[index] != null ? row[index].trim() : "";
     }
 
+    // [UTILITY] Abbreviate department name to its code or acronym up to 6 characters
     public static String abbreviateDepartment(String deptName) {
         if (deptName == null || deptName.isBlank()) return "N/A";
         Department dept = Department.fromCodeOrFullName(deptName);
@@ -319,11 +329,13 @@ public class CSV {
         return generateAcronym(deptName, 6);
     }
 
+    // [UTILITY] Abbreviate course name to acronym up to 10 characters
     public static String abbreviateCourse(String courseName) {
         if (courseName == null || courseName.isBlank()) return "N/A";
         return generateAcronym(courseName, 10);
     }
 
+    // [UTILITY] Generate acronym from a given string up to maxLength
     public static String generateAcronym(String value, int maxLength) {
         String[] tokens = value.replaceAll("[^A-Za-z0-9 ]", " ").split("\\s+");
         StringBuilder acronym = new StringBuilder();
@@ -342,6 +354,7 @@ public class CSV {
         return acronym.toString();
     }
 
+    // [UTILITY] Remove all enrollments of a student by personId
     public static void removeStudentEnrollments(String personId) {
         if (personId == null || personId.isBlank()) return;
         List<String[]> rows = CSV.readCSV(Settings.ENROLLMENTS_FILE);

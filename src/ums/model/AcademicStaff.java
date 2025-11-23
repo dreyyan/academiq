@@ -17,7 +17,7 @@ import ums.model.enums.FacultyRank;
 import ums.model.enums.Gender;
 
 // [IMPORT] Utilities
-import ums.util.Logger;
+import ums.util.console.ConsoleDisplay;
 
 public class AcademicStaff extends Faculty {
     // * Attributes
@@ -58,7 +58,7 @@ public class AcademicStaff extends Faculty {
                 coursesTaught.add(offering);
                 updateTeachingHours(offering.getCourse().getCredits());
             } else {
-                Logger.errorMessage("Cannot add course - teaching load would exceed maximum");
+                ConsoleDisplay.dialogBox("error", "Cannot add course - teaching load would exceed maximum");
             }
         }
     }

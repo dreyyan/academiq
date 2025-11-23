@@ -45,16 +45,18 @@ public class Course {
     public void setCredits(int credits) { this.credits = credits; }
 
     // * Methods
-    // [HELPER] Map user input (full name or shorthand) to a Course object
-    public static <T extends Enum<T>> Course mapCourseInput(String input, T[] courses, Department dept) {
-        input = input.trim().toLowerCase();
+    // [HELPER] Map user input (full name or shorthand) to a 'Course' object
+    public static <T extends Enum<T>> Course mapCourseInput(String input, T[] courses, Department department) {
+        input = input.trim().toLowerCase(); // Normalize input
 
+        // Check each course in the provided enum array
         for (T c : courses) {
-            String fullName = ((Object)c).toString(); // enum's full name string
+            String fullName = ((Object)c).toString();
             String shortName = generateCourseShortName(fullName);
 
+            // Match input against full name or shorthand
             if (fullName.equalsIgnoreCase(input) || shortName.equalsIgnoreCase(input)) {
-                return new Course(fullName, dept);
+                return new Course(fullName, department);
             }
         }
 
@@ -63,6 +65,7 @@ public class Course {
 
     // [METHOD] Generate shorthand for a course from its full name
     public static String generateCourseShortName(String fullName) {
+        // Generate shorthand based on common degree prefixes
         if (fullName.startsWith("Bachelor of Science in ")) {
             return "BS " + fullName.substring("Bachelor of Science in ".length());
         } else if (fullName.startsWith("Bachelor of Arts in ")) {
@@ -74,12 +77,12 @@ public class Course {
         } else if (fullName.startsWith("Doctor of Dental Medicine")) {
             return "DMD";
         }
-        return fullName; // fallback
+        return fullName; // Return full name if no shorthand applicable
     }
 
     // [HELPER] Create Course from name or code
     public static Course fromCodeOrFullName(String input) {
-        // If no input, return 'unassigned' course
+        // Handle null or blank input
         if (input == null || input.isBlank()) return new Course("Not Assigned");
 
         // Normalize input to match enum values
@@ -146,9 +149,7 @@ public class Course {
         return new Course(input.replace("_", " "));
     }
 
-    // =========================
-    // HELPER: Map short name to Course object
-    // =========================
+    // [HELPER] Create Course from short name
     public static Course fromShortName(String shortName) {
         if (shortName == null || shortName.isBlank()) return null;
 
@@ -166,13 +167,13 @@ public class Course {
                         return new Course(fullName, dept);
                     }
                 }
-            } catch (Exception ignored) { }
+            } catch (Exception ignored) {}
         }
 
-        return null;
+        return null; // Not found
     }
 
-    // Convert full name to the short form used in selectOptions
+    // [HELPER] Map full course name to its shorthand
     public static String mapToShortName(String fullName) {
         if (fullName.startsWith("Bachelor of Science in ")) {
             return "BS " + fullName.substring("Bachelor of Science in ".length());
@@ -187,7 +188,7 @@ public class Course {
         }
     }
 
-    // Map enum class name to Department
+    // [HELPER] Map enum class name to Department
     public static Department mapEnumNameToDepartment(String enumClassName) {
         switch (enumClassName) {
             case "CASCourse": return Department.CAS;

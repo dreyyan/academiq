@@ -7,6 +7,7 @@ import ums.util.Settings;
 
 public class ConsoleUI {
     // * Attributes
+    // ANSI Color Codes
     public static final String RESET = "\u001B[0m";
     public static final String RED = "\u001B[31m";
     public static final String ORANGE = "\u001B[38;5;208m";
@@ -27,10 +28,10 @@ public class ConsoleUI {
     // [UTILITY] Clear the console screen
     public static void clearScreen() {
         try {
-            final String os = System.getProperty("os.name").toLowerCase();
+            final String os = System.getProperty("os.name").toLowerCase(); // get OS name
 
             if (os.contains("win")) {
-                // Windows: Use cls command via process
+                // Windows
                 new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
             } else {
                 // Linux / macOS / Unix
@@ -84,14 +85,14 @@ public class ConsoleUI {
 // [UTILITY] Draw one or multiple input boxes with a vertical divider between label and value.
 // boxInnerWidth = desired width inside the outer borders (characters between ╔ and ╗)
 public static void drawInputFields(int boxInnerWidth, String... labels) {
-    if (boxInnerWidth < 10) boxInnerWidth = 10; // minimum sane width
+    if (boxInnerWidth < 10) boxInnerWidth = 10; // minimum width
 
     // box drawing chars
     final String TL = "╔", TR = "╗", BL = "╚", BR = "╝";
     final String H  = "═";
     final String V  = "║";
     final String DL = "╠", DR = "╣";
-    final String SEP = "║"; // inner separator between label and value
+    final String SEP = "║";
 
     // longest label
     int maxLabelLength = 0;
@@ -101,15 +102,13 @@ public static void drawInputFields(int boxInnerWidth, String... labels) {
 
     // Ensure inner width can contain label + sep + at least small value area
     int innerWidth = Math.max(boxInnerWidth, maxLabelLength + 6); // +6 safe padding
-    // label block will be right-aligned into maxLabelLength and surrounded by one space each side:
-    // " " + <rightAlignedLabel(maxLabelLength)> + " "  => length = maxLabelLength + 2
-    int labelBlockLen = maxLabelLength + 2;
+    int labelBlockLen = maxLabelLength + 2; // +2 for spaces around label
 
     // Remaining space for value block after we reserve 1 char for inner separator
     int valueBlockLen = innerWidth - labelBlockLen - 1; // -1 for SEP char
     if (valueBlockLen < 1) valueBlockLen = 1; // at least 1 char for value area
 
-    // Top border
+    // Construct box parts
     String top = TL + H.repeat(innerWidth) + TR;
     String divider = DL + H.repeat(innerWidth) + DR;
     String bottom = BL + H.repeat(innerWidth) + BR;
@@ -117,6 +116,7 @@ public static void drawInputFields(int boxInnerWidth, String... labels) {
     ConsoleUI.moveCursor(5);
     ConsoleInput.printCentered(top, Settings.CONSOLE_WIDTH - 9);
 
+    // Draw each input field row
     for (int i = 0; i < labels.length; i++) {
         String rawLabel = labels[i] == null ? "" : labels[i];
 
@@ -175,7 +175,6 @@ public static void drawInputFields(int boxInnerWidth, String... labels) {
         int currentY = startY;
 
         for (String rawValue : values) {
-
             // Move cursor to the field position
             ConsoleUI.goTo(currentY, fieldX);
 
@@ -193,11 +192,11 @@ public static void drawInputFields(int boxInnerWidth, String... labels) {
             }
 
             System.out.print(value);
-
             currentY += 2; // Auto-increment Y
         }
     }
 
+    // [UTILITY] Clear dialog box area
     public static void clearDialogBox(int startPosition) {
         for (int i = startPosition; i > 2; --i) {
             ConsoleUI.goTo(Settings.CONSOLE_HEIGHT - i, 0);
@@ -206,6 +205,7 @@ public static void drawInputFields(int boxInnerWidth, String... labels) {
         }
     }
 
+    // [UTILITY] Truncate a string to maxLength with ellipsis
     public static String truncate(String value, int maxLength) {
         if (value.length() <= maxLength) return value;
         if (maxLength <= 3) return "..."; // minimal space for ellipsis
