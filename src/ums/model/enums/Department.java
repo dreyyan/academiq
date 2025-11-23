@@ -51,4 +51,19 @@ public enum Department {
         // If none, return 'UNASSIGNED' value
         return UNASSIGNED;
     }
+
+    // Convert a string to enum safely
+    public static Department fromString(String s) {
+        if (s == null || s.isBlank()) return null;
+
+        s = s.trim().toUpperCase()
+             .replaceAll("[^A-Z0-9]", "_"); // replace spaces & symbols with underscores
+
+        try {
+            return Department.valueOf(s);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Warning: Department not found: " + s);
+            return null; // or return a default department
+        }
+    }
 }

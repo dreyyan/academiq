@@ -125,7 +125,6 @@ public class AcademicStaff extends Faculty {
             getAddress(),
             getContactNumber(),
             getEmail(),
-            getPersonId(),
             getDepartment() != null ? getDepartment().toString() : "",
             getRank() != null ? getRank().toString() : "",
             getHireDate() != null ? getHireDate().toString() : "",

@@ -6,14 +6,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
+// [IMPORT] Models
 import ums.model.AcademicStaff;
 import ums.model.Faculty;
 import ums.model.GraduateStudent;
 import ums.model.NonAcademicStaff;
 import ums.model.Student;
 import ums.model.UndergraduateStudent;
+
+// [IMPORT] Entities
 import ums.model.entity.Course;
 import ums.model.entity.CourseOffering;
+
+// [IMPORT] Enums
 import ums.model.enums.AcademicStanding;
 import ums.model.enums.Department;
 import ums.model.enums.FacultyRank;
@@ -185,37 +193,39 @@ public class Auth {
         }
     }
 
-    private static NonAcademicStaff parseNonAcademicStaffRow(String[] row) {
-        if (row == null || row.length == 0) return null;
+public static NonAcademicStaff parseNonAcademicStaffRow(String[] r) {
+    try {
+        String personId   = r[Settings.COL_PERSON_ID].trim();
+        String firstName  = r[Settings.COL_FIRST_NAME].trim();
+        String middleName = r[Settings.COL_MIDDLE_NAME].trim();
+        String lastName   = r[Settings.COL_LAST_NAME].trim();
 
-        try {
-            String firstName  = row.length > 1 ? row[1] : "";
-            String middleName = row.length > 2 ? row[2] : "";
-            String lastName   = row.length > 3 ? row[3] : "";
-            LocalDate dob     = row.length > 4 && !row[4].isBlank() ? LocalDate.parse(row[4]) : LocalDate.now();
-            Gender gender     = safeGender(row.length > 5 ? row[5] : null);
-            String address    = row.length > 6 ? row[6] : "";
-            String contact    = row.length > 7 ? row[7] : "";
-            String email      = row.length > 8 ? row[8] : "";
+        LocalDate dob = LocalDate.parse(r[Settings.COL_DOB].trim(), DateTimeFormatter.ISO_LOCAL_DATE);
+        Gender gender = Gender.valueOf(r[Settings.COL_GENDER].trim().toUpperCase());
+        String address = r[Settings.COL_ADDRESS].trim();
+        String contact = r[Settings.COL_CONTACT].trim();
+        String email = r[Settings.COL_EMAIL].trim();
 
-            Department department = row.length > 10 ? Department.fromCodeOrFullName(row[10]) : Department.UNASSIGNED;
-            String position = row.length > 17 ? row[17] : "Staff";
-            LocalDate hireDate = row.length > 12 && !row[12].isBlank() ? LocalDate.parse(row[12]) : LocalDate.now();
-            String officeLocation = row.length > 13 ? row[13] : "";
-            double salary = row.length > 14 ? safeDouble(row, 14) : 0.0;
-            int workHours = parseWorkHours(row.length > 18 ? row[18] : "");
+        Department department = Department.fromString(r[Settings.COL_DEPARTMENT_STAFF].trim());
+        String position = r[Settings.COL_POSITION].trim();
+        LocalDate hireDate = LocalDate.parse(r[Settings.COL_HIRE_DATE_ADMIN].trim(), DateTimeFormatter.ISO_LOCAL_DATE);
+        String office = r[Settings.COL_OFFICE_ADMIN].trim();
+        double salary = Double.parseDouble(r[Settings.COL_SALARY_ADMIN].trim());
+        int workHours = Integer.parseInt(r[Settings.COL_SHIFT_SCHEDULE].replace(" hrs/week","").trim());
 
-            return new NonAcademicStaff(
-                firstName, middleName, lastName, dob, gender,
-                address, contact, email,
-                department, position,
-                hireDate, officeLocation, salary, workHours
-            );
-        } catch (Exception e) {
-            System.out.println("[ERROR][parseNonAcademicStaffRow] " + e.getMessage());
-            return null;
-        }
+        return new NonAcademicStaff(
+            firstName, middleName, lastName, dob, gender,
+            address, contact, email,
+            department, position,
+            hireDate, office, salary, workHours
+        );
+
+    } catch (Exception e) {
+        System.out.println("Error parsing NonAcademicStaff row: " + e);
+        return null;
     }
+}
+
 
     // [HELPER] Safely parse GraduateProgram from CSV row
     public static GraduateProgram safeProgramLevel(String[] row, int index) {
@@ -380,10 +390,15 @@ public class Auth {
         List<String[]> rows = CSV.readCSV(Settings.NON_ACADEMIC_STAFF_FILE);
 
         for (String[] r : rows) {
+            // Skip rows that are too short
             if (r.length <= Settings.COL_EMAIL) continue;
-            if (!r[Settings.COL_EMAIL].trim().equalsIgnoreCase(email.trim())) continue;
 
-            return parseNonAcademicStaffRow(r);
+            // Trim whitespace in the CSV field
+            String rowEmail = r[Settings.COL_EMAIL].trim();
+
+            if (rowEmail.equalsIgnoreCase(email.trim())) {
+                return parseNonAcademicStaffRow(r);
+            }
         }
 
         return null;

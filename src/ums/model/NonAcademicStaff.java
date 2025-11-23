@@ -132,8 +132,7 @@ public class NonAcademicStaff extends Faculty {
             getOfficeLocation(),
             String.valueOf(getSalary()),
             String.valueOf(isTenured()),
-            "0", // placeholder for advisees
-            getPersonId(),
+            "0",
             getPosition(),
             getShiftSchedule() != null ? getShiftSchedule() : "",
             supervisor != null ? supervisor.getPersonId() : ""

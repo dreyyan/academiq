@@ -33,7 +33,7 @@ public final class Settings {
     public static final int COL_GENDER      = 5;
     public static final int COL_ADDRESS     = 6;
     public static final int COL_CONTACT     = 7;
-    public static final int COL_EMAIL       = 8; // login key
+    public static final int COL_EMAIL       = 8;
 
     // ======================
     // Students.csv
@@ -65,16 +65,15 @@ public final class Settings {
     // ======================
     // Administrators.csv (Non-Academic Staff)
     // ======================
-    public static final int COL_DEPARTMENT_STAFF = 9;
-    public static final int COL_POSITION         = 10;
-    public static final int COL_HIRE_DATE_ADMIN  = 11;
-    public static final int COL_OFFICE_ADMIN     = 12;
-    public static final int COL_SALARY_ADMIN     = 13;
-    public static final int COL_ACTIVE           = 14;
-    public static final int COL_LEAVE_DAYS       = 15;
-    public static final int COL_ROLE_START_DATE  = 16;
-    public static final int COL_ROLE_TITLE       = 17;
-    public static final int COL_SHIFT_SCHEDULE   = 18;
+    public static final int COL_DEPARTMENT_STAFF = 9;    // College of Information & Communications Technology
+    public static final int COL_POSITION         = 10;   // Instructor
+    public static final int COL_HIRE_DATE_ADMIN  = 11;   // 2025-11-23
+    public static final int COL_OFFICE_ADMIN     = 12;   // Iloilo City
+    public static final int COL_SALARY_ADMIN     = 13;   // 35000.0
+    public static final int COL_ACTIVE           = 14;   // false
+    public static final int COL_LEAVE_DAYS       = 15;   // 0
+    public static final int COL_ROLE_TITLE       = 16;   // Full Administrator
+    public static final int COL_SHIFT_SCHEDULE   = 17;   // 40 hrs/week
 
     // ======================
     // CSV Limits
