@@ -22,8 +22,8 @@ public class UndergraduateStudent extends Student {
         // Person Attributes
         String firstName, String middleName, String lastName, LocalDate dateOfBirth, Gender gender, String address, String contactNumber, String email,
         // Student Attributes
-        String studentId, LocalDate enrollmentDate, Department department, Course course,
-        AcademicStanding academicStanding, double GPA, int creditsEarned, List<CourseOffering> enrolledCourses,
+        LocalDate enrollmentDate, Department department, Course course,
+        AcademicStanding academicStanding,
         // UndergraduateStudent Attributes
         YearLevel yearLevel
     ) {
@@ -31,7 +31,7 @@ public class UndergraduateStudent extends Student {
             // Person Attributes
             firstName, middleName, lastName, dateOfBirth, gender, address, contactNumber, email,
             // Student Attributes
-            studentId, enrollmentDate, department, course, academicStanding
+            enrollmentDate, department, course, academicStanding
         );
 
         this.yearLevel = yearLevel;

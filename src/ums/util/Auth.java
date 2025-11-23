@@ -171,7 +171,6 @@ public class Auth {
             String contact    = row.length > 7 ? row[7] : "";
             String email      = row.length > 8 ? row[8] : "";
 
-            String facultyId  = row.length > 9 ? row[9] : "";
             Department dept   = row.length > 10 ? Department.fromCodeOrFullName(row[10]) : Department.UNASSIGNED;
             FacultyRank rank  = row.length > 11 ? safeFacultyRank(row[11]) : FacultyRank.INSTRUCTOR;
             LocalDate hire    = row.length > 12 && !row[12].isBlank() ? LocalDate.parse(row[12]) : LocalDate.now();
@@ -184,9 +183,9 @@ public class Auth {
             return new AcademicStaff(
                 firstName, middleName, lastName, dob, gender,
                 address, contact, email,
-                facultyId, dept, rank, hire, office,
+                dept, rank, hire, office,
                 salary, isTenured, new ArrayList<>(),
-                facultyId, teachingHours, maxTeaching
+                teachingHours, maxTeaching
             );
         } catch (Exception e) {
             System.out.println("[ERROR][parseAcademicStaffRow] " + e.getMessage());
@@ -198,30 +197,26 @@ public class Auth {
         if (row == null || row.length == 0) return null;
 
         try {
-            String firstName  = row.length > 0 ? row[0] : "";
-            String middleName = row.length > 1 ? row[1] : "";
-            String lastName   = row.length > 2 ? row[2] : "";
-            LocalDate dob     = row.length > 3 && !row[3].isBlank() ? LocalDate.parse(row[3]) : LocalDate.now();
-            Gender gender     = safeGender(row.length > 4 ? row[4] : null);
-            String address    = row.length > 5 ? row[5] : "";
-            String contact    = row.length > 6 ? row[6] : "";
-            String email      = row.length > 7 ? row[7] : "";
+            String firstName  = row.length > 1 ? row[1] : "";
+            String middleName = row.length > 2 ? row[2] : "";
+            String lastName   = row.length > 3 ? row[3] : "";
+            LocalDate dob     = row.length > 4 && !row[4].isBlank() ? LocalDate.parse(row[4]) : LocalDate.now();
+            Gender gender     = safeGender(row.length > 5 ? row[5] : null);
+            String address    = row.length > 6 ? row[6] : "";
+            String contact    = row.length > 7 ? row[7] : "";
+            String email      = row.length > 8 ? row[8] : "";
 
-            String staffIdPrimary = row.length > 16 ? row[16] : "";
-            String staffIdFallback = row.length > 8 ? row[8] : "";
-            String staffId = !staffIdPrimary.isBlank() ? staffIdPrimary : staffIdFallback;
-
-            Department department = row.length > 9 ? Department.fromCodeOrFullName(row[9]) : Department.UNASSIGNED;
+            Department department = row.length > 10 ? Department.fromCodeOrFullName(row[10]) : Department.UNASSIGNED;
             String position = row.length > 17 ? row[17] : "Staff";
-            LocalDate hireDate = row.length > 11 && !row[11].isBlank() ? LocalDate.parse(row[11]) : LocalDate.now();
-            String officeLocation = row.length > 12 ? row[12] : "";
-            double salary = row.length > 13 ? safeDouble(row, 13) : 0.0;
+            LocalDate hireDate = row.length > 12 && !row[12].isBlank() ? LocalDate.parse(row[12]) : LocalDate.now();
+            String officeLocation = row.length > 13 ? row[13] : "";
+            double salary = row.length > 14 ? safeDouble(row, 14) : 0.0;
             int workHours = parseWorkHours(row.length > 18 ? row[18] : "");
 
             return new NonAcademicStaff(
                 firstName, middleName, lastName, dob, gender,
                 address, contact, email,
-                staffId, department, position,
+                department, position,
                 hireDate, officeLocation, salary, workHours
             );
         } catch (Exception e) {
@@ -249,7 +244,7 @@ public class Auth {
             return null; // no advisor assigned
         }
         String advisorId = row[index].trim();
-        // Look up advisor using academic staff records
+        // Look up advisor using academic staff records by personId
         Faculty faculty = Auth.getAcademicStaffById(advisorId);
         if (faculty == null) {
             System.out.println("Warning: Advisor with ID '" + advisorId + "' not found.");
@@ -306,106 +301,109 @@ public class Auth {
         }
     }
 
-    public static NonAcademicStaff getNonAcademicStaffById(String staffId) {
-        if (staffId == null || staffId.isBlank()) return null;
+    public static NonAcademicStaff getNonAcademicStaffById(String personId) {
+        if (personId == null || personId.isBlank()) return null;
 
         List<String[]> rows = CSV.readCSV(Settings.NON_ACADEMIC_STAFF_FILE);
         for (String[] row : rows) {
             if (row.length == 0) continue;
 
-            String primaryId  = row.length > 16 ? row[16] : "";
-            String fallbackId = row.length > 8 ? row[8] : "";
+            String id = row.length > 0 ? row[0] : "";
 
-            if (staffId.equalsIgnoreCase(primaryId) || staffId.equalsIgnoreCase(fallbackId)) {
+            if (personId.equalsIgnoreCase(id)) {
                 return parseNonAcademicStaffRow(row);
             }
         }
         return null;
     }
 
-    public static Student getUndergraduateByEmail(String email) {
-        List<String[]> rows = CSV.readCSV(Settings.STUDENTS_FILE);
-        for (String[] r : rows) {
-            if (r.length <= Settings.COL_EMAIL || !r[Settings.COL_EMAIL].trim().equalsIgnoreCase(email.trim())) {
-                continue;
-            }
+public static Student getUndergraduateByEmail(String email) {
+    List<String[]> rows = CSV.readCSV(Settings.STUDENTS_FILE);
 
-            try {
-                String personId   = r[Settings.COL_PERSON_ID];
-                String firstName  = r[Settings.COL_FIRST_NAME];
-                String middleName = r[Settings.COL_MIDDLE_NAME];
-                String lastName   = r[Settings.COL_LAST_NAME];
-                LocalDate dob     = LocalDate.parse(r[Settings.COL_DOB]);
-                Gender gender     = Gender.valueOf(r[Settings.COL_GENDER].toUpperCase());
-                String address    = r[Settings.COL_ADDRESS];
-                String contact    = r[Settings.COL_CONTACT];
-                String studentId  = r[Settings.COL_STUDENT_ID];
-                LocalDate enroll  = LocalDate.parse(r[Settings.COL_ENROLL_DATE]);
+    for (String[] r : rows) {
+        // Skip rows that are too short or email doesn't match
+        if (r.length <= Settings.COL_EMAIL || 
+            !r[Settings.COL_EMAIL].trim().equalsIgnoreCase(email.trim())) {
+            continue;
+        }
 
-                Department dept   = safeDept(r, Settings.COL_DEPARTMENT);
-                Course course     = safeCourse(r, Settings.COL_COURSE);
-                AcademicStanding standing = safeStanding(r, Settings.COL_ACAD_STANDING);
-                double gpa        = safeDouble(r, Settings.COL_GPA);
-                int credits       = safeInt(r, Settings.COL_CREDITS);
-                List<CourseOffering> offerings = new ArrayList<>();
+        try {
+            String firstName  = r[Settings.COL_FIRST_NAME];
+            String middleName = r[Settings.COL_MIDDLE_NAME];
+            String lastName   = r[Settings.COL_LAST_NAME];
+            LocalDate dob     = LocalDate.parse(r[Settings.COL_DOB]);
+            Gender gender     = Gender.valueOf(r[Settings.COL_GENDER].toUpperCase());
+            String address    = r[Settings.COL_ADDRESS];
+            String contact    = r[Settings.COL_CONTACT];
+            LocalDate enroll  = LocalDate.parse(r[Settings.COL_ENROLL_DATE]);
 
-                YearLevel yl = credits < 30 ? YearLevel.FRESHMAN :
+            Department dept   = safeDept(r, Settings.COL_DEPARTMENT);
+            Course course     = safeCourse(r, Settings.COL_COURSE);
+            AcademicStanding standing = safeStanding(r, Settings.COL_ACAD_STANDING);
+
+            int credits = safeInt(r, Settings.COL_CREDITS); // use to determine year level
+            YearLevel yl = credits < 30 ? YearLevel.FRESHMAN :
                             credits < 60 ? YearLevel.SOPHOMORE :
                             credits < 90 ? YearLevel.JUNIOR : YearLevel.SENIOR;
 
-                return new UndergraduateStudent(
-                    firstName, middleName, lastName, dob, gender, address, contact, r[Settings.COL_EMAIL],
-                    studentId, enroll, dept, course, standing, gpa, credits, offerings, yl
-                );
-            } catch (Exception e) {
-                System.out.println(e);
-            }
+            // Construct and return UndergraduateStudent
+            return new UndergraduateStudent(
+                firstName, middleName, lastName, dob, gender, 
+                address, contact, r[Settings.COL_EMAIL],
+                enroll, dept, course, standing,
+                yl
+            );
+
+        } catch (Exception e) {
+            System.out.println("Error parsing student row: " + e);
         }
-        return null;
     }
 
-    public static Student getGraduateByEmail(String email) {
-        List<String[]> rows = CSV.readCSV(Settings.STUDENTS_FILE);
-        for (String[] r : rows) {
-            if (r.length <= Settings.COL_EMAIL || !r[Settings.COL_EMAIL].trim().equalsIgnoreCase(email.trim())) {
-                continue;
-            }
+    return null; // no matching student found
+}
 
-            try {
-                String personId   = r[Settings.COL_PERSON_ID];
-                String firstName  = r[Settings.COL_FIRST_NAME];
-                String middleName = r[Settings.COL_MIDDLE_NAME];
-                String lastName   = r[Settings.COL_LAST_NAME];
-                LocalDate dob     = LocalDate.parse(r[Settings.COL_DOB]);
-                Gender gender     = Gender.valueOf(r[Settings.COL_GENDER].toUpperCase());
-                String address    = r[Settings.COL_ADDRESS];
-                String contact    = r[Settings.COL_CONTACT];
-                String studentId  = r[Settings.COL_STUDENT_ID];
-                LocalDate enroll  = LocalDate.parse(r[Settings.COL_ENROLL_DATE]);
 
-                Department dept   = safeDept(r, Settings.COL_DEPARTMENT);
-                Course course     = safeCourse(r, Settings.COL_COURSE);
-                AcademicStanding standing = safeStanding(r, Settings.COL_ACAD_STANDING);
-                double gpa        = safeDouble(r, Settings.COL_GPA);
-                int credits       = safeInt(r, Settings.COL_CREDITS);
-                List<CourseOffering> offerings = new ArrayList<>();
+    // public static Student getGraduateByEmail(String email) {
+    //     List<String[]> rows = CSV.readCSV(Settings.STUDENTS_FILE);
+    //     for (String[] r : rows) {
+    //         if (r.length <= Settings.COL_EMAIL || !r[Settings.COL_EMAIL].trim().equalsIgnoreCase(email.trim())) {
+    //             continue;
+    //         }
 
-                // Graduate-specific fields
-                GraduateProgram programLevel = safeProgramLevel(r, Settings.COL_PROGRAM_LEVEL); // e.g., MASTER, PHD
-                String thesisTitle        = r.length > Settings.COL_THESIS_TITLE ? r[Settings.COL_THESIS_TITLE] : null;
-                Faculty advisor           = safeAdvisor(r, Settings.COL_ADVISOR_ID);
+    //         try {
+    //             String personId   = r[Settings.COL_PERSON_ID];
+    //             String firstName  = r[Settings.COL_FIRST_NAME];
+    //             String middleName = r[Settings.COL_MIDDLE_NAME];
+    //             String lastName   = r[Settings.COL_LAST_NAME];
+    //             LocalDate dob     = LocalDate.parse(r[Settings.COL_DOB]);
+    //             Gender gender     = Gender.valueOf(r[Settings.COL_GENDER].toUpperCase());
+    //             String address    = r[Settings.COL_ADDRESS];
+    //             String contact    = r[Settings.COL_CONTACT];
+    //             LocalDate enroll  = LocalDate.parse(r[Settings.COL_ENROLL_DATE]);
 
-                return new GraduateStudent(
-                    firstName, middleName, lastName, dob, gender, address, contact, r[Settings.COL_EMAIL],
-                    studentId, enroll, dept, course, standing, gpa, credits, offerings,
-                    programLevel, thesisTitle, advisor
-                );
-            } catch (Exception e) {
-                System.out.println(e);
-            }
-        }
-        return null;
-    }
+    //             Department dept   = safeDept(r, Settings.COL_DEPARTMENT);
+    //             Course course     = safeCourse(r, Settings.COL_COURSE);
+    //             AcademicStanding standing = safeStanding(r, Settings.COL_ACAD_STANDING);
+    //             double gpa        = safeDouble(r, Settings.COL_GPA);
+    //             int credits       = safeInt(r, Settings.COL_CREDITS);
+    //             List<CourseOffering> offerings = new ArrayList<>();
+
+    //             // Graduate-specific fields
+    //             GraduateProgram programLevel = safeProgramLevel(r, Settings.COL_PROGRAM_LEVEL); // e.g., MASTER, PHD
+    //             String thesisTitle        = r.length > Settings.COL_THESIS_TITLE ? r[Settings.COL_THESIS_TITLE] : null;
+    //             Faculty advisor           = safeAdvisor(r, Settings.COL_ADVISOR_ID);
+
+    //             return new GraduateStudent(
+    //                 firstName, middleName, lastName, dob, gender, address, contact, r[Settings.COL_EMAIL],
+    //                 enroll, dept, course, standing, gpa, credits, offerings,
+    //                 programLevel, thesisTitle, advisor
+    //             );
+    //         } catch (Exception e) {
+    //             System.out.println(e);
+    //         }
+    //     }
+    //     return null;
+    // }
 
     public static AcademicStaff getAcademicStaffByEmail(String email) {
         if (email == null || email.isBlank()) return null;
@@ -423,19 +421,20 @@ public class Auth {
         return null;
     }
 
-    public static NonAcademicStaff getNonAcademicStaffByEmail(String email) {
-        List<String[]> rows = CSV.readCSV(Settings.NON_ACADEMIC_STAFF_FILE);
+public static NonAcademicStaff getNonAcademicStaffByEmail(String email) {
+    List<String[]> rows = CSV.readCSV(Settings.NON_ACADEMIC_STAFF_FILE);
 
-        for (String[] r : rows) {
-            if (r.length <= 7) continue;
-            if (!r[7].trim().equalsIgnoreCase(email.trim())) continue;
+    for (String[] r : rows) {
+        if (r.length <= 8) continue; // at least 9 columns including email
+        if (!r[8].trim().equalsIgnoreCase(email.trim())) continue;
 
-            NonAcademicStaff staff = parseNonAcademicStaffRow(r);
-            if (staff != null) return staff;
-        }
-
-        return null;
+        NonAcademicStaff staff = parseNonAcademicStaffRow(r);
+        if (staff != null) return staff;
     }
+
+    return null; // no match found
+}
+
 
     // [METHOD] Read academic staff from .csv
     public static List<AcademicStaff> readAllAcademicStaff() {
@@ -451,10 +450,10 @@ public class Auth {
     }
 
     // [METHOD] Get
-    public static AcademicStaff getAcademicStaffById(String staffId) {
+    public static AcademicStaff getAcademicStaffById(String personId) {
         List<AcademicStaff> allStaff = readAllAcademicStaff(); // you need a method that reads all staff from CSV
         for (AcademicStaff staff : allStaff) {
-            if (staff.getFacultyId().equalsIgnoreCase(staffId)) {
+            if (staff.getPersonId().equalsIgnoreCase(personId)) {
                 return staff;
             }
         }

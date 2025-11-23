@@ -120,7 +120,7 @@ public class CSV {
         newStudentRow[Settings.COL_GENDER]       = Gender.OTHER.toString();
         newStudentRow[Settings.COL_ADDRESS]      = "";
         newStudentRow[Settings.COL_CONTACT]      = "";
-        newStudentRow[Settings.COL_STUDENT_ID]   = "STUDENT_ID_" + UUID.randomUUID().toString();
+        // PersonId is generated automatically by Person constructor
         newStudentRow[Settings.COL_ENROLL_DATE]  = LocalDate.now().toString();
         newStudentRow[Settings.COL_DEPARTMENT]   = "";   // not assigned yet
         newStudentRow[Settings.COL_COURSE]       = "";   // not assigned yet
@@ -174,7 +174,7 @@ public class CSV {
 
     // [UTILITY] Update student record
     public static void updateStudentRecord(Student student) {
-        if (student == null || student.getStudentId() == null) {
+        if (student == null || student.getPersonId() == null) {
             errorMessage("Cannot update null student or student without ID.");
             return;
         }
@@ -185,8 +185,8 @@ public class CSV {
         for (int i = 0; i < rows.size(); i++) {
             String[] row = rows.get(i);
 
-            // Match by STUDENT_ID column
-            if (row.length > Settings.COL_STUDENT_ID && row[Settings.COL_STUDENT_ID].equals(student.getStudentId())) {
+            // Match by PERSON_ID column
+            if (row.length > Settings.COL_PERSON_ID && row[Settings.COL_PERSON_ID].equals(student.getPersonId())) {
 
                 // Ensure row has enough columns
                 int requiredLength = Settings.TOTAL_COLS;
@@ -222,19 +222,19 @@ public class CSV {
         if (updated) {
             writeCSV(Settings.STUDENTS_FILE, rows);
         } else {
-            errorMessage("Student ID not found in CSV: " + student.getStudentId());
+            errorMessage("Student ID not found in CSV: " + student.getPersonId());
         }
     }
 
     // [UTILITY] Check if a student is already enrolled in a course offering
-    public static boolean isStudentEnrolled(String studentId, String offeringId) {
+    public static boolean isStudentEnrolled(String personId, String offeringId) {
         List<String[]> rows = readCSV(Settings.ENROLLMENTS_FILE);
 
         for (String[] row : rows) {
-            if (row.length >= 2) { // Ensure there are at least two columns: studentId and offeringId
+            if (row.length >= 2) { // Ensure there are at least two columns: personId and offeringId
                 String sId = row[0].trim();
                 String oId = row[1].trim();
-                if (sId.equals(studentId) && oId.equals(offeringId)) {
+                if (sId.equals(personId) && oId.equals(offeringId)) {
                     return true; // Found a match
                 }
             }
@@ -244,13 +244,13 @@ public class CSV {
     }
 
     // [UTILITY] Check and remove a student's enrollment
-    public static void removeEnrollment(String studentId, String offeringId) {
+    public static void removeEnrollment(String personId, String offeringId) {
         List<String[]> rows = readCSV(Settings.ENROLLMENTS_FILE);
         boolean removed = false;
 
         for (int i = rows.size() - 1; i >= 0; i--) { // iterate backwards to safely remove
             String[] row = rows.get(i);
-            if (row.length >= 2 && row[0].equals(studentId) && row[1].equals(offeringId)) {
+            if (row.length >= 2 && row[0].equals(personId) && row[1].equals(offeringId)) {
                 rows.remove(i);
                 removed = true;
             }
@@ -342,13 +342,13 @@ public class CSV {
         return acronym.toString();
     }
 
-    public static void removeStudentEnrollments(String studentId) {
-        if (studentId == null || studentId.isBlank()) return;
+    public static void removeStudentEnrollments(String personId) {
+        if (personId == null || personId.isBlank()) return;
         List<String[]> rows = CSV.readCSV(Settings.ENROLLMENTS_FILE);
         boolean updated = false;
         for (int i = rows.size() - 1; i >= 0; i--) {
             String[] row = rows.get(i);
-            if (row.length > 0 && studentId.equalsIgnoreCase(row[0])) {
+            if (row.length > 0 && personId.equalsIgnoreCase(row[0])) {
                 rows.remove(i);
                 updated = true;
             }

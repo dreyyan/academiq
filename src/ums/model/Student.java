@@ -20,7 +20,6 @@ import ums.util.console.ConsoleDisplay;
 
 public abstract class Student extends Person {
     // * Attributes
-    private String studentId;
     private LocalDate enrollmentDate; 
     private Department department;
     private Course course;
@@ -34,13 +33,12 @@ public abstract class Student extends Person {
             // Person Attributes
             String firstName, String middleName, String lastName, LocalDate dateOfBirth, Gender gender, String address, String contactNumber, String email,
             // Student Attributes
-            String studentId, LocalDate enrollmentDate, Department department, Course course, AcademicStanding academicStanding) {
+            LocalDate enrollmentDate, Department department, Course course, AcademicStanding academicStanding) {
             super(
                 // Person Attributes
                 firstName, middleName, lastName, dateOfBirth, gender, address, contactNumber, email
             );
 
-            this.studentId = studentId;
             this.enrollmentDate = enrollmentDate;
             this.department = department; 
             this.course = course;
@@ -51,7 +49,6 @@ public abstract class Student extends Person {
         }
 
     // * Getters
-    public String getStudentId() { return this.studentId; }
     public LocalDate getEnrollmentDate() { return this.enrollmentDate; }
     public Department getDepartment() { return this.department; }
     public Course getCourse() { return this.course; }
@@ -69,7 +66,7 @@ public abstract class Student extends Person {
     // [METHOD] Enroll student in an existing course offering
     public void enrollInCourseOffering(CourseOffering offering){
         if (getEnrolledCourseOfferings().contains(offering)){ // ! [ERROR] Student already enrolled in course offering
-            ConsoleDisplay.dialogBox("error", getStudentId() + " is already enrolled in " + offering.getCourse());
+            ConsoleDisplay.dialogBox("error", getPersonId() + " is already enrolled in " + offering.getCourse());
         } else {
             getEnrolledCourseOfferings().add(offering); // Enroll in course offering
             ConsoleDisplay.dialogBox("success", "Successfully enrolled in " + offering.getCourse() + "!");
@@ -81,7 +78,7 @@ public abstract class Student extends Person {
         if(getEnrolledCourseOfferings().remove(offering)){
             ConsoleDisplay.dialogBox("success", "Successfully dropped in " + offering.getCourse() + "!");
         } else {
-            ConsoleDisplay.dialogBox("error", getStudentId() + " is stil enrolled in " + offering.getCourse());
+            ConsoleDisplay.dialogBox("error", getPersonId() + " is stil enrolled in " + offering.getCourse());
         }
     }
 
@@ -108,9 +105,9 @@ public abstract class Student extends Person {
 
         // Display eligibility for graduation
         if (isEligible) {
-            Logger.infoMessage(getStudentId() + " is eligible for Undergraduate Graduation.");
+            Logger.infoMessage(getPersonId() + " is eligible for Undergraduate Graduation.");
         } else {
-            Logger.infoMessage(getStudentId() + " is not eligible for Undergraduate Graduation.");
+            Logger.infoMessage(getPersonId() + " is not eligible for Undergraduate Graduation.");
         }
 
         return isEligible; 
@@ -120,7 +117,7 @@ public abstract class Student extends Person {
     public List<String> getAcademicsInformation() {
         List<String> info = new ArrayList<>(); // Stores student's academics information
 
-        info.add(getStudentId());
+        info.add(getPersonId());
         info.add(getEnrollmentDate().toString());
         info.add(getDepartment() != null ? getDepartment().toString() : "Not Assigned");
         info.add(getCourse() != null ? getCourse().toString() : "Not Assigned");
@@ -136,7 +133,7 @@ public abstract class Student extends Person {
         StringBuilder report = new StringBuilder();
 
         report.append("======= Student Report =======\n");
-        report.append("ID: ").append(getStudentId()).append("\n");
+        report.append("ID: ").append(getPersonId()).append("\n");
         report.append("Department: ").append(getDepartment() != null ? getDepartment() : "Not Assigned").append("\n");
         report.append("Course: ").append(getCourse() != null ? getCourse() : "Not Assigned").append("\n");
         report.append("Year Level: ").append(calculateYearLevel()).append("\n");
@@ -152,7 +149,7 @@ public abstract class Student extends Person {
         return new String[] {
             getPersonId(), getFirstName(), getMiddleName(), getLastName(), getDateOfBirth().toString(),
             getGender().toString(), getAddress(), getContactNumber(), getEmail(),
-            getStudentId(), getEnrollmentDate().toString(),
+            getPersonId(), getEnrollmentDate().toString(),
             getDepartment() != null ? getDepartment().toString() : "",
             getCourse() != null ? getCourse().toString() : "",
             String.valueOf(getGPA()),

@@ -21,7 +21,6 @@ import ums.util.Logger;
 
 public class AcademicStaff extends Faculty {
     // * Attributes
-    private String teacherId;
     private List<CourseOffering> coursesTaught;
     private int teachingHoursPerWeek;
     private int maxTeachingLoad = 18;
@@ -31,25 +30,23 @@ public class AcademicStaff extends Faculty {
         // Person Attributes
         String firstName, String middleName, String lastName, LocalDate dateOfBirth, Gender gender, String address, String contactNumber, String email,
         // Faculty Attributes
-        String facultyId, Department department, FacultyRank rank, LocalDate hireDate, String officeLocation, double salary, boolean isTenured, List<GraduateStudent> advisees,
+        Department department, FacultyRank rank, LocalDate hireDate, String officeLocation, double salary, boolean isTenured, List<GraduateStudent> advisees,
         // AcademicStaff Attributes
-        String teacherId, int teachingHoursPerWeek, int maxTeachingLoad
+        int teachingHoursPerWeek, int maxTeachingLoad
         ) {
         super(
             // Person Attributes
             firstName, middleName, lastName, dateOfBirth, gender, address, contactNumber, email,
             // Faculty Attributes
-            facultyId, department, rank, hireDate, officeLocation, salary, isTenured, advisees
+            department, rank, hireDate, officeLocation, salary, isTenured, advisees
         );
 
-        this.teacherId = teacherId;
         this.coursesTaught = new ArrayList<>();
         this.teachingHoursPerWeek = teachingHoursPerWeek;
         this.maxTeachingLoad = maxTeachingLoad;
     }
 
     // * Getters
-    public String getTeacherId() { return this.teacherId; }
     public List<CourseOffering> getCoursesTaught() { return new ArrayList<>(coursesTaught); }
     public int getTeachingHoursPerWeek() { return this.teachingHoursPerWeek; }
 
@@ -97,7 +94,6 @@ public class AcademicStaff extends Faculty {
 
         report.append("======= Academic Staff Performance Report =======\n");
         report.append(super.generateReport());
-        report.append("Teacher ID: ").append(teacherId).append("\n");
         report.append("Teaching Hours Per Week: ").append(teachingHoursPerWeek).append("\n");
         report.append("Max Teaching Load: ").append(maxTeachingLoad).append("\n");
         report.append("Overloaded: ").append(isOverloaded() ? "Yes" : "No").append("\n");
@@ -129,7 +125,7 @@ public class AcademicStaff extends Faculty {
             getAddress(),
             getContactNumber(),
             getEmail(),
-            getTeacherId(),
+            getPersonId(),
             getDepartment() != null ? getDepartment().toString() : "",
             getRank() != null ? getRank().toString() : "",
             getHireDate() != null ? getHireDate().toString() : "",

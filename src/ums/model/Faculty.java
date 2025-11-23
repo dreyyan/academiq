@@ -12,7 +12,6 @@ import ums.model.enums.Gender;
 
 public abstract class Faculty extends Person {
     // * Attributes
-    private String facultyId;
     private Department department;
     private FacultyRank rank;
     private LocalDate hireDate;
@@ -26,14 +25,13 @@ public abstract class Faculty extends Person {
         // Person Attributes
         String firstName, String middleName, String lastName, LocalDate dateOfBirth, Gender gender, String address, String contactNumber, String email,    
         // Faculty Attributes
-        String facultyId, Department department, FacultyRank rank, LocalDate hireDate, String officeLocation, double salary, boolean isTenured, List<GraduateStudent> advisees
+        Department department, FacultyRank rank, LocalDate hireDate, String officeLocation, double salary, boolean isTenured, List<GraduateStudent> advisees
     ) {
         super(
             // Person Attributes
             firstName, middleName, lastName, dateOfBirth, gender, address, contactNumber, email
         );
 
-        this.facultyId = facultyId;
         this.department = department;
         this.rank = rank;
         this.hireDate = hireDate;
@@ -44,7 +42,6 @@ public abstract class Faculty extends Person {
     }
 
    // * Getters
-    public String getFacultyId() { return this.facultyId; }
     public Department getDepartment() { return this.department; }
     public FacultyRank getRank() { return this.rank; }
     public LocalDate getHireDate() { return this.hireDate; }
@@ -85,7 +82,7 @@ public abstract class Faculty extends Person {
         StringBuilder report = new StringBuilder();
 
         report.append("======= Faculty Report =======\n");
-        report.append("ID: ").append(facultyId).append("\n");
+        report.append("ID: ").append(getPersonId()).append("\n");
         report.append("Department: ").append(getDepartment()).append("\n");
         report.append("Rank: ").append(getRank()).append("\n");
         report.append("Hire Date: ").append(getHireDate()).append("\n");

@@ -13,7 +13,6 @@ import ums.model.enums.Gender;
 
 public class NonAcademicStaff extends Faculty {
     // * Attributes
-    private String staffId;
     private String position;
     private String shiftSchedule;
     private NonAcademicStaff supervisor;
@@ -23,18 +22,17 @@ public class NonAcademicStaff extends Faculty {
         // Person Attributes
         String firstName, String middleName, String lastName, LocalDate dateOfBirth, Gender gender, String address, String contactNumber, String email,
         // Faculty Attributes
-        String facultyId, Department department, FacultyRank rank, LocalDate hireDate, String officeLocation, double salary, boolean isTenured, List<GraduateStudent> advisees,
+        Department department, FacultyRank rank, LocalDate hireDate, String officeLocation, double salary, boolean isTenured, List<GraduateStudent> advisees,
         // NonAcademicStaff Attributes
-        String staffId, String position, String shiftSchedule, NonAcademicStaff supervisor
+        String position, String shiftSchedule, NonAcademicStaff supervisor
     ) {
         super(
             // Person Attributes
             firstName, middleName, lastName, dateOfBirth, gender, address, contactNumber, email,
             // Faculty Attributes
-            facultyId, department, rank, hireDate, officeLocation, salary, isTenured, advisees
+            department, rank, hireDate, officeLocation, salary, isTenured, advisees
         );
 
-        this.staffId = staffId;
         this.position = position;
         this.shiftSchedule = shiftSchedule;
         this.supervisor = supervisor;
@@ -43,27 +41,25 @@ public class NonAcademicStaff extends Faculty {
     public NonAcademicStaff(
         // Person Attributes
         String firstName, String middleName, String lastName, LocalDate dob, Gender gender, String address, String contact, String email,
-        String staffId, Department department, String position,
+        Department department, String position,
         LocalDate hireDate, String officeLocation, double salary, int workHours
     ) {
         super(
             firstName, middleName, lastName, dob, gender,
             address, contact, email,
-            staffId, department,
+            department,
             FacultyRank.INSTRUCTOR,
             hireDate, officeLocation,
             salary, false, 
             new ArrayList<GraduateStudent>()
         );
 
-        this.staffId = staffId;
         this.position = position;
         this.shiftSchedule = workHours + " hrs/week";
         this.supervisor = null;
     }
 
     // * Getters
-    public String getStaffId() { return this.staffId; }
     public String getPosition() { return this.position; }
     public String getShiftSchedule() { return this.shiftSchedule; }
     public NonAcademicStaff getSupervisor() { return this.supervisor; }
@@ -79,15 +75,14 @@ public class NonAcademicStaff extends Faculty {
         StringBuilder schedule = new StringBuilder();
 
         schedule.append("===== Work Schedule =====\n");
-        schedule.append("Staff ID: ").append(staffId).append("\n");
-        schedule.append("Faculty ID: ").append(getFacultyId()).append("\n");
+        schedule.append("Person ID: ").append(getPersonId()).append("\n");
         schedule.append("Position: ").append(position).append("\n");
         schedule.append("Shift: ").append(shiftSchedule).append("\n");
         schedule.append("Department: ").append(getDepartment()).append("\n");
         schedule.append("Office: ").append(getOfficeLocation()).append("\n");
 
         if (supervisor != null) {
-            schedule.append("Supervisor: ").append(supervisor.getStaffId())
+            schedule.append("Supervisor: ").append(supervisor.getPersonId())
                     .append(" (").append(supervisor.getPosition()).append(")\n");
         } else {
             schedule.append("Supervisor: None\n");
@@ -100,8 +95,7 @@ public class NonAcademicStaff extends Faculty {
         StringBuilder report = new StringBuilder();
         
         report.append("===== Non-Academic Staff Report =====\n");
-        report.append("Staff ID: ").append(staffId).append("\n");
-        report.append("Faculty ID: ").append(getFacultyId()).append("\n");
+        report.append("Person ID: ").append(getPersonId()).append("\n");
         report.append("Department: ").append(getDepartment()).append("\n");
         report.append("Position: ").append(position).append("\n");
         report.append("Rank: ").append(getRank()).append("\n");
@@ -112,7 +106,7 @@ public class NonAcademicStaff extends Faculty {
         report.append("Shift Schedule: ").append(shiftSchedule).append("\n");
         report.append("Tenured: ").append(isTenured() ? "Yes" : "No").append("\n");
         if (supervisor != null) {
-            report.append("Supervisor: ").append(supervisor.getStaffId())
+            report.append("Supervisor: ").append(supervisor.getPersonId())
                   .append(" - ").append(supervisor.getPosition()).append("\n");
         } else {
             report.append("Supervisor: None\n");
@@ -123,6 +117,7 @@ public class NonAcademicStaff extends Faculty {
 
     public String[] toCSVRow() {
         return new String[] {
+            getPersonId(),
             getFirstName(),
             getMiddleName(),
             getLastName(),
@@ -131,7 +126,7 @@ public class NonAcademicStaff extends Faculty {
             getAddress(),
             getContactNumber(),
             getEmail(),
-            getFacultyId(),
+            getPersonId(),
             getDepartment() != null ? getDepartment().toString() : "",
             getRank() != null ? getRank().toString() : "",
             getHireDate().toString(),
@@ -139,10 +134,10 @@ public class NonAcademicStaff extends Faculty {
             String.valueOf(getSalary()),
             String.valueOf(isTenured()),
             "0", // placeholder for advisees
-            getStaffId(),
+            getPersonId(),
             getPosition(),
             getShiftSchedule() != null ? getShiftSchedule() : "",
-            supervisor != null ? supervisor.getStaffId() : ""
+            supervisor != null ? supervisor.getPersonId() : ""
         };
     }
 }

@@ -2,10 +2,10 @@ package ums.model.enums;
 
 // * [POSITION] Faculty Rank
 public enum FacultyRank {
-    INSTRUCTOR("Instructor", 30000, 12),
-    ASSISTANT_PROFESSOR("Assistant Professor", 40000, 14),
-    ASSOCIATE_PROFESSOR("Associate Professor", 50000, 16),
-    FULL_PROFESSOR("Full Professor", 65000, 18);
+    INSTRUCTOR("Instructor", 10000, 15),
+    ASSISTANT_PROFESSOR("Assistant Professor", 20000, 20),
+    ASSOCIATE_PROFESSOR("Associate Professor", 30000, 25),
+    FULL_PROFESSOR("Full Professor", 45000, 30);
 
     // * Attributes
     private final String displayName;
