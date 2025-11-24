@@ -23,6 +23,7 @@ import org.jline.terminal.Attributes;
 
 // [IMPORT] Utilities
 import ums.util.Settings;
+import ums.util.Sound;
 
 public class ConsoleInput {
     // * Attributes
@@ -259,8 +260,10 @@ public class ConsoleInput {
                     // Navigate options
                     if (key == Settings.RIGHT_KEY && selectedIndex < options.length - 1) { // Right arrow
                         selectedIndex++;
+                        Sound.playSFX("select-sfx.wav");
                     } else if (key == Settings.LEFT_KEY && selectedIndex > 0) { // Left arrow
                         selectedIndex--;
+                        Sound.playSFX("select-sfx.wav");
                     }
                 } else {
                     // Normal typing

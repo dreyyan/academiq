@@ -36,6 +36,7 @@ import ums.util.console.ConsoleDisplay;
 import ums.util.console.ConsoleInput;
 import ums.util.console.ConsoleUI;
 import ums.util.console.ConsoleFormatting;
+import ums.util.Sound;
 
 // [IMPORT] Enums
 import ums.model.enums.FacultyRank;

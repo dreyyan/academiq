@@ -12,6 +12,9 @@ import java.io.IOException;
 // [IMPORT] UI
 import ums.ui.MainMenu;
 
+// [IMPORT] Utilities
+import ums.util.Sound;
+
 public class ConsoleDisplay {
     // * Methods
     // [UTILITY] Display a bordered frame with dynamic border thickness
@@ -177,6 +180,18 @@ public class ConsoleDisplay {
             case "info":
                 type = "[INFO]";
                 ConsoleUI.blue(type);
+                break;
+        }
+
+        switch (type) {
+            case "[SUCCESS]":
+                Sound.playSFX("success-sfx.wav");
+                break;
+            case "[ERROR]":
+                Sound.playSFX("error-sfx.wav");
+                break;
+            case "[INFO]":
+                Sound.playSFX("info-sfx.wav");
                 break;
         }
 
