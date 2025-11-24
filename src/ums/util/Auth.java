@@ -141,41 +141,73 @@ public class Auth {
         }
     }
 
-    // [HELPER] Parse AcademicStaff from CSV row
-    private static AcademicStaff parseAcademicStaffRow(String[] row) {
-        if (row == null || row.length == 0) return null;
+// [HELPER] Parse AcademicStaff from CSV row
+private static AcademicStaff parseAcademicStaffRow(String[] row) {
+    if (row == null || row.length == 0) return null;
 
-        try {
-            String firstName  = row.length > 1 ? row[1] : "";
-            String middleName = row.length > 2 ? row[2] : "";
-            String lastName   = row.length > 3 ? row[3] : "";
-            LocalDate dob     = row.length > 4 && !row[4].isBlank() ? LocalDate.parse(row[4]) : LocalDate.now();
-            Gender gender     = safeGender(row.length > 5 ? row[5] : null);
-            String address    = row.length > 6 ? row[6] : "";
-            String contact    = row.length > 7 ? row[7] : "";
-            String email      = row.length > 8 ? row[8] : "";
+    try {
+        String firstName  = row.length > 1 ? row[1] : "";
+        String middleName = row.length > 2 ? row[2] : "";
+        String lastName   = row.length > 3 ? row[3] : "";
 
-            Department dept   = row.length > 10 ? Department.fromCodeOrFullName(row[10]) : Department.UNASSIGNED;
-            FacultyRank rank  = row.length > 11 ? safeFacultyRank(row[11]) : FacultyRank.INSTRUCTOR;
-            LocalDate hire    = row.length > 12 && !row[12].isBlank() ? LocalDate.parse(row[12]) : LocalDate.now();
-            String office     = row.length > 13 ? row[13] : "";
-            double salary     = row.length > 14 ? safeDouble(row, 14) : 0.0;
-            int teachingHours = row.length > 15 ? safeInt(row, 15) : 0;
-            int maxTeaching   = row.length > 16 ? safeInt(row, 16) : 12;
-            boolean isTenured = row.length > 17 && "true".equalsIgnoreCase(row[17]);
+        LocalDate dob     = row.length > 4 && !row[4].isBlank()
+                ? LocalDate.parse(row[4])
+                : LocalDate.now();
 
-            return new AcademicStaff(
+        Gender gender     = safeGender(row.length > 5 ? row[5] : null);
+        String address    = row.length > 6 ? row[6] : "";
+        String contact    = row.length > 7 ? row[7] : "";
+        String email      = row.length > 8 ? row[8] : "";
+
+        // FIXED: department is at column 9
+        Department dept   = row.length > 9
+                ? Department.fromCodeOrFullName(row[9])
+                : Department.UNASSIGNED;
+
+        // FIXED: rank is at column 10
+        FacultyRank rank  = row.length > 10
+                ? safeFacultyRank(row[10])
+                : FacultyRank.INSTRUCTOR;
+
+        // FIXED: hire date at column 11
+        LocalDate hire    = row.length > 11 && !row[11].isBlank()
+                ? LocalDate.parse(row[11])
+                : LocalDate.now();
+
+        // FIXED: office at column 12
+        String office     = row.length > 12 ? row[12] : "";
+
+        // FIXED: salary at column 13
+        double salary     = row.length > 13 ? safeDouble(row, 13) : 0.0;
+
+        // FIXED: tenure at column 14
+        boolean isTenured = row.length > 14 && "true".equalsIgnoreCase(row[14]);
+
+        // FIXED: teaching hours at column 15
+        int teachingHours = row.length > 15 ? safeInt(row, 15) : 0;
+
+        // CSV does NOT have maxTeaching → default it
+        int maxTeaching = 12;
+
+        // These columns exist but your constructor doesn't use them:
+        // 16 jobTitle
+        // 17 workHours
+        // We simply ignore them for now.
+
+        return new AcademicStaff(
                 firstName, middleName, lastName, dob, gender,
                 address, contact, email,
                 dept, rank, hire, office,
                 salary, isTenured, new ArrayList<>(),
                 teachingHours, maxTeaching
-            );
-        } catch (Exception e) {
-            System.out.println("[ERROR][parseAcademicStaffRow] " + e.getMessage());
-            return null;
-        }
+        );
+
+    } catch (Exception e) {
+        System.out.println("[ERROR][parseAcademicStaffRow] " + e.getMessage());
+        return null;
     }
+}
+
 
     // [HELPER] Parse NonAcademicStaff from CSV row
     public static NonAcademicStaff parseNonAcademicStaffRow(String[] r) {

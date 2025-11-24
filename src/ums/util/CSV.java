@@ -149,7 +149,23 @@ public class CSV {
 
         for (String[] row : rows) {
             Course course = Course.fromCodeOrFullName(row[1]);
-            Semester semester = Semester.valueOf(row[2].toUpperCase());
+
+            Semester semester;
+            switch (row[2].trim().toUpperCase()) {
+                case "FIRST_SEM":
+                case "FIRST":
+                    semester = Semester.FIRST_SEM;
+                    break;
+
+                case "SECOND_SEM":
+                case "SECOND":
+                    semester = Semester.SECOND_SEM;
+                    break;
+
+                default:
+                    throw new IllegalArgumentException("Invalid semester: " + row[2]);
+            }
+
             int year = Integer.parseInt(row[3]);
             AcademicStaff instructor = Auth.getAcademicStaffById(row[4]);
             TimeSlot schedule = TimeSlot.fromString(row[5]);
