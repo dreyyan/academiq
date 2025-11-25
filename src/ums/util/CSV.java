@@ -554,23 +554,21 @@ public class CSV {
         };
     }
 
-    public static List<CourseOffering> fetchCourseOfferingsForStaff(AcademicStaff staff) throws IOException {
+public static List<CourseOffering> fetchCourseOfferingsForStaff(AcademicStaff staff) throws IOException {
     if (staff == null) return List.of();
 
     List<String[]> rows = CSV.readCSV(Settings.COURSE_OFFERINGS_FILE);
     List<CourseOffering> staffOfferings = new ArrayList<>();
 
-    for (int i = 1; i < rows.size(); i++) { // skip header
+    for (int i = 0; i < rows.size(); i++) { // skip header
         String[] row = rows.get(i);
         if (row.length < 8) continue; // ensure all columns exist
 
         String offeringId = row[0];
+        String instructorId = row[4].trim();
 
-        // Try to find course by code first, then by title
-        Course course = CourseCatalog.getCourseByCode(row[1]);
-        if (course == null) {
-            course = CourseCatalog.getCourseByName(row[1]);
-        }
+        // Get course by title only
+        Course course = CourseCatalog.getCourseByName(row[1].trim());
         if (course == null) {
             System.err.println("Warning: Course not found in catalog: " + row[1]);
             continue; // skip invalid course
@@ -578,10 +576,11 @@ public class CSV {
 
         Semester semester = Semester.fromString(row[2]);
         int year = Integer.parseInt(row[3]);
-        String instructorId = row[4].trim();
         TimeSlot schedule = TimeSlot.fromString(row[5]);
         int capacity = Integer.parseInt(row[6]);
         int enrolled = Integer.parseInt(row[7]);
+
+        System.out.println("staffId='" + staff.getPersonId() + "', instructorId='" + instructorId + "'");
 
         // Only add courses taught by this staff
         if (!staff.getPersonId().trim().equalsIgnoreCase(instructorId)) continue;
@@ -594,6 +593,7 @@ public class CSV {
     staff.setCourseOfferingsTaught(staffOfferings);
     return staffOfferings;
 }
+
 
 public static List<CourseOffering> fetchAllCourseOfferings() throws IOException {
     List<String[]> rows = CSV.readCSV(Settings.COURSE_OFFERINGS_FILE);
