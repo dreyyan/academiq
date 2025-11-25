@@ -2,12 +2,15 @@ package ums.ui;
 
 // [IMPORT] Standard
 import java.io.IOException;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 // [IMPORT] Models
@@ -20,6 +23,7 @@ import ums.model.UndergraduateStudent;
 // [IMPORT] Entities
 import ums.model.entity.Course;
 import ums.model.entity.CourseOffering;
+import ums.model.entity.TimeSlot;
 import ums.model.CourseCatalog;
 
 // [IMPORT] Enums
@@ -1097,90 +1101,7 @@ public static void displayAcademicStaffCoursesMenu(AcademicStaff staff) throws I
             int key = ConsoleInput.readKey();
             if (key == Settings.ESC_KEY) break;
             else if (key == 'A' || key == 'a') {
-                // ----- ADD COURSE (with pagination) -----
-                List<Course> availableCourses = CourseCatalog.getAllCourses();
-                if (availableCourses.isEmpty()) {
-                    ConsoleUI.clearDialogBox(4);
-                    ConsoleDisplay.dialogBox("info", "No courses available in the catalog.");
-                    ConsoleInput.pressEnterToContinue();
-                    continue;
-                }
-
-                int totalPages = (availableCourses.size() + pageSize - 1) / pageSize;
-                int currentPage = 0;
-
-                while (true) {
-                    ConsoleUI.clearScreen();
-                    ConsoleDisplay.displayBorder(2, 3);
-                    ConsoleUI.goTo(4, 0);
-                    ConsoleDisplay.displayHeaderSubtitle("Add Course (Page " + (currentPage + 1) + "/" + totalPages + ")");
-                    System.out.println();
-
-                    int start = currentPage * pageSize;
-                    int end = Math.min(start + pageSize, availableCourses.size());
-
-                    for (int i = start; i < end; i++) {
-                        Course c = availableCourses.get(i);
-                        ConsoleUI.moveCursor(14);
-                        System.out.printf("[%d] %s - %s\n", i + 1, c.getCourseCode(), CSV.abbreviateCourse(c.getTitle()));
-                    }
-
-                    // Navigation and input
-                    ConsoleUI.goTo(Settings.CONSOLE_HEIGHT - 6, 0);
-                    String nav = "";
-                    if (totalPages > 1) {
-                        if (currentPage > 0) nav += "[P] Previous Page  ";
-                        if (currentPage < totalPages - 1) nav += "[N] Next Page  ";
-                    }
-                    nav += "[Number] Select Course  |  [ESC] Cancel";
-                    ConsoleUI.moveCursor(3);
-                    ConsoleInput.printCentered(nav, Settings.CONSOLE_WIDTH - 6);
-
-                    key = ConsoleInput.readKey();
-                    if (key == Settings.ESC_KEY) break;
-                    else if ((key == 'N' || key == 'n') && currentPage < totalPages - 1) currentPage++;
-                    else if ((key == 'P' || key == 'p') && currentPage > 0) currentPage--;
-                    else if (key >= '1' && key <= '9') {
-                        // ask for full number if needed
-                        ConsoleUI.goTo(Settings.CONSOLE_HEIGHT - 8, 0);
-                        ConsoleUI.drawInputFields(34, "Course No. to add");
-                        int inputX = 65;
-                        String[] inputArray = ConsoleInput.captureFormInputs(Settings.CONSOLE_HEIGHT - 8, inputX, 2, 1);
-                        if (inputArray == null) continue;
-
-                        int choice;
-                        try { choice = Integer.parseInt(inputArray[0].trim()); }
-                        catch (NumberFormatException e) {
-                            ConsoleUI.clearDialogBox(4);
-                            ConsoleDisplay.dialogBox("error", "Invalid input. Enter a number.");
-                            continue;
-                        }
-
-                        if (choice < 1 || choice > availableCourses.size()) {
-                            ConsoleUI.clearDialogBox(4);
-                            ConsoleDisplay.dialogBox("error", "Invalid choice. Try again.");
-                            continue;
-                        }
-
-                        Course selectedCourse = availableCourses.get(choice - 1);
-                        CourseOffering offering = new CourseOffering(
-                                selectedCourse.getCourseCode() + "-" + staff.getPersonId(),
-                                selectedCourse,
-                                Semester.FIRST_SEM,
-                                2025,
-                                staff,
-                                null,
-                                30,
-                                0
-                        );
-
-                        staff.addCourseOffering(offering);
-                        CSV.updateAcademicStaffRecord(staff);
-                        ConsoleUI.clearDialogBox(4);
-                        ConsoleDisplay.dialogBox("success", "Course added successfully!");
-                        break; // exit add-course pagination after success
-                    }
-                }
+                if (handleCourseOfferingAddition(staff, pageSize)) continue;
             }
 
         } else {
@@ -1227,7 +1148,7 @@ public static void displayAcademicStaffCoursesMenu(AcademicStaff staff) throws I
                 int key = ConsoleInput.readKey();
                 if (key == Settings.ESC_KEY) break;
                 else if (key == 'A' || key == 'a') {
-                    // call same add-course pagination as above
+                    if (handleCourseOfferingAddition(staff, pageSize)) break;
                 } else if (key == 'R' || key == 'r') {
                     // call remove-course code
                 } else if ((key == 'N' || key == 'n') && currentPage < totalPages - 1) currentPage++;
@@ -1238,6 +1159,258 @@ public static void displayAcademicStaffCoursesMenu(AcademicStaff staff) throws I
 
     displayAcademicStaffMenu(staff); // back to main menu
 }
+    
+    private static boolean handleCourseOfferingAddition(AcademicStaff staff, int pageSize) throws IOException {
+        List<Course> availableCourses = CourseCatalog.getAllCourses();
+        if (availableCourses.isEmpty()) {
+            ConsoleUI.clearDialogBox(4);
+            ConsoleDisplay.dialogBox("info", "No courses available in the catalog.");
+            ConsoleInput.pressEnterToContinue();
+            return false;
+        }
+
+        int totalPages = (availableCourses.size() + pageSize - 1) / pageSize;
+        int currentPage = 0;
+
+        while (true) {
+            ConsoleUI.clearScreen();
+            ConsoleDisplay.displayBorder(2, 3);
+            ConsoleUI.goTo(4, 0);
+            ConsoleDisplay.displayHeaderSubtitle("Add Course to Teaching Load (Page " + (currentPage + 1) + "/" + totalPages + ")");
+            System.out.println();
+
+            int start = currentPage * pageSize;
+            int end = Math.min(start + pageSize, availableCourses.size());
+
+            for (int i = start; i < end; i++) {
+                Course course = availableCourses.get(i);
+                String code = course.getCourseCode();
+                if (code == null || code.isBlank()) {
+                    code = CSV.abbreviateCourse(course.getTitle());
+                }
+                ConsoleUI.moveCursor(14);
+                System.out.printf("[%d] %s - %s%n", i + 1, code, CSV.abbreviateCourse(course.getTitle()));
+            }
+
+            ConsoleUI.goTo(Settings.CONSOLE_HEIGHT - 6, 0);
+            ConsoleUI.moveCursor(3);
+            String nav = totalPages > 1
+                    ? "[←] Previous  |  [→] Next  |  [S] Select Course  |  [ESC] Cancel"
+                    : "[S] Select Course  |  [ESC] Cancel";
+            ConsoleInput.printCentered(nav, Settings.CONSOLE_WIDTH - 6);
+
+            int key = ConsoleInput.readKey();
+            if (key == Settings.ESC_KEY) {
+                return false;
+            } else if (key == Settings.RIGHT_KEY && currentPage < totalPages - 1) {
+                currentPage++;
+            } else if (key == Settings.LEFT_KEY && currentPage > 0) {
+                currentPage--;
+            } else if (key == 'S' || key == 's' || key == 10 || key == 13) {
+                Integer selection = promptCourseSelectionNumber(availableCourses.size());
+                if (selection == null) continue;
+
+                Course selectedCourse = availableCourses.get(selection - 1);
+                CourseOffering offering = promptCourseOfferingDetails(staff, selectedCourse);
+                if (offering == null) {
+                    ConsoleUI.clearDialogBox(4);
+                    ConsoleDisplay.dialogBox("info", "Course offering creation canceled.");
+                    ConsoleInput.pressEnterToContinue();
+                    continue;
+                }
+
+                staff.addCourseOffering(offering);
+                CSV.updateAcademicStaffRecord(staff);
+                CSV.appendRow(Settings.COURSE_OFFERINGS_FILE, buildCourseOfferingCsvRow(offering));
+
+                ConsoleUI.clearDialogBox(4);
+                ConsoleDisplay.dialogBox("success", "Course offering created successfully!");
+                ConsoleInput.pressEnterToContinue();
+                return true;
+            }
+        }
+    }
+
+    private static Integer promptCourseSelectionNumber(int totalCourses) throws IOException {
+        while (true) {
+            ConsoleUI.goTo(Settings.CONSOLE_HEIGHT - 8, 0);
+            ConsoleUI.drawInputFields(34, "Course No. to add");
+            int inputX = 65;
+            String[] inputArray = ConsoleInput.captureFormInputs(Settings.CONSOLE_HEIGHT - 8, inputX, 4, 1);
+            if (inputArray == null) return null;
+
+            String input = inputArray[0].trim();
+            if (input.isEmpty()) {
+                ConsoleUI.clearDialogBox(4);
+                ConsoleDisplay.dialogBox("error", "Please enter a number.");
+                continue;
+            }
+
+            try {
+                int choice = Integer.parseInt(input);
+                if (choice < 1 || choice > totalCourses) {
+                    ConsoleUI.clearDialogBox(4);
+                    ConsoleDisplay.dialogBox("error", "Choice must be between 1 and " + totalCourses + ".");
+                    continue;
+                }
+                return choice;
+            } catch (NumberFormatException e) {
+                ConsoleUI.clearDialogBox(4);
+                ConsoleDisplay.dialogBox("error", "Invalid number. Try again.");
+            }
+        }
+    }
+
+    private static CourseOffering promptCourseOfferingDetails(AcademicStaff staff, Course course) throws IOException {
+        final String[] fields = {
+                "Semester (First/Second)",
+                "Year (e.g., 2025)",
+                "Capacity",
+                "Day (e.g., MON or Monday)",
+                "Start Time (e.g., 10:30 AM)",
+                "End Time (e.g., 12:00 PM)"
+        };
+
+        final int yPosition = 9;
+        final int xPosition = 42;
+        final int maxLength = 20;
+
+        while (true) {
+            ConsoleUI.clearScreen();
+            ConsoleDisplay.displayBorder(2, 3);
+            ConsoleUI.goTo(4, 0);
+            ConsoleDisplay.displayHeaderSubtitle("Create Course Offering");
+
+            ConsoleUI.goTo(6, 10);
+            System.out.printf("Course: %s%n", course.getTitle());
+            ConsoleUI.goTo(7, 10);
+            System.out.printf("Instructor: %s%n", staff.getFullName());
+
+            ConsoleUI.drawInputFields(80, fields);
+            ConsoleUI.goTo(Settings.CONSOLE_HEIGHT - 4, 0);
+            ConsoleUI.moveCursor(3);
+            ConsoleInput.printCentered("Fill in the details and press [ENTER]. Press [ESC] to cancel.", Settings.CONSOLE_WIDTH - 6);
+
+            String[] inputs = ConsoleInput.captureFormInputs(yPosition, xPosition, maxLength, fields.length);
+            if (inputs == null) return null;
+
+            try {
+                Semester semester = parseSemesterInput(inputs[0]);
+                int year = parsePositiveInt(inputs[1], "Year");
+                int capacity = parsePositiveInt(inputs[2], "Capacity");
+                DayOfWeek day = parseDayOfWeekInput(inputs[3]);
+                LocalTime start = parseTimeInput(inputs[4]);
+                LocalTime end = parseTimeInput(inputs[5]);
+                TimeSlot schedule = new TimeSlot(day, start, end);
+                String offeringId = generateOfferingId(course, staff);
+
+                return new CourseOffering(
+                        offeringId,
+                        course,
+                        semester,
+                        year,
+                        staff,
+                        schedule,
+                        capacity,
+                        0
+                );
+            } catch (IllegalArgumentException | DateTimeParseException e) {
+                ConsoleUI.clearDialogBox(4);
+                ConsoleDisplay.dialogBox("error", e.getMessage());
+                ConsoleInput.pressEnterToContinue();
+            }
+        }
+    }
+
+    private static int parsePositiveInt(String value, String fieldName) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException(fieldName + " is required.");
+        }
+
+        try {
+            int parsed = Integer.parseInt(value.trim());
+            if (parsed <= 0) {
+                throw new IllegalArgumentException(fieldName + " must be greater than 0.");
+            }
+            return parsed;
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(fieldName + " must be a valid number.");
+        }
+    }
+
+    private static Semester parseSemesterInput(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException("Semester is required.");
+        }
+
+        String normalized = value.trim().toUpperCase().replace(" ", "_");
+        switch (normalized) {
+            case "1":
+            case "FIRST":
+            case "FIRST_SEM":
+            case "FIRST_SEMESTER":
+                return Semester.FIRST_SEM;
+            case "2":
+            case "SECOND":
+            case "SECOND_SEM":
+            case "SECOND_SEMESTER":
+                return Semester.SECOND_SEM;
+            default:
+                throw new IllegalArgumentException("Semester must be 'First' or 'Second'.");
+        }
+    }
+
+    private static DayOfWeek parseDayOfWeekInput(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException("Day of week is required.");
+        }
+
+        String normalized = value.trim().toUpperCase();
+        for (DayOfWeek day : DayOfWeek.values()) {
+            if (day.name().startsWith(normalized)) {
+                return day;
+            }
+        }
+
+        throw new IllegalArgumentException("Invalid day of week. Use names like MON or Monday.");
+    }
+
+    private static LocalTime parseTimeInput(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException("Time is required.");
+        }
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("h:mm a");
+        return LocalTime.parse(value.trim().toUpperCase(), formatter);
+    }
+
+    private static String generateOfferingId(Course course, AcademicStaff staff) {
+        String courseCode = (course != null) ? course.getCourseCode() : null;
+        if (courseCode == null || courseCode.isBlank()) {
+            courseCode = course != null ? CSV.abbreviateCourse(course.getTitle()) : "COURSE";
+        }
+        String sanitizedCourse = courseCode.replaceAll("\\s+", "").toUpperCase();
+        String staffId = (staff != null && staff.getPersonId() != null) ? staff.getPersonId() : "STAFF";
+        String suffix = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+        return sanitizedCourse + "-" + staffId + "-" + suffix;
+    }
+
+    private static String[] buildCourseOfferingCsvRow(CourseOffering offering) {
+        Course course = offering.getCourse();
+        String courseIdentifier = (course != null && course.getCourseCode() != null && !course.getCourseCode().isBlank())
+                ? course.getCourseCode()
+                : (course != null ? course.getTitle() : "");
+
+        return new String[] {
+                offering.getOfferingId(),
+                courseIdentifier != null ? courseIdentifier : "",
+                offering.getSemester() != null ? offering.getSemester().toString() : "",
+                String.valueOf(offering.getYear()),
+                offering.getInstructor() != null ? offering.getInstructor().getPersonId() : "",
+                offering.getSchedule() != null ? offering.getSchedule().toString() : "",
+                String.valueOf(offering.getCapacity()),
+                String.valueOf(offering.getEnrolledCount())
+        };
+    }
 
 
     // * UI: NonAcademicStaff Menu
