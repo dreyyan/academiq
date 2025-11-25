@@ -11,6 +11,7 @@ import ums.model.GraduateStudent;
 
 // [IMPORT] Entities
 import ums.model.entity.CourseOffering;
+import ums.model.entity.Course;
 
 // [IMPORT] Enums
 import ums.model.enums.Department;
@@ -60,14 +61,42 @@ public class AcademicStaff extends Faculty {
     // * Methods
     // [METHOD] Add a course offering to the teaching list
     public void addCourseOffering(CourseOffering offering) {
-        if (offering != null && !courseOfferingsTaught.contains(offering)) {
-            if (!isOverloaded()) {
-                courseOfferingsTaught.add(offering);
-                updateTeachingHours(offering.getCourse().getCredits());
-            } else {
-                ConsoleDisplay.dialogBox("error", "Cannot add course - teaching load would exceed maximum");
-            }
+        if (offering == null) return;
+
+        Course course = offering.getCourse();
+        if (course == null) {
+            ConsoleDisplay.dialogBox("error", "Invalid course offering (no course found).");
+            return;
         }
+
+        int courseHours = Math.max(0, course.getCredits());
+        int currentLoad = calculateTeachingLoad();
+        int projectedLoad = currentLoad + courseHours;
+
+        if (projectedLoad > getMaxTeachingLoad()) {
+            ConsoleDisplay.dialogBox(
+                "error",
+                "Cannot add course — teaching load would exceed maximum."
+            );
+            return;
+        }
+
+        if (courseOfferingsTaught.contains(offering)) {
+            ConsoleDisplay.dialogBox(
+                "info",
+                "This course offering is already assigned to this staff."
+            );
+            return;
+        }
+
+        courseOfferingsTaught.add(offering);
+        updateTeachingHours(courseHours);
+
+        ConsoleDisplay.dialogBox(
+            "success",
+            "Course successfully assigned:\n" +
+            course.getCourseCode() + " - " + course.getTitle()
+        );
     }
 
     // [METHOD] Remove a course offering from the teaching list
@@ -87,7 +116,14 @@ public class AcademicStaff extends Faculty {
 
     // [METHOD] Calculate total teaching load
     public int calculateTeachingLoad() {
-        return this.teachingHoursPerWeek;
+        int total = 0;
+        for (CourseOffering offering : courseOfferingsTaught) {
+            Course course = offering.getCourse();
+            if (course != null) {
+                total += Math.max(0, course.getCredits());
+            }
+        }
+        return total;
     }
 
     // [METHOD] Check if teaching load exceeds maximum
@@ -185,7 +221,7 @@ public class AcademicStaff extends Faculty {
             getOfficeLocation() != null ? getOfficeLocation() : "",
             String.valueOf(getSalary()),
             String.valueOf(getTeachingHoursPerWeek()),
-            String.valueOf(maxTeachingLoad),
+            String.valueOf(getMaxTeachingLoad()),
             String.valueOf(isTenured())
         };
     }

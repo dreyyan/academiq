@@ -1192,10 +1192,10 @@ public static void displayAcademicStaffCoursesMenu(AcademicStaff staff) throws I
                 System.out.printf("[%d] %s - %s%n", i + 1, code, CSV.abbreviateCourse(course.getTitle()));
             }
 
-            ConsoleUI.goTo(Settings.CONSOLE_HEIGHT - 6, 0);
+            ConsoleUI.goTo(Settings.CONSOLE_HEIGHT - 4, 0);
             ConsoleUI.moveCursor(3);
             String nav = totalPages > 1
-                    ? "[←] Previous  |  [→] Next  |  [S] Select Course  |  [ESC] Cancel"
+                    ? "[<] Previous  |  [>] Next  |  [S] Select Course  |  [ESC] Cancel"
                     : "[S] Select Course  |  [ESC] Cancel";
             ConsoleInput.printCentered(nav, Settings.CONSOLE_WIDTH - 6);
 
@@ -1207,6 +1207,7 @@ public static void displayAcademicStaffCoursesMenu(AcademicStaff staff) throws I
             } else if (key == Settings.LEFT_KEY && currentPage > 0) {
                 currentPage--;
             } else if (key == 'S' || key == 's' || key == 10 || key == 13) {
+                ConsoleUI.clearDialogBox(8);
                 Integer selection = promptCourseSelectionNumber(availableCourses.size());
                 if (selection == null) continue;
 
@@ -1234,9 +1235,9 @@ public static void displayAcademicStaffCoursesMenu(AcademicStaff staff) throws I
     private static Integer promptCourseSelectionNumber(int totalCourses) throws IOException {
         while (true) {
             ConsoleUI.goTo(Settings.CONSOLE_HEIGHT - 8, 0);
-            ConsoleUI.drawInputFields(34, "Course No. to add");
-            int inputX = 65;
-            String[] inputArray = ConsoleInput.captureFormInputs(Settings.CONSOLE_HEIGHT - 8, inputX, 4, 1);
+            ConsoleUI.drawInputFields(24, "Course No. to add");
+            int inputX = 60;
+            String[] inputArray = ConsoleInput.captureFormInputs(Settings.CONSOLE_HEIGHT - 7, inputX, 2, 1);
             if (inputArray == null) return null;
 
             String input = inputArray[0].trim();
@@ -1272,8 +1273,8 @@ public static void displayAcademicStaffCoursesMenu(AcademicStaff staff) throws I
         };
 
         final int yPosition = 9;
-        final int xPosition = 42;
-        final int maxLength = 20;
+        final int xPosition = 57;
+        final int maxLength = 18;
 
         while (true) {
             ConsoleUI.clearScreen();
@@ -1281,12 +1282,12 @@ public static void displayAcademicStaffCoursesMenu(AcademicStaff staff) throws I
             ConsoleUI.goTo(4, 0);
             ConsoleDisplay.displayHeaderSubtitle("Create Course Offering");
 
-            ConsoleUI.goTo(6, 10);
+            ConsoleUI.goTo(6, 25);
             System.out.printf("Course: %s%n", course.getTitle());
-            ConsoleUI.goTo(7, 10);
+            ConsoleUI.goTo(7, 25);
             System.out.printf("Instructor: %s%n", staff.getFullName());
 
-            ConsoleUI.drawInputFields(80, fields);
+            ConsoleUI.drawInputFields(50, fields);
             ConsoleUI.goTo(Settings.CONSOLE_HEIGHT - 4, 0);
             ConsoleUI.moveCursor(3);
             ConsoleInput.printCentered("Fill in the details and press [ENTER]. Press [ESC] to cancel.", Settings.CONSOLE_WIDTH - 6);
@@ -1411,7 +1412,6 @@ public static void displayAcademicStaffCoursesMenu(AcademicStaff staff) throws I
                 String.valueOf(offering.getEnrolledCount())
         };
     }
-
 
     // * UI: NonAcademicStaff Menu
     // [METHOD] Display "NonAcademicStaff" menu
