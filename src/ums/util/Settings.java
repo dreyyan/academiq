@@ -74,6 +74,7 @@ public final class Settings {
     // * CSV Settings
     public static final int STUDENTS_CSV_MAX_COLUMNS = 24;
     public static final int TOTAL_COLS = 19;
+    public static final int STAFF_TOTAL_COLS = 17;
 
     // * Key Codes
     public static final int ESC_KEY = 27;

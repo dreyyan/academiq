@@ -21,6 +21,7 @@ import ums.model.enums.Department;
 // [IMPORT] Entities
 import ums.model.AcademicStaff;
 import ums.model.Student;
+import ums.model.AcademicStaff;
 import ums.model.entity.Course;
 import ums.model.entity.CourseOffering;
 import ums.model.entity.TimeSlot;
@@ -33,6 +34,7 @@ import ums.model.enums.Semester;
 // [IMPORT] Utilities
 import ums.util.console.ConsoleDisplay;
 import ums.util.console.ConsoleInput;
+import ums.util.Settings;
 
 public class CSV {
     // * Methods
@@ -244,6 +246,52 @@ public class CSV {
             writeCSV(Settings.STUDENTS_FILE, rows);
         } else {
             ConsoleDisplay.dialogBox("error", "Student ID not found in CSV: " + student.getPersonId());
+        }
+    }
+
+    // [UTILITY] Update academic staff record
+    public static void updateAcademicStaffRecord(AcademicStaff staff) {
+        if (staff == null || staff.getPersonId() == null || staff.getPersonId().isBlank()) {
+            ConsoleDisplay.dialogBox("error", "Cannot update null staff or staff without ID.");
+            return;
+        }
+
+        List<String[]> rows = readCSV(Settings.ACADEMIC_STAFF_FILE);
+        boolean updated = false;
+
+        String staffId = staff.getPersonId().trim();  // Trim to avoid whitespace issues
+
+        for (int i = 0; i < rows.size(); i++) {
+            String[] row = rows.get(i);
+
+            // Skip empty or malformed rows
+            if (row == null || row.length <= Settings.COL_PERSON_ID) continue;
+
+            String rowId = row[Settings.COL_PERSON_ID].trim();
+
+            if (rowId.equalsIgnoreCase(staffId)) { // match ignoring case
+                // Convert staff to a new CSV row
+                String[] newRow = staff.toCSVRow();
+
+                // Ensure proper row size
+                int requiredLength = Settings.STAFF_TOTAL_COLS;
+                if (newRow.length < requiredLength) {
+                    String[] adjusted = new String[requiredLength];
+                    System.arraycopy(newRow, 0, adjusted, 0, newRow.length);
+                    for (int j = newRow.length; j < requiredLength; j++) adjusted[j] = "";
+                    newRow = adjusted;
+                }
+
+                rows.set(i, newRow);
+                updated = true;
+                break;
+            }
+        }
+
+        if (updated) {
+            writeCSV(Settings.ACADEMIC_STAFF_FILE, rows);
+        } else {
+            ConsoleDisplay.dialogBox("error", "Academic Staff ID not found in CSV: " + staffId);
         }
     }
 

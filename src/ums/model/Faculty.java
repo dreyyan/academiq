@@ -38,7 +38,27 @@ public abstract class Faculty extends Person {
         this.officeLocation = officeLocation;
         this.salary = salary;
         this.isTenured = isTenured;
-        this.advisees = new ArrayList<>();
+        this.advisees = new ArrayList<GraduateStudent>();
+    }
+
+    // * Constructor (Parameterized with ID)
+    public Faculty(
+        String personId,
+        String firstName, String middleName, String lastName, LocalDate dateOfBirth,
+        Gender gender, String address, String contactNumber, String email,
+        Department department, FacultyRank rank, LocalDate hireDate,
+        String officeLocation, double salary, boolean isTenured, List<GraduateStudent> advisees
+    ) {
+        super(personId, firstName, middleName, lastName, dateOfBirth, gender,
+            address, contactNumber, email);
+
+        this.department = department;
+        this.rank = rank;
+        this.hireDate = hireDate;
+        this.officeLocation = officeLocation;
+        this.salary = salary;
+        this.isTenured = isTenured;
+        this.advisees = new ArrayList<>(advisees);
     }
 
    // * Getters
@@ -54,7 +74,9 @@ public abstract class Faculty extends Person {
     public void setRank(FacultyRank rank) { this.rank = rank; }
     public void setOfficeLocation(String location) { this.officeLocation = location; }   
     public void setSalary(double salary) { this.salary = salary; }
-    public void setTenured(boolean tenured) {this.isTenured = tenured;}
+    public void setDepartment(Department department) { this.department = department; }
+    public void setHireDate(LocalDate hireDate) { this.hireDate = hireDate; }
+    public void setTenured(boolean tenured) { this.isTenured = tenured; }
 
     // * Methods
     // [METHOD] Grant tenure to faculty member

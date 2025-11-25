@@ -141,73 +141,58 @@ public class Auth {
         }
     }
 
-// [HELPER] Parse AcademicStaff from CSV row
-private static AcademicStaff parseAcademicStaffRow(String[] row) {
-    if (row == null || row.length == 0) return null;
+    // [HELPER] Parse AcademicStaff from CSV row
+    private static AcademicStaff parseAcademicStaffRow(String[] row) {
+        if (row == null || row.length == 0) return null;
 
-    try {
-        String firstName  = row.length > 1 ? row[1] : "";
-        String middleName = row.length > 2 ? row[2] : "";
-        String lastName   = row.length > 3 ? row[3] : "";
+        try {
+            String firstName  = row.length > 1 ? row[1] : "";
+            String middleName = row.length > 2 ? row[2] : "";
+            String lastName   = row.length > 3 ? row[3] : "";
 
-        LocalDate dob     = row.length > 4 && !row[4].isBlank()
-                ? LocalDate.parse(row[4])
-                : LocalDate.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy");
 
-        Gender gender     = safeGender(row.length > 5 ? row[5] : null);
-        String address    = row.length > 6 ? row[6] : "";
-        String contact    = row.length > 7 ? row[7] : "";
-        String email      = row.length > 8 ? row[8] : "";
+            LocalDate dob     = row.length > 4 && !row[4].isBlank()
+                    ? LocalDate.parse(row[4], formatter)
+                    : LocalDate.now();
 
-        // FIXED: department is at column 9
-        Department dept   = row.length > 9
-                ? Department.fromCodeOrFullName(row[9])
-                : Department.UNASSIGNED;
+            Gender gender     = safeGender(row.length > 5 ? row[5] : null);
+            String address    = row.length > 6 ? row[6] : "";
+            String contact    = row.length > 7 ? row[7] : "";
+            String email      = row.length > 8 ? row[8] : "";
 
-        // FIXED: rank is at column 10
-        FacultyRank rank  = row.length > 10
-                ? safeFacultyRank(row[10])
-                : FacultyRank.INSTRUCTOR;
+            Department dept   = row.length > 9
+                    ? Department.fromCodeOrFullName(row[9])
+                    : Department.UNASSIGNED;
 
-        // FIXED: hire date at column 11
-        LocalDate hire    = row.length > 11 && !row[11].isBlank()
-                ? LocalDate.parse(row[11])
-                : LocalDate.now();
+            FacultyRank rank  = row.length > 10
+                    ? safeFacultyRank(row[10])
+                    : FacultyRank.INSTRUCTOR;
 
-        // FIXED: office at column 12
-        String office     = row.length > 12 ? row[12] : "";
+            LocalDate hire    = row.length > 11 && !row[11].isBlank()
+                    ? LocalDate.parse(row[11], formatter)
+                    : LocalDate.now();
 
-        // FIXED: salary at column 13
-        double salary     = row.length > 13 ? safeDouble(row, 13) : 0.0;
+            String office     = row.length > 12 ? row[12] : "";
+            double salary     = row.length > 13 ? safeDouble(row, 13) : 0.0;
+            boolean isTenured = row.length > 14 && "true".equalsIgnoreCase(row[14]);
+            int teachingHours = row.length > 15 ? safeInt(row, 15) : 0;
+            int maxTeaching = 12;
+            String personId = row.length > 0 ? row[0] : "";
 
-        // FIXED: tenure at column 14
-        boolean isTenured = row.length > 14 && "true".equalsIgnoreCase(row[14]);
+            return new AcademicStaff(
+                    personId, firstName, middleName, lastName, dob, gender,
+                    address, contact, email,
+                    dept, rank, hire, office,
+                    salary, isTenured, new ArrayList<GraduateStudent>(),
+                    teachingHours, maxTeaching
+            );
 
-        // FIXED: teaching hours at column 15
-        int teachingHours = row.length > 15 ? safeInt(row, 15) : 0;
-
-        // CSV does NOT have maxTeaching → default it
-        int maxTeaching = 12;
-
-        // These columns exist but your constructor doesn't use them:
-        // 16 jobTitle
-        // 17 workHours
-        // We simply ignore them for now.
-
-        return new AcademicStaff(
-                firstName, middleName, lastName, dob, gender,
-                address, contact, email,
-                dept, rank, hire, office,
-                salary, isTenured, new ArrayList<>(),
-                teachingHours, maxTeaching
-        );
-
-    } catch (Exception e) {
-        System.out.println("[ERROR][parseAcademicStaffRow] " + e.getMessage());
-        return null;
+        } catch (Exception e) {
+            System.out.println("[ERROR][parseAcademicStaffRow] " + e.getMessage());
+            return null;
+        }
     }
-}
-
 
     // [HELPER] Parse NonAcademicStaff from CSV row
     public static NonAcademicStaff parseNonAcademicStaffRow(String[] r) {
@@ -228,7 +213,7 @@ private static AcademicStaff parseAcademicStaffRow(String[] row) {
             String office = r[Settings.COL_OFFICE_ADMIN].trim();
             double salary = Double.parseDouble(r[Settings.COL_SALARY_ADMIN].trim());
             int workHours = Integer.parseInt(r[Settings.COL_SHIFT_SCHEDULE].replace(" hrs/week","").trim());
-
+            
             return new NonAcademicStaff(
                 firstName, middleName, lastName, dob, gender,
                 address, contact, email,

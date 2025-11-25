@@ -35,6 +35,14 @@ public abstract class Person {
         this.email = email;
     }
 
+    // * Constructor (Parameterized with ID)
+    public Person(String personId, String firstName, String middleName, String lastName,
+                  LocalDate dateOfBirth, Gender gender,
+                  String address, String contactNumber, String email) {
+        this(firstName, middleName, lastName, dateOfBirth, gender, address, contactNumber, email);
+        this.personId = personId;
+    }
+
     // * Getters
     public String getPersonId() { return this.personId; }
     public String getFirstName() { return this.firstName; }
