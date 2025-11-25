@@ -57,6 +57,7 @@ public class AcademicStaff extends Faculty {
 
     // * Setters
     public void setMaxTeachingLoad(int maxLoad) { this.maxTeachingLoad = maxLoad; }
+    public void setCourseOfferingsTaught(List<CourseOffering> offerings) { this.courseOfferingsTaught = offerings; }
 
     // * Methods
     // [METHOD] Add a course offering to the teaching list
@@ -91,12 +92,6 @@ public class AcademicStaff extends Faculty {
 
         courseOfferingsTaught.add(offering);
         updateTeachingHours(courseHours);
-
-        ConsoleDisplay.dialogBox(
-            "success",
-            "Course successfully assigned:\n" +
-            course.getCourseCode() + " - " + course.getTitle()
-        );
     }
 
     // [METHOD] Remove a course offering from the teaching list

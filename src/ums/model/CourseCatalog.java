@@ -68,4 +68,15 @@ public class CourseCatalog {
         }
         return null;
     }
+
+    public static Course getCourseByCode(String code) {
+        if (code == null || code.isBlank()) return null;
+
+        for (Course c : getAllCourses()) { // assuming getAllCourses() returns List<Course>
+            if (code.equalsIgnoreCase(c.getCourseCode())) {
+                return c;
+            }
+        }
+        return null;
+    }
 }

@@ -9,6 +9,12 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.DayOfWeek;
+import java.util.stream.Collectors;
+
 
 // [IMPORT] Exceptions
 import java.io.IOException;
@@ -17,11 +23,15 @@ import java.io.IOException;
 import ums.model.enums.GraduateProgram;
 import ums.model.enums.YearLevel;
 import ums.model.enums.Department;
+import ums.model.enums.FacultyRank;
 
-// [IMPORT] Entities
+// [IMPORT] Models
 import ums.model.AcademicStaff;
 import ums.model.Student;
 import ums.model.AcademicStaff;
+import ums.model.CourseCatalog;
+
+// [IMPORT] Entities
 import ums.model.entity.Course;
 import ums.model.entity.CourseOffering;
 import ums.model.entity.TimeSlot;
@@ -156,11 +166,15 @@ public class CSV {
             switch (row[2].trim().toUpperCase()) {
                 case "FIRST_SEM":
                 case "FIRST":
+                case "1ST SEM":
+                case "1ST SEMESTER":
                     semester = Semester.FIRST_SEM;
                     break;
 
                 case "SECOND_SEM":
                 case "SECOND":
+                case "2ND SEM":
+                case "2ND SEMESTER":
                     semester = Semester.SECOND_SEM;
                     break;
 
@@ -433,5 +447,261 @@ public class CSV {
         if (updated) {
             CSV.writeCSV(Settings.ENROLLMENTS_FILE, rows);
         }
+    }
+
+    public static int parsePositiveInt(String value, String fieldName) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException(fieldName + " is required.");
+        }
+
+        try {
+            int parsed = Integer.parseInt(value.trim());
+            if (parsed <= 0) {
+                throw new IllegalArgumentException(fieldName + " must be greater than 0.");
+            }
+            return parsed;
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(fieldName + " must be a valid number.");
+        }
+    }
+
+    public static Semester parseSemesterInput(String input) {
+        String sem = input.trim().toUpperCase();
+        switch (sem) {
+            case "FIRST":
+            case "FIRST_SEM":
+            case "1ST SEM":
+            case "1ST SEMESTER":
+                return Semester.FIRST_SEM;
+            case "SECOND":
+            case "SECOND_SEM":
+            case "2ND SEM":
+            case "2ND SEMESTER":
+                return Semester.SECOND_SEM;
+            default:
+                throw new IllegalArgumentException("Invalid semester input: " + input);
+        }
+    }
+
+    public static DayOfWeek parseDayOfWeekInput(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException("Day of week is required.");
+        }
+
+        String normalized = value.trim().toUpperCase();
+        for (DayOfWeek day : DayOfWeek.values()) {
+            if (day.name().startsWith(normalized)) {
+                return day;
+            }
+        }
+
+        throw new IllegalArgumentException("Invalid day of week. Use names like MON or Monday.");
+    }
+
+    public static LocalTime parseTimeInput(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException("Time is required.");
+        }
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("h:mm a");
+        return LocalTime.parse(value.trim().toUpperCase(), formatter);
+    }
+
+    public static String generateOfferingId(Course course, AcademicStaff staff) {
+        String courseCode = (course != null) ? course.getCourseCode() : null;
+        if (courseCode == null || courseCode.isBlank()) {
+            courseCode = (course != null)
+                    ? CSV.abbreviateCourse(course.getTitle())
+                    : "CRS";
+        }
+        String prefix = courseCode.replaceAll("[^A-Za-z0-9]", "").toUpperCase();
+        if (prefix.isBlank() && course != null && course.getTitle() != null) {
+            prefix = CSV.abbreviateCourse(course.getTitle());
+        }
+        if (prefix.length() > 8) {
+            prefix = prefix.substring(0, 8);
+        }
+
+        String staffId = (staff != null && staff.getPersonId() != null)
+                ? staff.getPersonId()
+                : "STAFF";
+        if (staffId.length() > 4) {
+            staffId = staffId.substring(0, 4);
+        }
+
+        String suffix = UUID.randomUUID().toString()
+                .replace("-", "")
+                .substring(0, 4)
+                .toUpperCase();
+
+        return prefix + "-" + staffId + "-" + suffix;
+    }
+
+    public static String[] buildCourseOfferingCsvRow(CourseOffering offering) {
+        Course course = offering.getCourse();
+        String courseIdentifier = (course != null && course.getCourseCode() != null && !course.getCourseCode().isBlank())
+                ? course.getCourseCode()
+                : (course != null ? course.getTitle() : "");
+
+        return new String[] {
+                offering.getOfferingId(),
+                courseIdentifier != null ? courseIdentifier : "",
+                offering.getSemester() != null ? offering.getSemester().toString() : "",
+                String.valueOf(offering.getYear()),
+                offering.getInstructor() != null ? offering.getInstructor().getPersonId() : "",
+                offering.getSchedule() != null ? offering.getSchedule().toString() : "",
+                String.valueOf(offering.getCapacity()),
+                String.valueOf(offering.getEnrolledCount())
+        };
+    }
+
+    public static List<CourseOffering> fetchCourseOfferingsForStaff(AcademicStaff staff) throws IOException {
+    if (staff == null) return List.of();
+
+    List<String[]> rows = CSV.readCSV(Settings.COURSE_OFFERINGS_FILE);
+    List<CourseOffering> staffOfferings = new ArrayList<>();
+
+    for (int i = 1; i < rows.size(); i++) { // skip header
+        String[] row = rows.get(i);
+        if (row.length < 8) continue; // ensure all columns exist
+
+        String offeringId = row[0];
+
+        // Try to find course by code first, then by title
+        Course course = CourseCatalog.getCourseByCode(row[1]);
+        if (course == null) {
+            course = CourseCatalog.getCourseByName(row[1]);
+        }
+        if (course == null) {
+            System.err.println("Warning: Course not found in catalog: " + row[1]);
+            continue; // skip invalid course
+        }
+
+        Semester semester = Semester.fromString(row[2]);
+        int year = Integer.parseInt(row[3]);
+        String instructorId = row[4].trim();
+        TimeSlot schedule = TimeSlot.fromString(row[5]);
+        int capacity = Integer.parseInt(row[6]);
+        int enrolled = Integer.parseInt(row[7]);
+
+        // Only add courses taught by this staff
+        if (!staff.getPersonId().trim().equalsIgnoreCase(instructorId)) continue;
+
+        staffOfferings.add(new CourseOffering(
+            offeringId, course, semester, year, staff, schedule, capacity, enrolled
+        ));
+    }
+
+    staff.setCourseOfferingsTaught(staffOfferings);
+    return staffOfferings;
+}
+
+public static List<CourseOffering> fetchAllCourseOfferings() throws IOException {
+    List<String[]> rows = CSV.readCSV(Settings.COURSE_OFFERINGS_FILE);
+    List<CourseOffering> offerings = new ArrayList<>();
+
+    for (int i = 1; i < rows.size(); i++) {
+        String[] row = rows.get(i);
+        if (row.length < 7) continue;
+
+        String offeringId = row[0];
+        String courseCode = row[1];
+        Course course = CourseCatalog.getCourseByCode(courseCode); // can be null if not in catalog
+        AcademicStaff instructor = null; // we don’t need full staff here, just ID for removal
+        Semester semester = Semester.valueOf(row[3].toUpperCase().replace(" ", "_"));
+        int year = Integer.parseInt(row[4]);
+        int capacity = Integer.parseInt(row[5]);
+        int enrolled = Integer.parseInt(row[6]);
+
+        offerings.add(new CourseOffering(offeringId, course, semester, year, instructor, null, capacity, enrolled));
+    }
+    return offerings;
+}
+
+    public static List<String[]> fetchAllCourseOfferingsRaw() throws IOException {
+        // Reads all rows from the CSV including the header
+        return CSV.readCSV(Settings.COURSE_OFFERINGS_FILE);
+    }
+
+    public static void saveAllCourseOfferingsRaw(List<String[]> rows) throws IOException {
+        CSV.writeCSV(Settings.COURSE_OFFERINGS_FILE, rows);
+    }
+
+    public static void saveAllCourseOfferings(List<CourseOffering> offerings) throws IOException {
+        List<String[]> rows = new ArrayList<>();
+
+        // Header
+        rows.add(new String[] { "OfferingID", "CourseCode", "InstructorID", "Semester", "Year", "Capacity", "EnrolledCount" });
+
+        for (CourseOffering co : offerings) {
+            String courseCode = co.getCourse() != null ? co.getCourse().getCourseCode() : "";
+            String instructorId = co.getInstructor() != null ? co.getInstructor().getPersonId() : "";
+
+            rows.add(new String[] {
+                co.getOfferingId(),
+                courseCode,
+                instructorId,
+                co.getSemester() != null ? co.getSemester().toString() : "",
+                String.valueOf(co.getYear()),
+                String.valueOf(co.getCapacity()),
+                String.valueOf(co.getEnrolledCount())
+            });
+        }
+
+        CSV.writeCSV(Settings.COURSE_OFFERINGS_FILE, rows);
+    }
+
+    public static AcademicStaff fetchStaffById(String id) throws IOException {
+        List<String[]> staffRows = CSV.readCSV(Settings.ACADEMIC_STAFF_FILE);
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MM-dd-yyyy");
+
+        for (int i = 1; i < staffRows.size(); i++) { // skip header
+            String[] row = staffRows.get(i);
+            if (row[0].equals(id)) {
+
+                // Parse dateOfBirth
+                LocalDate dob = row[4].isBlank() ? null : LocalDate.parse(row[4], dateFormatter);
+
+                // Parse gender
+                Gender gender = row[5].isBlank() ? null : Gender.valueOf(row[5].toUpperCase());
+
+                // Other string fields
+                String address = row[6];
+                String contact = row[7];
+                String email = row[8];
+
+                // Parse department
+                Department department = row[9].isBlank() ? Department.UNASSIGNED : Department.valueOf(row[9]);
+
+                // Parse rank
+                FacultyRank rank = row[10].isBlank() ? null : FacultyRank.valueOf(row[10].toUpperCase());
+
+                // Parse hire date
+                LocalDate hireDate = row[11].isBlank() ? null : LocalDate.parse(row[11], dateFormatter);
+
+                // Office location
+                String officeLocation = row[12];
+
+                // Salary
+                double salary = row[13].isBlank() ? 0 : Double.parseDouble(row[13]);
+
+                // Tenure
+                boolean isTenured = row[16].equalsIgnoreCase("true") || row[16].equalsIgnoreCase("yes");
+
+                // Create AcademicStaff
+                AcademicStaff staff = new AcademicStaff(
+                    row[0], row[1], row[2], row[3],
+                    dob, gender,
+                    address, contact, email,
+                    department, rank, hireDate,
+                    officeLocation, salary, isTenured,
+                    new ArrayList<>(), // empty advisees list
+                    0,                // teachingHoursPerWeek default
+                    18                // maxTeachingLoad default
+                );
+
+                return staff;
+            }
+        }
+        return null;
     }
 }

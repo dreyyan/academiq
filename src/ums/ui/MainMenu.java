@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 // [IMPORT] Models
 import ums.model.GraduateStudent;
@@ -1068,7 +1069,9 @@ public class MainMenu {
         displayAcademicStaffMenu(staff);
     }
 
-    // [METHOD] Display Academic Staff "Courses" menu (2 pages, fixed empty list & add-course pagination)
+// ---------------------------
+// [METHOD] Display Academic Staff "Courses" menu
+// ---------------------------
 public static void displayAcademicStaffCoursesMenu(AcademicStaff staff) throws IOException {
     if (staff == null) {
         ConsoleDisplay.dialogBox("error", "Academic staff record is null!");
@@ -1076,90 +1079,140 @@ public static void displayAcademicStaffCoursesMenu(AcademicStaff staff) throws I
     }
 
     final int yPosition = 7;
-    final int xPosition = 4;
-    final int maxLength = 50;
-    final int pageSize = 20; // max courses per page
+    final int tableWidth = 90;
+    final int pageSize = 20;
 
-    while (true) {
-        List<CourseOffering> courses = staff.getCourseOfferingsTaught();
+    final int colNo = 4;
+    final int colCode = 20;
+    final int colTitle = 30;
+    final int colCredit = 7;
+    final int colYear = 6;
+    final int colSem = 10;
 
-        ConsoleUI.clearScreen();
-        ConsoleDisplay.displayBorder(2, 3);
-        ConsoleUI.goTo(4, 0);
-        ConsoleDisplay.displayHeaderSubtitle("Academic Staff: Courses Taught");
-        System.out.println();
+    boolean exitMenu = false;
+
+    while (!exitMenu) {
+        List<CourseOffering> courses = CSV.fetchCourseOfferingsForStaff(staff);
 
         if (courses.isEmpty()) {
-            ConsoleUI.goTo(yPosition, xPosition);
-            ConsoleInput.printCentered("No courses assigned.", Settings.CONSOLE_WIDTH - 6);
+            ConsoleUI.clearScreen();
+            ConsoleDisplay.displayBorder(2, 3);
+            ConsoleUI.goTo(4, 0);
+            ConsoleDisplay.displayHeaderSubtitle("Academic Staff: Courses Taught");
+            System.out.println();
 
-            // Display options
+            ConsoleUI.goTo(yPosition, 0);
+            ConsoleUI.moveCursor(3);
+            ConsoleInput.printCentered("No courses assigned.", Settings.CONSOLE_WIDTH - 6);
             ConsoleUI.goTo(Settings.CONSOLE_HEIGHT - 4, 0);
             ConsoleUI.moveCursor(3);
             ConsoleInput.printCentered("[A] Add Course  |  [ESC] Back", Settings.CONSOLE_WIDTH - 6);
 
             int key = ConsoleInput.readKey();
-            if (key == Settings.ESC_KEY) break;
+            if (key == Settings.ESC_KEY) exitMenu = true;
             else if (key == 'A' || key == 'a') {
                 if (handleCourseOfferingAddition(staff, pageSize)) continue;
             }
+            continue;
+        }
 
-        } else {
-            // ----- Courses exist: pagination & options -----
-            int totalPages = (courses.size() + pageSize - 1) / pageSize;
-            int currentPage = 0;
+        int totalPages = Math.max(1, (courses.size() + pageSize - 1) / pageSize);
+        int currentPage = 0;
 
-            while (true) {
-                ConsoleUI.clearScreen();
-                ConsoleDisplay.displayBorder(2, 3);
-                ConsoleUI.goTo(4, 0);
-                ConsoleDisplay.displayHeaderSubtitle("Academic Staff: Courses Taught (Page " + (currentPage + 1) + "/" + totalPages + ")");
-                System.out.println();
+        boolean refresh = false;
 
-                int start = currentPage * pageSize;
-                int end = Math.min(start + pageSize, courses.size());
+        while (true) {
+            ConsoleUI.clearScreen();
+            ConsoleDisplay.displayBorder(2, 3);
+            ConsoleUI.goTo(4, 0);
+            ConsoleDisplay.displayHeaderSubtitle(
+                "Academic Staff: Courses Taught (Page " + (currentPage + 1) + "/" + totalPages + ")"
+            );
+            System.out.println();
 
-                ConsoleUI.goTo(yPosition, xPosition);
-                System.out.println("Current Courses:");
-                for (int i = start; i < end; i++) {
-                    CourseOffering c = courses.get(i);
-                    String courseLine = String.format(
-                            "[%d] %s - %s | Credits: %d | Year: %d | Semester: %s",
-                            i + 1,
-                            c.getCourse().getCourseCode(),
-                            CSV.abbreviateCourse(c.getCourse().getTitle()),
-                            c.getCourse().getCredits(),
-                            c.getYear(),
-                            c.getSemester()
-                    );
-                    System.out.println(courseLine);
-                }
+            int start = currentPage * pageSize;
+            int end = Math.min(start + pageSize, courses.size());
 
-                ConsoleUI.goTo(Settings.CONSOLE_HEIGHT - 6, 0);
-                String nav = "";
-                if (totalPages > 1) {
-                    if (currentPage > 0) nav += "[P] Previous Page  ";
-                    if (currentPage < totalPages - 1) nav += "[N] Next Page  ";
-                }
-                nav += "[A] Add Course  |  [R] Remove Course  |  [ESC] Back";
+            // ===== TABLE TOP BORDER =====
+            ConsoleUI.goTo(yPosition, 0);
+            ConsoleUI.moveCursor(3);
+            ConsoleInput.printCentered("=".repeat(tableWidth), Settings.CONSOLE_WIDTH - 6);
+
+            // ===== TABLE HEADER =====
+            ConsoleUI.goTo(yPosition + 1, 0);
+            String headerRow = String.format(
+                "| %-"+(colNo-1)+"s | %-"+(colCode-1)+"s | %-"+(colTitle-1)+"s | %-"+(colCredit-1)+"s | %-"+(colYear-1)+"s | %-"+(colSem-1)+"s |",
+                "No", "Code", "Title", "Credit", "Year", "Sem"
+            );
+            ConsoleUI.moveCursor(3);
+            ConsoleInput.printCentered(headerRow, Settings.CONSOLE_WIDTH - 6);
+
+            // ===== DIVIDER =====
+            ConsoleUI.goTo(yPosition + 2, 0);
+            ConsoleUI.moveCursor(3);
+            ConsoleInput.printCentered("-".repeat(tableWidth), Settings.CONSOLE_WIDTH - 6);
+
+            // ===== TABLE ROWS =====
+            int rowY = yPosition + 3;
+            for (int i = start; i < end; i++) {
+                CourseOffering offering = courses.get(i);
+                Course course = offering.getCourse();
+
+                String codeShown = ConsoleUI.truncate(offering.getOfferingId(), colCode-1);
+                String titleShown = ConsoleUI.truncate(course != null ? course.getTitle() : "N/A", colTitle-1);
+                String creditShown = course != null ? String.valueOf(course.getCredits()) : "N/A";
+                String yearShown = String.valueOf(offering.getYear());
+                String semText = offering.getSemester() == Semester.FIRST_SEM ? "1st Sem" : "2nd Sem";
+
+                String row = String.format(
+                    "| %-"+(colNo-1)+"d | %-"+(colCode-1)+"s | %-"+(colTitle-1)+"s | %-"+(colCredit-1)+"s | %-"+(colYear-1)+"s | %-"+(colSem-1)+"s |",
+                    (i - start) + 1, codeShown, titleShown, creditShown, yearShown, semText
+                );
+
+                ConsoleUI.goTo(rowY++, 0);
                 ConsoleUI.moveCursor(3);
-                ConsoleInput.printCentered(nav, Settings.CONSOLE_WIDTH - 6);
+                ConsoleInput.printCentered(row, Settings.CONSOLE_WIDTH - 6);
+            }
 
-                int key = ConsoleInput.readKey();
-                if (key == Settings.ESC_KEY) break;
-                else if (key == 'A' || key == 'a') {
-                    if (handleCourseOfferingAddition(staff, pageSize)) break;
-                } else if (key == 'R' || key == 'r') {
-                    // call remove-course code
-                } else if ((key == 'N' || key == 'n') && currentPage < totalPages - 1) currentPage++;
-                else if ((key == 'P' || key == 'p') && currentPage > 0) currentPage--;
+            // ===== TABLE BOTTOM BORDER =====
+            ConsoleUI.goTo(rowY, 0);
+            ConsoleUI.moveCursor(3);
+            ConsoleInput.printCentered("=".repeat(tableWidth), Settings.CONSOLE_WIDTH - 6);
+
+            // ===== NAVIGATION =====
+            ConsoleUI.goTo(Settings.CONSOLE_HEIGHT - 6, 0);
+            ConsoleUI.moveCursor(3);
+            String nav = "";
+            if (totalPages > 1) {
+                if (currentPage > 0) nav += "[P] Prev  ";
+                if (currentPage < totalPages - 1) nav += "[N] Next  ";
+            }
+            nav += "[A] Add  |  [R] Remove  |  [ESC] Back";
+            ConsoleInput.printCentered(nav, tableWidth);
+
+            int key = ConsoleInput.readKey();
+            if (key == Settings.ESC_KEY) {
+                exitMenu = true;
+                break;
+            } else if ((key == 'N' || key == 'n') && currentPage < totalPages - 1) currentPage++;
+            else if ((key == 'P' || key == 'p') && currentPage > 0) currentPage--;
+            else if ((key == 'A' || key == 'a') && handleCourseOfferingAddition(staff, pageSize)) {
+                refresh = true;
+                break;
+            } else if ((key == 'R' || key == 'r') && handleCourseOfferingRemoval(staff)) {
+                ConsoleUI.clearDialogBox(8);
+                refresh = true;
+                break;
             }
         }
+
+        if (exitMenu) break;
+        if (refresh) continue;
     }
 
-    displayAcademicStaffMenu(staff); // back to main menu
+    displayAcademicStaffMenu(staff);
 }
-    
+
     private static boolean handleCourseOfferingAddition(AcademicStaff staff, int pageSize) throws IOException {
         List<Course> availableCourses = CourseCatalog.getAllCourses();
         if (availableCourses.isEmpty()) {
@@ -1222,7 +1275,7 @@ public static void displayAcademicStaffCoursesMenu(AcademicStaff staff) throws I
 
                 staff.addCourseOffering(offering);
                 CSV.updateAcademicStaffRecord(staff);
-                CSV.appendRow(Settings.COURSE_OFFERINGS_FILE, buildCourseOfferingCsvRow(offering));
+                CSV.appendRow(Settings.COURSE_OFFERINGS_FILE, CSV.buildCourseOfferingCsvRow(offering));
 
                 ConsoleUI.clearDialogBox(4);
                 ConsoleDisplay.dialogBox("success", "Course offering created successfully!");
@@ -1231,6 +1284,66 @@ public static void displayAcademicStaffCoursesMenu(AcademicStaff staff) throws I
             }
         }
     }
+
+public static boolean handleCourseOfferingRemoval(AcademicStaff staff) {
+
+    try {
+        List<CourseOffering> allOfferings = CSV.fetchAllCourseOfferings();
+        List<CourseOffering> staffOfferings = allOfferings.stream()
+                .filter(o -> o.getInstructor() != null && o.getInstructor().getPersonId().equals(staff.getPersonId()))
+                .collect(Collectors.toList());
+
+        if (staffOfferings.isEmpty()) {
+            ConsoleDisplay.dialogBox("info", "No courses to remove.");
+            ConsoleInput.pressEnterToContinue();
+            return false;
+        }
+
+        // Display offerings with index
+        for (int i = 0; i < staffOfferings.size(); i++) {
+            CourseOffering o = staffOfferings.get(i);
+            String title = (o.getCourse() != null) ? o.getCourse().getTitle() : "Unknown";
+            System.out.printf("[%d] %s (%s)\n", i + 1, title, o.getOfferingId());
+        }
+
+        ConsoleUI.drawInputFields(40, "Select course to remove (index)");
+        String[] input = ConsoleInput.captureFormInputs(Settings.CONSOLE_HEIGHT - 7, 69, 2, 1);
+        if (input == null) return false;
+
+        int sel = Integer.parseInt(input[0].trim()) - 1;
+        if (sel < 0 || sel >= staffOfferings.size()) {
+            ConsoleDisplay.dialogBox("error", "Invalid choice.");
+            return false;
+        }
+
+        CourseOffering toRemove = staffOfferings.get(sel);
+
+        // Remove from global CSV
+        List<String[]> allRows = CSV.fetchAllCourseOfferingsRaw();
+        List<String[]> filtered = new ArrayList<>();
+        filtered.add(allRows.get(0)); // header
+        for (int i = 1; i < allRows.size(); i++) {
+            String[] row = allRows.get(i);
+            if (!row[0].equals(toRemove.getOfferingId())) {
+                filtered.add(row);
+            }
+        }
+        CSV.saveAllCourseOfferingsRaw(filtered);
+
+        // Remove from staff in-memory
+        staff.removeCourseOffering(toRemove);
+        CSV.updateAcademicStaffRecord(staff);
+
+        ConsoleDisplay.dialogBox("success", "Course removed.");
+        ConsoleInput.pressEnterToContinue();
+        return true;
+
+    } catch (IOException | NumberFormatException ex) {
+        ConsoleDisplay.dialogBox("error", "Error removing course: " + ex.getMessage());
+        return false;
+    }
+}
+
 
     private static Integer promptCourseSelectionNumber(int totalCourses) throws IOException {
         while (true) {
@@ -1296,14 +1409,14 @@ public static void displayAcademicStaffCoursesMenu(AcademicStaff staff) throws I
             if (inputs == null) return null;
 
             try {
-                Semester semester = parseSemesterInput(inputs[0]);
-                int year = parsePositiveInt(inputs[1], "Year");
-                int capacity = parsePositiveInt(inputs[2], "Capacity");
-                DayOfWeek day = parseDayOfWeekInput(inputs[3]);
-                LocalTime start = parseTimeInput(inputs[4]);
-                LocalTime end = parseTimeInput(inputs[5]);
+                Semester semester = CSV.parseSemesterInput(inputs[0]);
+                int year = CSV.parsePositiveInt(inputs[1], "Year");
+                int capacity = CSV.parsePositiveInt(inputs[2], "Capacity");
+                DayOfWeek day = CSV.parseDayOfWeekInput(inputs[3]);
+                LocalTime start = CSV.parseTimeInput(inputs[4]);
+                LocalTime end = CSV.parseTimeInput(inputs[5]);
                 TimeSlot schedule = new TimeSlot(day, start, end);
-                String offeringId = generateOfferingId(course, staff);
+                String offeringId = CSV.generateOfferingId(course, staff);
 
                 return new CourseOffering(
                         offeringId,
@@ -1321,96 +1434,6 @@ public static void displayAcademicStaffCoursesMenu(AcademicStaff staff) throws I
                 ConsoleInput.pressEnterToContinue();
             }
         }
-    }
-
-    private static int parsePositiveInt(String value, String fieldName) {
-        if (value == null || value.trim().isEmpty()) {
-            throw new IllegalArgumentException(fieldName + " is required.");
-        }
-
-        try {
-            int parsed = Integer.parseInt(value.trim());
-            if (parsed <= 0) {
-                throw new IllegalArgumentException(fieldName + " must be greater than 0.");
-            }
-            return parsed;
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException(fieldName + " must be a valid number.");
-        }
-    }
-
-    private static Semester parseSemesterInput(String value) {
-        if (value == null || value.trim().isEmpty()) {
-            throw new IllegalArgumentException("Semester is required.");
-        }
-
-        String normalized = value.trim().toUpperCase().replace(" ", "_");
-        switch (normalized) {
-            case "1":
-            case "FIRST":
-            case "FIRST_SEM":
-            case "FIRST_SEMESTER":
-                return Semester.FIRST_SEM;
-            case "2":
-            case "SECOND":
-            case "SECOND_SEM":
-            case "SECOND_SEMESTER":
-                return Semester.SECOND_SEM;
-            default:
-                throw new IllegalArgumentException("Semester must be 'First' or 'Second'.");
-        }
-    }
-
-    private static DayOfWeek parseDayOfWeekInput(String value) {
-        if (value == null || value.trim().isEmpty()) {
-            throw new IllegalArgumentException("Day of week is required.");
-        }
-
-        String normalized = value.trim().toUpperCase();
-        for (DayOfWeek day : DayOfWeek.values()) {
-            if (day.name().startsWith(normalized)) {
-                return day;
-            }
-        }
-
-        throw new IllegalArgumentException("Invalid day of week. Use names like MON or Monday.");
-    }
-
-    private static LocalTime parseTimeInput(String value) {
-        if (value == null || value.trim().isEmpty()) {
-            throw new IllegalArgumentException("Time is required.");
-        }
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("h:mm a");
-        return LocalTime.parse(value.trim().toUpperCase(), formatter);
-    }
-
-    private static String generateOfferingId(Course course, AcademicStaff staff) {
-        String courseCode = (course != null) ? course.getCourseCode() : null;
-        if (courseCode == null || courseCode.isBlank()) {
-            courseCode = course != null ? CSV.abbreviateCourse(course.getTitle()) : "COURSE";
-        }
-        String sanitizedCourse = courseCode.replaceAll("\\s+", "").toUpperCase();
-        String staffId = (staff != null && staff.getPersonId() != null) ? staff.getPersonId() : "STAFF";
-        String suffix = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
-        return sanitizedCourse + "-" + staffId + "-" + suffix;
-    }
-
-    private static String[] buildCourseOfferingCsvRow(CourseOffering offering) {
-        Course course = offering.getCourse();
-        String courseIdentifier = (course != null && course.getCourseCode() != null && !course.getCourseCode().isBlank())
-                ? course.getCourseCode()
-                : (course != null ? course.getTitle() : "");
-
-        return new String[] {
-                offering.getOfferingId(),
-                courseIdentifier != null ? courseIdentifier : "",
-                offering.getSemester() != null ? offering.getSemester().toString() : "",
-                String.valueOf(offering.getYear()),
-                offering.getInstructor() != null ? offering.getInstructor().getPersonId() : "",
-                offering.getSchedule() != null ? offering.getSchedule().toString() : "",
-                String.valueOf(offering.getCapacity()),
-                String.valueOf(offering.getEnrolledCount())
-        };
     }
 
     // * UI: NonAcademicStaff Menu
