@@ -2,12 +2,7 @@ package ums.model;
 
 // [IMPORT] Standard
 import java.time.LocalDate;
-import java.util.List;
-
-// [IMPORT] Entities
 import ums.model.entity.Course;
-import ums.model.entity.CourseOffering;
-// [IMPORT] Enums
 import ums.model.enums.AcademicStanding;
 import ums.model.enums.Department;
 import ums.model.enums.Gender;
@@ -34,6 +29,20 @@ public class UndergraduateStudent extends Student {
             enrollmentDate, department, course, academicStanding
         );
 
+        this.yearLevel = yearLevel;
+    }
+
+    // * Constructor (Parameterized - WITH PersonID)
+    public UndergraduateStudent(
+        String personId,  // ADD THIS
+        String firstName, String middleName, String lastName,
+        LocalDate dateOfBirth, Gender gender,
+        String address, String contactNumber, String email,
+        LocalDate enrollmentDate, Department department, Course course,
+        AcademicStanding academicStanding, YearLevel yearLevel
+    ) {
+        super(personId, firstName, middleName, lastName, dateOfBirth, gender, 
+            address, contactNumber, email, enrollmentDate, department, course, academicStanding);
         this.yearLevel = yearLevel;
     }
 

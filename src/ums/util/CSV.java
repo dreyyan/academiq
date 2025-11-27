@@ -5,46 +5,28 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.time.DayOfWeek;
-import java.util.stream.Collectors;
-
-
-// [IMPORT] Exceptions
-import java.io.IOException;
-
-// [IMPORT] Enums
-import ums.model.enums.GraduateProgram;
-import ums.model.enums.YearLevel;
-import ums.model.enums.Department;
-import ums.model.enums.FacultyRank;
-
-// [IMPORT] Models
-import ums.model.AcademicStaff;
-import ums.model.Student;
 import ums.model.AcademicStaff;
 import ums.model.CourseCatalog;
-
-// [IMPORT] Entities
+import ums.model.Student;
 import ums.model.entity.Course;
 import ums.model.entity.CourseOffering;
 import ums.model.entity.TimeSlot;
-
-// [IMPORT] Enums
 import ums.model.enums.AcademicStanding;
+import ums.model.enums.Department;
+import ums.model.enums.FacultyRank;
 import ums.model.enums.Gender;
+import ums.model.enums.GraduateProgram;
 import ums.model.enums.Semester;
-
-// [IMPORT] Utilities
+import ums.model.enums.YearLevel;
 import ums.util.console.ConsoleDisplay;
-import ums.util.console.ConsoleInput;
-import ums.util.Settings;
 
 public class CSV {
     // * Methods
@@ -159,54 +141,139 @@ public class CSV {
         List<String[]> rows = readCSV(Settings.COURSE_OFFERINGS_FILE);
         List<CourseOffering> offerings = new ArrayList<>();
 
-        for (String[] row : rows) {
-            Course course = Course.fromCodeOrFullName(row[1]);
-
-            Semester semester;
-            switch (row[2].trim().toUpperCase()) {
-                case "FIRST_SEM":
-                case "FIRST":
-                case "1ST SEM":
-                case "1ST SEMESTER":
-                    semester = Semester.FIRST_SEM;
-                    break;
-
-                case "SECOND_SEM":
-                case "SECOND":
-                case "2ND SEM":
-                case "2ND SEMESTER":
-                    semester = Semester.SECOND_SEM;
-                    break;
-
-                default:
-                    throw new IllegalArgumentException("Invalid semester: " + row[2]);
+        for (int i = 0; i < rows.size(); i++) {
+            String[] row = rows.get(i);
+            
+            // Skip header row FIRST (before checking column count)
+            if (i == 0 || row[0].equalsIgnoreCase("OfferingID") || row[0].equalsIgnoreCase("Offering ID")) {
+                continue;
+            }
+            
+            // Skip if row doesn't have enough columns (empty line)
+            if (row.length < 8) {
+                System.out.println("Skipping row " + i + ": insufficient columns (" + row.length + ")");
+                continue;
             }
 
-            int year = Integer.parseInt(row[3]);
-            AcademicStaff instructor = Auth.getAcademicStaffById(row[4]);
-            TimeSlot schedule = TimeSlot.fromString(row[5]);
-            int capacity = Integer.parseInt(row[6]);
-            int enrolled = Integer.parseInt(row[7]);
+            try {
+                Course course = Course.fromCodeOrFullName(row[1]);
 
-            offerings.add(new CourseOffering(row[0], course, semester, year, instructor, schedule, capacity, enrolled));
+                Semester semester;
+                switch (row[2].trim().toUpperCase()) {
+                    case "FIRST_SEM":
+                    case "FIRST":
+                    case "1ST SEM":
+                    case "1ST SEMESTER":
+                        semester = Semester.FIRST_SEM;
+                        break;
+
+                    case "SECOND_SEM":
+                    case "SECOND":
+                    case "2ND SEM":
+                    case "2ND SEMESTER":
+                        semester = Semester.SECOND_SEM;
+                        break;
+
+                    default:
+                        throw new IllegalArgumentException("Invalid semester: " + row[2]);
+                }
+
+                int year = Integer.parseInt(row[3]);
+                AcademicStaff instructor = Auth.getAcademicStaffById(row[4]);
+                TimeSlot schedule = TimeSlot.fromString(row[5]);
+                int capacity = Integer.parseInt(row[6]);
+                int enrolled = Integer.parseInt(row[7]);
+
+                offerings.add(new CourseOffering(row[0], course, semester, year, instructor, schedule, capacity, enrolled));
+            } catch (Exception e) {
+                System.err.println("Error parsing row " + i + ": " + e.getMessage());
+                e.printStackTrace();
+            }
         }
 
         return offerings;
     }
 
-    // [UTILITY] Update course offering details
-    public static void updateCourseOffering(CourseOffering offering) {
+    // [UTILITY] Update course offering enrolled count in CSV
+    public static void updateCourseOfferingEnrollment(String offeringId, int newEnrolledCount) {
         List<String[]> rows = readCSV(Settings.COURSE_OFFERINGS_FILE);
+        boolean found = false;
 
         for (int i = 0; i < rows.size(); i++) {
-            if (rows.get(i)[0].equals(offering.getOfferingId())) {
-                // Update enrolled count
-                rows.get(i)[7] = String.valueOf(offering.getEnrolledCount());
+            String[] row = rows.get(i);
+            
+            // Skip empty rows
+            if (row.length == 0) continue;
+            
+            if (row[0].equalsIgnoreCase("OfferingID") || row[0].equalsIgnoreCase("Offering ID")) {
+                continue;
+            }
+            
+            // Match by offering ID 
+            if (row.length >= 8 && row[0].trim().equals(offeringId.trim())) {
+                // Update enrolled count (column index 7)
+                row[7] = String.valueOf(newEnrolledCount);
+                rows.set(i, row);
+                found = true;
                 break;
             }
         }
 
-        writeCSV(Settings.COURSE_OFFERINGS_FILE, rows); // overwrite
+        if (found) {
+            writeCSV(Settings.COURSE_OFFERINGS_FILE, rows);
+        } else {
+            System.err.println("ERROR: Offering ID not found: '" + offeringId + "'");
+        }
+    }
+
+    // [UTILITY] Update course offering details 
+    public static void updateCourseOffering(CourseOffering offering) {
+        if (offering == null || offering.getOfferingId() == null) return;
+        updateCourseOfferingEnrollment(offering.getOfferingId(), offering.getEnrolledCount());
+    }
+
+    // [UTILITY] Enroll student in course offering
+    public static boolean enrollStudentInOffering(String personId, String offeringId, CourseOffering offering) {
+        // Check if already enrolled
+        if (isStudentEnrolled(personId, offeringId)) {
+            System.out.println("DEBUG: Student already enrolled");
+            return false;
+        }
+        
+        // Check if seats available
+        if (offering.getEnrolledCount() >= offering.getCapacity()) {
+            return false;
+        }
+        
+        // Add enrollment record to enrollments.csv
+        appendRow(Settings.ENROLLMENTS_FILE, new String[] { personId, offeringId });
+        
+        // Calculate new count
+        int newCount = offering.getEnrolledCount() + 1;
+        
+        // Update the CSV
+        updateCourseOfferingEnrollment(offeringId, newCount);
+        
+        return true;
+    }
+
+    // [UTILITY] Drop student from course offering 
+    public static boolean dropStudentFromOffering(String personId, String offeringId, CourseOffering offering) {
+        // Check if student is enrolled
+        if (!isStudentEnrolled(personId, offeringId)) {
+            return false;
+        }
+        
+        // Remove enrollment record
+        removeEnrollment(personId, offeringId);
+        
+        // Calculate new count
+        int newCount = Math.max(0, offering.getEnrolledCount() - 1);
+        
+        // Update the CSV
+        updateCourseOfferingEnrollment(offeringId, newCount);
+        
+        return true;
     }
 
     // [UTILITY] Update student record
@@ -703,5 +770,59 @@ public static List<CourseOffering> fetchAllCourseOfferings() throws IOException 
             }
         }
         return null;
+    }
+
+    // [UTILITY] Fetch all students enrolled in a specific course offering
+    public static List<Student> getEnrolledStudents(String offeringId) throws IOException {
+        List<Student> enrolledStudents = new ArrayList<>();
+        
+        // Read enrollments CSV
+        List<String[]> enrollmentRows = CSV.readCSV(Settings.ENROLLMENTS_FILE);
+        
+        for (String[] row : enrollmentRows) {
+            if (row.length >= 2) {
+                String personId = row[0].trim();
+                String enrolledOfferingId = row[1].trim();
+                
+                // If this enrollment matches the offering ID
+                if (enrolledOfferingId.equals(offeringId)) {
+                    // Find the student by person ID
+                    Student student = Auth.getStudentById(personId);
+                    if (student != null) {
+                        enrolledStudents.add(student);
+                    }
+                }
+            }
+        }
+        
+        return enrolledStudents;
+    }
+
+    // [UTILITY] Get count of enrolled students for an offering
+    public static int getEnrolledStudentCount(String offeringId) throws IOException {
+        int count = 0;
+        List<String[]> enrollmentRows = CSV.readCSV(Settings.ENROLLMENTS_FILE);
+        
+        for (String[] row : enrollmentRows) {
+            if (row.length >= 2 && row[1].trim().equals(offeringId)) {
+                count++;
+            }
+        }
+        
+        return count;
+    }
+
+    // [UTILITY] Get enrollment details with date
+    public static List<String[]> getEnrollmentDetails(String offeringId) throws IOException {
+        List<String[]> details = new ArrayList<>();
+        List<String[]> enrollmentRows = CSV.readCSV(Settings.ENROLLMENTS_FILE);
+        
+        for (String[] row : enrollmentRows) {
+            if (row.length >= 2 && row[1].trim().equals(offeringId)) {
+                details.add(row); // Returns [personId, offeringId, enrollmentDate]
+            }
+        }
+        
+        return details;
     }
 }

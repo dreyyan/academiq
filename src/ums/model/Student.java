@@ -48,6 +48,28 @@ public abstract class Student extends Person {
             this.enrolledCourseOfferings = new ArrayList<>();
         }
 
+        // * Constructor (Parameterized - WITH PersonID)
+    public Student(
+        // Person ID
+        String personId,
+        // Person Attributes
+        String firstName, String middleName, String lastName, LocalDate dateOfBirth, Gender gender, String address, String contactNumber, String email,
+        // Student Attributes
+        LocalDate enrollmentDate, Department department, Course course, AcademicStanding academicStanding) {
+        super(
+            // Person Attributes WITH ID
+            personId, firstName, middleName, lastName, dateOfBirth, gender, address, contactNumber, email
+        );
+
+        this.enrollmentDate = enrollmentDate;
+        this.department = department; 
+        this.course = course;
+        this.academicStanding = academicStanding;
+        this.GPA = 0.0;
+        this.creditsEarned = 0;
+        this.enrolledCourseOfferings = new ArrayList<>();
+    }
+
     // * Getters
     public LocalDate getEnrollmentDate() { return this.enrollmentDate; }
     public Department getDepartment() { return this.department; }
@@ -61,7 +83,9 @@ public abstract class Student extends Person {
     public void setDepartment(Department department) { this.department = department; }
     public void setCourse(Course course){ this.course = course; }
     public void setAcademicStanding(AcademicStanding academicStanding) { this.academicStanding = academicStanding; }
-
+    public void setGPA(double GPA) {this.GPA = GPA;}
+    public void setCreditsEarned(int credits) { this.creditsEarned = credits;}
+    
     // * Methods
     // [METHOD] Enroll student in an existing course offering
     public void enrollInCourseOffering(CourseOffering offering){
@@ -117,7 +141,6 @@ public abstract class Student extends Person {
     public List<String> getAcademicsInformation() {
         List<String> info = new ArrayList<>(); // Stores student's academics information
 
-        info.add(getPersonId());
         info.add(getEnrollmentDate().toString());
         info.add(getDepartment() != null ? getDepartment().toString() : "Not Assigned");
         info.add(getCourse() != null ? getCourse().toString() : "Not Assigned");
@@ -147,14 +170,21 @@ public abstract class Student extends Person {
 
     public String[] toCSVRow() {
         return new String[] {
-            getPersonId(), getFirstName(), getMiddleName(), getLastName(), getDateOfBirth().toString(),
-            getGender().toString(), getAddress(), getContactNumber(), getEmail(),
+            getPersonId(), 
+            getFirstName(), 
+            getMiddleName(), 
+            getLastName(), 
+            getDateOfBirth().toString(),
+            getGender().toString(), 
+            getAddress(), 
+            getContactNumber(), 
+            getEmail(),
             getEnrollmentDate().toString(),
             getDepartment() != null ? getDepartment().toString() : "",
             getCourse() != null ? getCourse().toString() : "",
-            String.valueOf(getGPA()),
-            String.valueOf(getCreditsEarned()),
-            getAcademicStanding().toString()
+            getAcademicStanding().toString(),  
+            String.valueOf(getGPA()),   
+            String.valueOf(getCreditsEarned())
         };
     }
 }

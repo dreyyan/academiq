@@ -5,6 +5,7 @@ import ums.model.enums.Semester;
 
 // [IMPORT] Models
 import ums.model.AcademicStaff;
+import ums.model.enums.Semester;
 
 public class CourseOffering {
     // * Attributes
@@ -47,4 +48,7 @@ public class CourseOffering {
     public void setSchedule(TimeSlot schedule) { this.schedule = schedule; }
     public void setCapacity(int capacity) { this.capacity = capacity; }
     public void updateEnrolledCount(int enrolledCount) { this.enrolledCount = enrolledCount; }
+    public void incrementEnrolledCount() {this.enrolledCount++;}
+    public void decrementEnrolledCount() {  if (this.enrolledCount > 0) {   this.enrolledCount--;}}
+    public void setEnrolledCount(int count) {this.enrolledCount = count;}
 }
