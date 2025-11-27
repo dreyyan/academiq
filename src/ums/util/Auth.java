@@ -453,78 +453,78 @@ public class Auth {
 
     // [UTILITY] Get student by person ID
     public static Student getStudentById(String personId) {
-    List<String[]> rows = CSV.readCSV(Settings.STUDENTS_FILE);
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    
-    for (String[] row : rows) {
-        if (row.length > Settings.COL_PERSON_ID) {
-            String rowPersonId = row[Settings.COL_PERSON_ID].trim();
-            
-            if (rowPersonId.equals(personId)) {
-                try {
-                    // Parse student data
-                    String firstName = CSV.safeValue(row, Settings.COL_FIRST_NAME);
-                    String middleName = CSV.safeValue(row, Settings.COL_MIDDLE_NAME);
-                    String lastName = CSV.safeValue(row, Settings.COL_LAST_NAME);
-                    
-                    LocalDate dob = row[Settings.COL_DOB].isBlank() ? 
-                        LocalDate.now() : LocalDate.parse(row[Settings.COL_DOB], formatter);
-                    
-                    Gender gender = row[Settings.COL_GENDER].isBlank() ? 
-                        Gender.OTHER : Gender.valueOf(row[Settings.COL_GENDER].toUpperCase());
-                    
-                    String address = CSV.safeValue(row, Settings.COL_ADDRESS);
-                    String contact = CSV.safeValue(row, Settings.COL_CONTACT);
-                    String email = CSV.safeValue(row, Settings.COL_EMAIL);
-                    
-                    LocalDate enrollDate = row[Settings.COL_ENROLL_DATE].isBlank() ? 
-                        LocalDate.now() : LocalDate.parse(row[Settings.COL_ENROLL_DATE], formatter);
-                    
-                    // FIX: Use fromCodeOrFullName instead of valueOf
-                    Department dept = row[Settings.COL_DEPARTMENT].isBlank() ? 
-                        Department.UNASSIGNED : Department.fromCodeOrFullName(row[Settings.COL_DEPARTMENT]);
-                    
-                    Course course = row[Settings.COL_COURSE].isBlank() ? 
-                        null : Course.fromCodeOrFullName(row[Settings.COL_COURSE]);
-                    
-                    AcademicStanding standing = row[Settings.COL_ACAD_STANDING].isBlank() ? 
-                        AcademicStanding.GOOD : AcademicStanding.valueOf(row[Settings.COL_ACAD_STANDING]);
-                    
-                    double gpa = row[Settings.COL_GPA].isBlank() ? 
-                        0.0 : Double.parseDouble(row[Settings.COL_GPA]);
-                    
-                    int credits = row[Settings.COL_CREDITS].isBlank() ? 
-                        0 : Integer.parseInt(row[Settings.COL_CREDITS]);
-                    
-                    // Create and return student
-                    Student student = new UndergraduateStudent(
-                        personId, 
-                        firstName, middleName, lastName, dob, gender,
-                        address, contact, email, enrollDate, dept, course,
-                        standing, YearLevel.FRESHMAN
-                    );
-                    
-                    student.setGPA(gpa);
-                    student.setCreditsEarned(credits);
-                    
-                    List<CourseOffering> enrolledOfferings = loadStudentEnrollments(personId);
-                    for (CourseOffering offering : enrolledOfferings) {
-                        student.getEnrolledCourseOfferings().add(offering);
+        List<String[]> rows = CSV.readCSV(Settings.STUDENTS_FILE);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        
+        for (String[] row : rows) {
+            if (row.length > Settings.COL_PERSON_ID) {
+                String rowPersonId = row[Settings.COL_PERSON_ID].trim();
+                
+                if (rowPersonId.equals(personId)) {
+                    try {
+                        // Parse student data
+                        String firstName = CSV.safeValue(row, Settings.COL_FIRST_NAME);
+                        String middleName = CSV.safeValue(row, Settings.COL_MIDDLE_NAME);
+                        String lastName = CSV.safeValue(row, Settings.COL_LAST_NAME);
+                        
+                        LocalDate dob = row[Settings.COL_DOB].isBlank() ? 
+                            LocalDate.now() : LocalDate.parse(row[Settings.COL_DOB], formatter);
+                        
+                        Gender gender = row[Settings.COL_GENDER].isBlank() ? 
+                            Gender.OTHER : Gender.valueOf(row[Settings.COL_GENDER].toUpperCase());
+                        
+                        String address = CSV.safeValue(row, Settings.COL_ADDRESS);
+                        String contact = CSV.safeValue(row, Settings.COL_CONTACT);
+                        String email = CSV.safeValue(row, Settings.COL_EMAIL);
+                        
+                        LocalDate enrollDate = row[Settings.COL_ENROLL_DATE].isBlank() ? 
+                            LocalDate.now() : LocalDate.parse(row[Settings.COL_ENROLL_DATE], formatter);
+                        
+                        // FIX: Use fromCodeOrFullName instead of valueOf
+                        Department dept = row[Settings.COL_DEPARTMENT].isBlank() ? 
+                            Department.UNASSIGNED : Department.fromCodeOrFullName(row[Settings.COL_DEPARTMENT]);
+                        
+                        Course course = row[Settings.COL_COURSE].isBlank() ? 
+                            null : Course.fromCodeOrFullName(row[Settings.COL_COURSE]);
+                        
+                        AcademicStanding standing = row[Settings.COL_ACAD_STANDING].isBlank() ? 
+                            AcademicStanding.GOOD : AcademicStanding.valueOf(row[Settings.COL_ACAD_STANDING]);
+                        
+                        double gpa = row[Settings.COL_GPA].isBlank() ? 
+                            0.0 : Double.parseDouble(row[Settings.COL_GPA]);
+                        
+                        int credits = row[Settings.COL_CREDITS].isBlank() ? 
+                            0 : Integer.parseInt(row[Settings.COL_CREDITS]);
+                        
+                        // Create and return student
+                        Student student = new UndergraduateStudent(
+                            personId, 
+                            firstName, middleName, lastName, dob, gender,
+                            address, contact, email, enrollDate, dept, course,
+                            standing, YearLevel.FRESHMAN
+                        );
+                        
+                        student.setGPA(gpa);
+                        student.setCreditsEarned(credits);
+                        
+                        List<CourseOffering> enrolledOfferings = loadStudentEnrollments(personId);
+                        for (CourseOffering offering : enrolledOfferings) {
+                            student.getEnrolledCourseOfferings().add(offering);
+                        }
+                        
+                        return student;
+                        
+                    } catch (Exception e) {
+                        System.err.println("Error parsing student: " + e.getMessage());
+                        e.printStackTrace(); // Add this to see full stack trace
+                        return null;
                     }
-                    
-                    return student;
-                    
-                } catch (Exception e) {
-                    System.err.println("Error parsing student: " + e.getMessage());
-                    e.printStackTrace(); // Add this to see full stack trace
-                    return null;
                 }
             }
         }
+        
+        return null;
     }
-    
-    return null;
-}
 
     public static List<CourseOffering> loadStudentEnrollments(String personId) {
         List<CourseOffering> enrolledOfferings = new ArrayList<>();
