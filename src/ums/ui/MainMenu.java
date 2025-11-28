@@ -798,16 +798,98 @@ public class MainMenu {
 
         ConsoleUI.goTo(Settings.CONSOLE_HEIGHT - 3, 0);
         ConsoleUI.moveCursor(3);
-        ConsoleInput.printCentered("[ESC] Back", Settings.CONSOLE_WIDTH - 3);
+        ConsoleInput.printCentered("[ESC] Back  |  [E] Edit", Settings.CONSOLE_WIDTH - 3);;
 
-        while (true) {
+         while (true) {
             int key = ConsoleInput.readKey();
 
             if (key == Settings.ESC_KEY) {
                 break;
-            } break;
-        }
+            } else if (key == 'E' || key == 'e') {
+                ConsoleUI.clearInputFields(yPosition, xPosition, maxLength, profileFields.length);
+                ConsoleUI.clearDialogBox(5);
 
+                ConsoleUI.goTo(Settings.CONSOLE_HEIGHT - 3, 0);
+                ConsoleUI.moveCursor(3);
+                ConsoleInput.printCentered("[ESC] Cancel", Settings.CONSOLE_WIDTH - 3);
+
+                while (true) {
+                    // Gender selection dropdown
+                    String[][] selectOptions = new String[profileFields.length][];
+                    selectOptions[4] = new String[]{"Male", "Female", "Prefer not to say"};
+
+                    boolean[] hidden = new boolean[profileFields.length];
+
+                    String[] inputs = ConsoleInput.captureFormInputs(
+                        yPosition, xPosition, maxLength,
+                        profileFields.length, hidden, selectOptions
+                    );
+
+                    // Cancel editing
+                    if (inputs == null) {
+                        ConsoleUI.clearDialogBox(4);
+                        ConsoleDisplay.dialogBox("info", "Edit canceled. No changes were made.");
+                        ConsoleInput.pressEnterToContinue();
+                        displayAcademicStaffMenu(staff);
+                        return;
+                    }
+
+                    // Validate date
+                    if (!inputs[3].isEmpty()) {
+                        try {
+                            staff.setDateOfBirth(LocalDate.parse(inputs[3], formatter));
+                        } catch (Exception e) {
+                            ConsoleUI.clearDialogBox(4);
+                            ConsoleDisplay.dialogBox("error",
+                                "Invalid date! Use MM-dd-YYYY format."
+                            );
+                            ConsoleUI.clearInputFields(yPosition, xPosition, maxLength, profileFields.length);
+                            continue;
+                        }
+                    }
+
+                    // Validate gender
+                    if (!inputs[4].isEmpty()) {
+                        try {
+                            staff.setGender(Gender.fromString(inputs[4]));
+                        } catch (Exception e) {
+                            ConsoleUI.clearDialogBox(4);
+                            ConsoleDisplay.dialogBox("error", "Invalid gender.");
+                            ConsoleUI.clearInputFields(yPosition, xPosition, maxLength, profileFields.length);
+                            continue;
+                        }
+                    }
+
+                    // Validate email
+                    if (!inputs[7].isEmpty() && !Auth.isValidEmail(inputs[7])) {
+                        ConsoleUI.clearDialogBox(4);
+                        ConsoleDisplay.dialogBox("error",
+                            "Please enter a valid email (example@domain.com)."
+                        );
+                        ConsoleUI.clearInputFields(yPosition, xPosition, maxLength, profileFields.length);
+                        continue;
+                    }
+
+                    // Apply changes
+                    if (!inputs[0].isEmpty()) staff.setFirstName(inputs[0]);
+                    if (!inputs[1].isEmpty()) staff.setMiddleName(inputs[1]);
+                    if (!inputs[2].isEmpty()) staff.setLastName(inputs[2]);
+                    if (!inputs[5].isEmpty()) staff.setAddress(inputs[5]);
+                    if (!inputs[6].isEmpty()) staff.setContactNumber(inputs[6]);
+                    if (!inputs[7].isEmpty()) staff.setEmail(inputs[7]);
+
+                    // Save to CSV
+                    CSV.updateAcademicStaffRecord(staff);
+
+                    ConsoleUI.clearDialogBox(4);
+                    ConsoleDisplay.dialogBox("success", "Profile updated successfully!");
+                    ConsoleInput.pressEnterToContinue();
+                    break;
+                }
+            }
+            break;
+        } 
+        
         // Navigate back to 'Academic Staff Menu'
         displayAcademicStaffMenu(staff);
     }
@@ -858,76 +940,14 @@ public class MainMenu {
 
         ConsoleUI.goTo(Settings.CONSOLE_HEIGHT - 3, 0);
         ConsoleUI.moveCursor(3);
-        ConsoleInput.printCentered("[ESC] Back  |  [E] Edit", Settings.CONSOLE_WIDTH - 3);
+        ConsoleInput.printCentered("[ESC] Back", Settings.CONSOLE_WIDTH - 3);
 
         while (true) {
             int key = ConsoleInput.readKey();
 
             if (key == Settings.ESC_KEY) {
                 break;
-            } else if (key == 'E' || key == 'e') {
-                ConsoleUI.clearInputFields(yPosition, xPosition, maxLength, academicsFields.length);
-                ConsoleUI.clearDialogBox(5);
-
-                ConsoleUI.goTo(Settings.CONSOLE_HEIGHT - 3, 0);
-                ConsoleUI.moveCursor(3);
-                ConsoleInput.printCentered("[ESC] Cancel", Settings.CONSOLE_WIDTH - 3);
-
-                while (true) {
-                    // Editable fields: Department, Rank, Hire Date, Office, Salary, Teaching Load, Tenured
-                    String[][] selectOptions = new String[academicsFields.length][];
-                    selectOptions[1] = Arrays.stream(Department.values())
-                                            .filter(d -> d != Department.UNASSIGNED)
-                                            .map(Department::getCode)
-                                            .toArray(String[]::new);
-                    selectOptions[2] = Arrays.stream(FacultyRank.values())
-                                            .map(FacultyRank::getDisplayName)
-                                            .toArray(String[]::new);
-                    selectOptions[9] = new String[]{"Yes", "No"};
-
-                    boolean[] hidden = new boolean[academicsFields.length];
-                    Arrays.fill(hidden, false);
-
-                    String[] inputs = ConsoleInput.captureFormInputs(
-                        yPosition, xPosition, maxLength,
-                        academicsFields.length, hidden, selectOptions
-                    );
-
-                    if (inputs == null) {
-                        ConsoleUI.clearDialogBox(4);
-                        ConsoleDisplay.dialogBox("info", "Edit canceled. No changes were made.");
-                        ConsoleInput.pressEnterToContinue();
-                        displayAcademicStaffMenu(staff);
-                        return;
-                    }
-
-                    try {
-                        // Apply edits
-                        if (!inputs[1].isEmpty()) staff.setDepartment(Department.fromCodeOrFullName(inputs[1]));
-                        if (!inputs[2].isEmpty()) staff.setRank(FacultyRank.fromString(inputs[2]));
-                        if (!inputs[3].isEmpty()) staff.setHireDate(LocalDate.parse(inputs[3], formatter));
-                        if (!inputs[4].isEmpty()) staff.setOfficeLocation(inputs[4]);
-                        if (!inputs[5].isEmpty()) staff.setSalary(Double.parseDouble(inputs[5]));
-                        if (!inputs[6].isEmpty()) staff.updateTeachingHours(Integer.parseInt(inputs[6]) - staff.getTeachingHoursPerWeek());
-                        if (!inputs[7].isEmpty()) staff.setMaxTeachingLoad(Integer.parseInt(inputs[7]));
-                        if (!inputs[9].isEmpty()) staff.setTenured(inputs[9].equalsIgnoreCase("Yes"));
-
-                        // Save changes
-                        CSV.updateAcademicStaffRecord(staff);
-
-                        ConsoleUI.clearDialogBox(4);
-                        ConsoleDisplay.dialogBox("success", "Academic information updated successfully!");
-                        ConsoleInput.pressEnterToContinue();
-                        break;
-
-                    } catch (Exception e) {
-                        ConsoleUI.clearDialogBox(4);
-                        ConsoleDisplay.dialogBox("error", "Invalid input: " + e.getMessage());
-                        ConsoleUI.clearInputFields(yPosition, xPosition, maxLength, academicsFields.length);
-                    }
-                }
-            }
-            break;
+            }break;
         }
 
         displayAcademicStaffMenu(staff);
